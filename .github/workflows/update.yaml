@@ -1,0 +1,47 @@
+name: Download and Update all
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update_page:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+        working-directory: ./.github/workflows
+
+    steps:
+      - uses: actions/checkout@master
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: covid
+          python-version: 3.9
+          miniconda-version: "latest"
+          channels: conda-forge,defaults
+      - name: Install requirements from requirements.txt
+        run: pip install -r ./requirements.txt
+        working-directory: ./
+      - name: Run Download scheduler
+        run: python ./schedule.py
+        continue-on-error: true
+      - name: process Fallzahlen
+        run: python ./process_RKI_Covid_update.py
+        continue-on-error: true
+        timeout-minutes: 60
+      - name: Commit files
+        run: |
+          git config --local user.name  ${{ github.actor }}
+          git add ':/*.gz'
+          git add ':/*.xz'
+          git add ':/*.xlsx'
+          git add ':/*.csv'
+          git add ':/*.png'
+          git status -s
+          git commit -m "daily update and processing"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true

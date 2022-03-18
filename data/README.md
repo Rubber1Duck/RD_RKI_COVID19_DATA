@@ -1,0 +1,1 @@
+This folder is to store the downloaded compressed RKI dumps

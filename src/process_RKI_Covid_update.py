@@ -7,8 +7,8 @@ import pandas as pd
 from repo_tools_pkg.file_tools import find_latest_file
 
 # %%
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Fallzahlen',
+path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
                                'RKI_COVID19_Fallzahlen.csv')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'

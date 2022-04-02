@@ -33,11 +33,7 @@ jobs:
       - name: Commit files
         run: |
           git config --local user.name  ${{ github.actor }}
-          git add ':/*.gz'
-          git add ':/*.xz'
-          git add ':/*.xlsx'
           git add ':/*.csv'
-          git add ':/*.png'
           git status -s
           git commit -m "daily update and processing"
       - name: Push changes

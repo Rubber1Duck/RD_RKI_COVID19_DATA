@@ -24,12 +24,10 @@ jobs:
         run: pip install -r ./requirements.txt
         working-directory: ./
       - name: Run Download scheduler
-        run: python ./schedule.py
+        run: python ./src/schedule.py
         continue-on-error: true
-        working-directory: ../src/
       - name: process Fallzahlen
-        run: python ./process_RKI_Covid_update.py
-        working-directory: ../src/
+        run: python ./src/process_RKI_Covid_update.py
         continue-on-error: true
         timeout-minutes: 60
       - name: Commit files

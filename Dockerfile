@@ -1,10 +1,15 @@
-FROM python:3
+FROM python:3.9.12-alpine
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
 COPY . .
 
-CMD [ "python", "./your-daemon-or-script.py" ]
+RUN apk update \
+  && apk upgrade \
+  && apk add \
+    --virtual .dependencies build-base binutils \
+  && pip install --no-cache-dir -r requirements.txt \
+  && apk del .dependencies
+
+CMD []
+#CMD [ "python", "./your-daemon-or-script.py" ]

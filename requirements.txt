@@ -1,7 +1,4 @@
-matplotlib
 numpy
 pytz
 pandas
-openpyxl
-holidays
 requests

@@ -1,6 +1,9 @@
 name: Download and Update all
 
 on:
+  schedule:
+    - cron: "10 4 * * *"
+
   workflow_dispatch:
 
 jobs:
@@ -34,7 +37,8 @@ jobs:
         timeout-minutes: 60
       - name: Commit files
         run: |
-          git config --local user.name  ${{ github.actor }}
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git add ':/*.csv'
           git status -s
           git commit -m "daily update and processing"

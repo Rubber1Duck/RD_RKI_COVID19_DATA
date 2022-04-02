@@ -22,7 +22,7 @@ jobs:
           channels: conda-forge,defaults
       - name: Install requirements from requirements.txt
         run: pip install -r ./requirements.txt
-        working-directory: ../../
+        working-directory: ./
       - name: Run Download scheduler
         run: python ./schedule.py
         continue-on-error: true

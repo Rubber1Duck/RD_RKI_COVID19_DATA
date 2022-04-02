@@ -24,8 +24,9 @@ jobs:
         run: pip install -r ./requirements.txt
         working-directory: ./
       - name: Run Download scheduler
-        run: python ./src/schedule.py
+        run: python ./schedule.py
         continue-on-error: true
+        working-directory: ./src/
       - name: process Fallzahlen
         run: python ./src/process_RKI_Covid_update.py
         continue-on-error: true

@@ -30,6 +30,7 @@ jobs:
       - name: process Fallzahlen
         run: python ./src/process_RKI_Covid_update.py
         continue-on-error: true
+        working-directory: ./src/
         timeout-minutes: 60
       - name: Commit files
         run: |

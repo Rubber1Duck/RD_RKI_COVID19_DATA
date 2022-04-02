@@ -3,8 +3,7 @@
 ~$*
 
 # data
-data/*.xz
-data/*.gz
+data/*
 
 # Python defaults
 # Byte-compiled / optimized / DLL files

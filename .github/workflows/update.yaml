@@ -41,7 +41,7 @@ jobs:
           git config user.email github-actions@github.com
           git add ':/*.csv'
           git status -s
-          git commit -m "daily update and processing"
+          git commit -m "update on $(date '+%Y-%m-%d')"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:

@@ -6,6 +6,11 @@ import pandas as pd
 
 from repo_tools_pkg.file_tools import find_latest_file
 
+import pytz
+
+t_now = datetime.now(pytz.timezone('Europe/Berlin')).time()
+print(f"Starting at {t_now}")
+
 # %%
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',

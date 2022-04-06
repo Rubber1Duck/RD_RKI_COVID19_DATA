@@ -1,4 +1,4 @@
-FROM python:3.9-alpine3.14
+FROM python:3.9-slim
 
 WORKDIR /usr/src/app
 
@@ -8,11 +8,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY ./requirements.txt .
 
-RUN apk update \
-  && apk upgrade \
-  && apk add \
-    --virtual .dependencies build-base binutils \
-  && pip install --no-cache-dir -v -r requirements.txt \
-  && apk del .dependencies
+RUN pip install --no-cache-dir -v -r requirements.txt
 
-CMD ["/bin/sh"]
+CMD ["/bin/bash"]

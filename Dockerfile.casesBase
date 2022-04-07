@@ -6,8 +6,15 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+
 COPY ./requirements.txt .
 
-RUN pip install --no-cache-dir -v -r requirements.txt
+RUN apt-get update \
+  && apt-get -y upgrade \
+  && apt-get -y install build-essential binutils \
+  && pip install --no-cache-dir -r requirements.txt \
+  && apt-get -y purge binutils build-essential \
+  && apt-get -y --purge autoremove \
+  && apt-get clean
 
 CMD ["/bin/bash"]

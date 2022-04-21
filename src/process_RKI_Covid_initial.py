@@ -9,14 +9,11 @@ import pandas as pd
 
 # %%
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-path_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
-                                'RKI_COVID19_Fallzahlen_temp.csv')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path)
 file_list.sort(reverse=False)
 pattern = 'RKI_COVID19'
-dfs = []
 key_list = ['IdBundesland', 'IdLandkreis']
 dtypes_new = {'IdBundesland': 'Int32', 'IdLandkreis': 'Int32', 'NeuerFall': 'Int8',
               'NeuerTodesfall': 'Int8', 'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'Meldedatum': 'object',
@@ -96,7 +93,6 @@ for file_path_full, report_date in all_files:
         df['report_date'] = report_date
         df.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
         df['Datenstand'] = datenstand
-        dfs.append(df)
         covid_df = df
         covid_df.sort_values(by=['report_date', 'IdLandkreis'], inplace=True)
         with open(path_date_csv, 'wb') as csvfile:

@@ -13,8 +13,6 @@ print(f"Starting at {t_now}")
 
 # %%
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
-                               'RKI_COVID19_Fallzahlen.csv')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 pattern = 'RKI_COVID19'
@@ -30,12 +28,6 @@ key_list = ['Datenstand', 'IdBundesland', 'IdLandkreis']
 # %% read covid latest
 covid_path_latest, date_latest = find_latest_file(os.path.join(path), file_pattern=pattern)
 covid_df = pd.read_csv(covid_path_latest, usecols=dtypes_covid.keys(), dtype=dtypes_covid)
-
-# %% read fallzahlen current
-fallzahlen_df = pd.read_csv(path_fallzahlen, engine='python', dtype=dtypes_fallzahlen, usecols=dtypes_fallzahlen.keys())
-fallzahlen_df['Datenstand'] = pd.to_datetime(fallzahlen_df['Datenstand']).dt.date
-fallzahlen_df['report_date'] = pd.to_datetime(fallzahlen_df['report_date']).dt.date
-fallzahlen_df['meldedatum_max'] = pd.to_datetime(fallzahlen_df['meldedatum_max']).dt.date
 
 # %% eval fallzahlen new
 print(date_latest)

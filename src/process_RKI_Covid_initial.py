@@ -1,14 +1,16 @@
 import os
 import re
-from datetime import date, timedelta
-
+from datetime import *
+from time import *
 import numpy as np
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 
 # %%
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-path_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Fallzahlen',
-                        'RKI_COVID19_Fallzahlen_temp.csv')
+path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+path_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                                'RKI_COVID19_Fallzahlen_temp.csv')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path)
@@ -41,11 +43,12 @@ for file in file_list:
             report_date = date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4)))
             all_files.append((file_path_full, report_date))
 
-count = 0
 for file_path_full, report_date in all_files:
     if report_date >= date(2020, 3, 24):
-        count += 1
+        t1 = process_time()
         print(report_date)
+        path_date_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                               'RKI_COVID19_Fallzahlen_' + report_date.strftime("%Y%m%d") + '.csv')
         if report_date == date(2020, 3, 25):
             # Sonderfall, falscher Datentyp in Zeile
             df = pd.read_csv(file_path_full, usecols=dtypes_new.keys(), dtype=dtypes_new, skiprows=[10572])
@@ -94,15 +97,11 @@ for file_path_full, report_date in all_files:
         df.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
         df['Datenstand'] = datenstand
         dfs.append(df)
-        # if count>30: break
-
-# %%
-covid_df = pd.concat(dfs)
-covid_df.sort_values(by=['report_date', 'IdLandkreis'], inplace=True)
-
-# %% dedup and write csv
-covid_df_clean = covid_df.copy()
-# covid_df.drop_duplicates(subset=['IdLandkreis','meldedatum_max'], keep='last',inplace=True)
-with open(path_csv, 'wb') as csvfile:
-    covid_df.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8', date_format='%Y-%m-%d',
+        covid_df = df
+        covid_df.sort_values(by=['report_date', 'IdLandkreis'], inplace=True)
+        with open(path_date_csv, 'wb') as csvfile:
+            covid_df.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8', date_format='%Y-%m-%d',
                     columns=dtypes_fallzahlen.keys())
+        t2 = process_time()
+        t = t2 - t1
+        print('Rechenzeit: ', t)

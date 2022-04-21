@@ -59,15 +59,9 @@ agg_key = {
 covid_df = covid_df.groupby(key_list, as_index=False).agg(agg_key)
 covid_df.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
 covid_df['report_date'] = date_latest
-
-# %% concat and dedup
-fallzahlen_df = fallzahlen_df[fallzahlen_df['Datenstand'] != datenstand.date()]
-
-fallzahlen_new = pd.concat([fallzahlen_df, covid_df])
-fallzahlen_new.drop_duplicates(subset=key_list, keep='last', inplace=True)
-fallzahlen_new.sort_values(by=key_list, inplace=True)
-
-# %% write csv
-with open(path_fallzahlen, 'wb') as csvfile:
-    fallzahlen_new.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
+path_date_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                               'RKI_COVID19_Fallzahlen_' + date_latest.strftime("%Y%m%d") + '.csv')
+covid_df.sort_values(by=key_list, inplace=True)
+with open(path_date_csv, 'wb') as csvfile:
+    covid_df.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                           date_format='%Y-%m-%d', columns=dtypes_fallzahlen.keys())

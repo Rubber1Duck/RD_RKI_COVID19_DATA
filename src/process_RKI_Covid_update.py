@@ -103,5 +103,3 @@ for datum in day_range:
 for file_path_full, report_date in all_files:
     if report_date.strftime('%Y%m%d') not in day_range_str:
         os.remove(file_path_full)
-
-# %%

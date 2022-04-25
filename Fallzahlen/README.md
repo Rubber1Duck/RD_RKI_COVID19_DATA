@@ -1,9 +1,9 @@
 # Fallzahlen
 
-Täglicher Abzug der aggregierten Fallzahlen vom RKI ab 2020-03-24
+Täglicher Abzug der aggregierten Fallzahlen vom RKI der vergangenen 14 Tage
 
-Die Datei RKI_COVID19_Fallzahlen.csv fasst die Fallzahlen (Todesfälle und Neuinfektionen) für alle verfügbaren
-Reportingtage der RKI-Dumps auf Landkreisebene zusammen.
+Die Datei FixFallzahlen_JJJJMMDD_LK.csv fasst die Fallzahlen (Todesfälle und Neuinfektionen) vom JJJJMMDD der RKI-Dumps auf Landkreisebene zusammen.
+Die Datei FixFallzahlen_JJJJMMDD_BL.csv fasst die Fallzahlen (Todesfälle und Neuinfektionen) vom JJJJMMDD der RKI-Dumps auf Bundeslandebene (ebenso für gesamt Deutschland) zusammen.
 
 Quellenvermerk: 
 - RKI (https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Daten.html)

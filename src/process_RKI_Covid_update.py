@@ -97,7 +97,7 @@ with open(path_date_csv_LK, 'wb') as csvfile:
 with open(path_date_csv_BL, 'wb') as csvfile:
     covid_df_BL.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                           date_format='%Y-%m-%d', columns=dtypes_fallzahlen_BL.keys())
-# %% limit files to the last 14 days
+# %% limit files to the last 7 days
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
@@ -116,7 +116,7 @@ for file in file_list:
             report_date = date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4)))
             all_files.append((file_path_full, report_date))
 
-day_range = pd.date_range(end=datetime.today(), periods=14).tolist()
+day_range = pd.date_range(end=datetime.today(), periods=7).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y%m%d'))

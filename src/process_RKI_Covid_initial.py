@@ -9,6 +9,8 @@ import pandas as pd
 
 # %%
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+path_bevoelkerung_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Bevoelkerung',
+                               'Bevoelkerung.csv')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path)
@@ -24,13 +26,21 @@ dtypes_new_2 = {'IdBundesland': 'Int32', 'IdLandkreis': 'Int32', 'NeuerFall': 'I
 dtypes_old = {'IdBundesland': 'Int32', 'Landkreis ID': 'Int32', 'Neuer Fall': 'Int8',
               'Neuer Todesfall': 'Int8', 'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'Meldedatum': 'object',
               'Datenstand': 'object'}
+dtypes_bevoelkerung = {'AGS': 'Int32', 'Name': 'object', 'GueltigAb': 'object', 'GueltigBis': 'object', 'Einwohner': 'Int32'}
 dtypes_fallzahlen_LK = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'IdLandkreis': 'Int32',
                      'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'AnzahlFall_neu': 'Int32',
                      'AnzahlTodesfall_neu': 'Int32', 'AnzahlFall_7d': 'Int32', 'report_date': 'object',
-                     'meldedatum_max': 'object'}
+                     'meldedatum_max': 'object', 'population': 'Int32', 'incidence_7d': 'float64'}
 dtypes_fallzahlen_BL = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'AnzahlFall': 'Int32',
                      'AnzahlTodesfall': 'Int32', 'AnzahlFall_neu': 'Int32', 'AnzahlTodesfall_neu': 'Int32',
-                     'AnzahlFall_7d': 'Int32', 'report_date': 'object', 'meldedatum_max': 'object'}
+                     'AnzahlFall_7d': 'Int32', 'report_date': 'object', 'meldedatum_max': 'object',
+                     'population': 'Int32', 'incidence_7d': 'float64'}
+
+# %% open bevoelkerung.csv
+bevoelkerung_df = pd.read_csv(path_bevoelkerung_csv, usecols=dtypes_bevoelkerung.keys(), dtype=dtypes_bevoelkerung)
+bevoelkerung_df['GueltigAb'] = pd.to_datetime(bevoelkerung_df['GueltigAb'])
+bevoelkerung_df['GueltigBis'] = pd.to_datetime(bevoelkerung_df['GueltigBis'])
+
 # %%
 all_files = []
 for file in file_list:
@@ -102,6 +112,7 @@ for file_path_full, report_date in all_files:
         df_BL = df_BL.groupby(key_list, as_index=False).agg(agg_key)
         df_GER = df_GER.groupby(key_list, as_index=False).agg(agg_key)
         df_BL = pd.concat([df_GER, df_BL])
+        df_BL.reset_index(inplace=True, drop=True)
         df_BL.drop(['IdLandkreis'], inplace=True, axis=1)
         df_LK['report_date'] = report_date
         df_BL['report_date'] = report_date
@@ -111,6 +122,18 @@ for file_path_full, report_date in all_files:
         df_BL['Datenstand'] = datenstand
         df_LK.sort_values(by=['report_date', 'IdBundesland', 'IdLandkreis'], inplace=True)
         df_BL.sort_values(by=['report_date', 'IdBundesland'], inplace=True)
+        df_mask = (bevoelkerung_df['AGS'].isin(df_LK['IdLandkreis'])) & (bevoelkerung_df['GueltigAb'] <= datenstand) & (bevoelkerung_df['GueltigBis'] >= datenstand)
+        population_df = bevoelkerung_df[df_mask]
+        population_df.reset_index(inplace=True, drop=True)
+        df_LK['population'] = population_df['Einwohner']
+        df_LK['AnzahlFall_7d'] = df_LK['AnzahlFall_7d'].astype(int)
+        df_LK['incidence_7d'] = df_LK['AnzahlFall_7d'] / df_LK['population'] * 100000
+        df_mask = (bevoelkerung_df['AGS'].isin(df_BL['IdBundesland'])) & (bevoelkerung_df['GueltigAb'] <= datenstand) & (bevoelkerung_df['GueltigBis'] >= datenstand)
+        population_df = bevoelkerung_df[df_mask]
+        population_df.reset_index(inplace=True, drop=True)
+        df_BL['population'] = population_df['Einwohner']
+        df_BL['AnzahlFall_7d'] = df_BL['AnzahlFall_7d'].astype(int)
+        df_BL['incidence_7d'] = df_BL['AnzahlFall_7d'] / df_BL['population'] * 100000
         with open(path_date_csv_LK, 'wb') as csvfile:
             df_LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8', date_format='%Y-%m-%d',
                     columns=dtypes_fallzahlen_LK.keys())

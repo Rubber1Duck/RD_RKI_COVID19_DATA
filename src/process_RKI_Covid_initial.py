@@ -28,14 +28,12 @@ dtypes_old = {'IdBundesland': 'Int32', 'Landkreis ID': 'Int32', 'Neuer Fall': 'I
               'Neuer Todesfall': 'Int8', 'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'Meldedatum': 'object',
               'Datenstand': 'object'}
 BV_dtypes = {'AGS': 'Int32', 'Name': 'object', 'GueltigAb': 'object', 'GueltigBis': 'object', 'Einwohner': 'Int32'}
-LK_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'IdLandkreis': 'Int32',
+LK_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'IdLandkreis': 'Int32', 'Landkreis': 'object',
                      'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'AnzahlFall_neu': 'Int32',
-                     'AnzahlTodesfall_neu': 'Int32', 'AnzahlFall_7d': 'Int32', 'report_date': 'object',
-                     'meldedatum_max': 'object', 'population': 'Int32', 'incidence_7d': 'float64'}
-BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'AnzahlFall': 'Int32',
+                     'AnzahlTodesfall_neu': 'Int32', 'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'}
+BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'Bundesland': 'object', 'AnzahlFall': 'Int32',
                      'AnzahlTodesfall': 'Int32', 'AnzahlFall_neu': 'Int32', 'AnzahlTodesfall_neu': 'Int32',
-                     'AnzahlFall_7d': 'Int32', 'report_date': 'object', 'meldedatum_max': 'object',
-                     'population': 'Int32', 'incidence_7d': 'float64'}
+                     'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'}
 
 # %% open bevoelkerung.csv
 BV = pd.read_csv(path_BV_csv, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
@@ -57,10 +55,6 @@ for file in file_list:
 for file_path_full, report_date in all_files:
     if report_date >= date(2020, 3, 24):
         print(report_date)
-        path_LK_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
-                               'FixFallzahlen_' + report_date.strftime("%Y-%m-%d") + '_LK.csv')
-        path_BL_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
-                               'FixFallzahlen_' + report_date.strftime("%Y-%m-%d") + '_BL.csv')
         if report_date == date(2020, 3, 25):
             # Sonderfall, falscher Datentyp in Zeile
             LK = pd.read_csv(file_path_full, usecols=dtypes_new.keys(), dtype=dtypes_new, skiprows=[10572])
@@ -90,9 +84,10 @@ for file_path_full, report_date in all_files:
             datenstand = pd.to_datetime(LK['Datenstand'].iloc[0])
         except:
             datenstand = pd.to_datetime(LK['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
+        meldedatum_max = LK['Meldedatum'].max()
         LK['AnzahlFall_neu'] = np.where(LK['NeuerFall'].isin([-1, 1]), LK['AnzahlFall'], 0)
         LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0)
-        LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (datenstand - timedelta(days=8)),
+        LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (meldedatum_max - timedelta(days=7)),
                                        LK['AnzahlFall'], 0)
         LK['AnzahlTodesfall_neu'] = np.where(LK['NeuerTodesfall'].isin([-1, 1]), LK['AnzahlTodesfall'], 0)
         LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([0, 1]), LK['AnzahlTodesfall'], 0)
@@ -113,27 +108,32 @@ for file_path_full, report_date in all_files:
         ID0 = ID0.groupby(key_list, as_index=False).agg(agg_key)
         BL = pd.concat([ID0, BL])
         BL.reset_index(inplace=True, drop=True)
-        BL.drop(['IdLandkreis'], inplace=True, axis=1)
-        LK['report_date'] = report_date
-        BL['report_date'] = report_date
-        LK.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
-        BL.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
+        BL.drop(['IdLandkreis', 'Meldedatum'], inplace=True, axis=1)
+        LK.drop(['Meldedatum'], inplace=True, axis=1)
         LK['Datenstand'] = datenstand
         BL['Datenstand'] = datenstand
-        LK.sort_values(by=['report_date', 'IdBundesland', 'IdLandkreis'], inplace=True)
-        BL.sort_values(by=['report_date', 'IdBundesland'], inplace=True)
+        LK.sort_values(by=['Datenstand', 'IdBundesland', 'IdLandkreis'], inplace=True)
+        BL.sort_values(by=['Datenstand', 'IdBundesland'], inplace=True)
         LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
         LK_pop = BV[LK_pop_mask]
         LK_pop.reset_index(inplace=True, drop=True)
+        LK['Landkreis'] = LK_pop['Name']
         LK['population'] = LK_pop['Einwohner']
         LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
         LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['population'] * 100000
+        LK.drop(['population'], inplace=True, axis=1)
         BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
         BL_pop = BV[BL_pop_mask]
         BL_pop.reset_index(inplace=True, drop=True)
+        BL['Bundesland'] = BL_pop['Name']
         BL['population'] = BL_pop['Einwohner']
         BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
         BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
+        BL.drop(['population'], inplace=True, axis=1)
+        path_LK_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                               'FixFallzahlen_' + report_date.strftime("%Y-%m-%d") + '_LK.csv')
+        path_BL_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                               'FixFallzahlen_' + report_date.strftime("%Y-%m-%d") + '_BL.csv')
         with open(path_LK_csv, 'wb') as csvfile:
             LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8', date_format='%Y-%m-%d',
                     columns=LK_dtypes.keys())

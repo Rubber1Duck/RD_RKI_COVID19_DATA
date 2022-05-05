@@ -18,14 +18,12 @@ path_BV_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Be
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 pattern = 'RKI_COVID19'
-LK_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'IdLandkreis': 'Int32',
+LK_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'IdLandkreis': 'Int32', 'Landkreis': 'object',
             'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'AnzahlFall_neu': 'Int32',
-            'AnzahlTodesfall_neu': 'Int32', 'AnzahlFall_7d': 'Int32', 'report_date': 'object',
-            'meldedatum_max': 'object', 'population': 'Int32', 'incidence_7d': 'float64'}
-BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'AnzahlFall': 'Int32',
+            'AnzahlTodesfall_neu': 'Int32', 'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'}
+BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32','Bundesland': 'object', 'AnzahlFall': 'Int32',
             'AnzahlTodesfall': 'Int32', 'AnzahlFall_neu': 'Int32', 'AnzahlTodesfall_neu': 'Int32',
-            'AnzahlFall_7d': 'Int32', 'report_date': 'object', 'meldedatum_max': 'object',
-            'population': 'Int32', 'incidence_7d': 'float64'}
+            'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'}
 BV_dtypes = {'AGS': 'Int32', 'Name': 'object', 'GueltigAb': 'object', 'GueltigBis': 'object', 'Einwohner': 'Int32'}
 CV_dtypes = {'Datenstand': 'object', 'IdBundesland': 'Int32', 'IdLandkreis': 'Int32', 'NeuerFall': 'Int8',
                 'NeuerTodesfall': 'Int8', 'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'Meldedatum': 'object'}
@@ -67,29 +65,30 @@ BL = BL.groupby(key_list_LK, as_index=False).agg(agg_key)
 ID0 = ID0.groupby(key_list_LK, as_index=False).agg(agg_key)
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
-BL.drop(['IdLandkreis'], inplace=True, axis=1)
-LK.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
-BL.rename(columns={'Meldedatum': 'meldedatum_max'}, inplace=True)
-LK['report_date'] = date_latest
-BL['report_date'] = date_latest
-LK_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
-                            'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_LK.csv')
-BL_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
-                            'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_BL.csv')
+BL.drop(['IdLandkreis', 'Meldedatum'], inplace=True, axis=1)
+LK.drop(['Meldedatum'], inplace=True, axis=1)
 LK.sort_values(by=key_list_LK, inplace=True)
 BL.sort_values(by=key_list_BL, inplace=True)
 LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['population'] = LK_pop['Einwohner']
+LK['Landkreis'] = LK_pop['Name']
 LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
 LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['population'] * 100000
+LK.drop(['population'], inplace=True, axis=1)
 BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
+BL['Bundesland'] = BL_pop['Name']
 BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
+BL.drop(['population'], inplace=True, axis=1)
+LK_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                            'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_LK.csv')
+BL_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                            'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_BL.csv')
 with open(LK_csv_path, 'wb') as csvfile:
     LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=LK_dtypes.keys())

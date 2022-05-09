@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update_page:
+  updateData:
     runs-on: ubuntu-latest
     defaults:
       run:

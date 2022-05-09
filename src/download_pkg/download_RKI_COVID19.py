@@ -6,6 +6,7 @@ from . import DownloadFile
 import os
 import json
 import pandas as pd
+import datetime
 
 def download_RKI_COVID19():
     data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data')
@@ -22,8 +23,8 @@ def download_RKI_COVID19():
     with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
         metaobj = json.load(file)
      
-    metaobj['created'] = pd.to_datetime(metaobj['created'], unit='ms', utc=True).isoformat()
-    metaobj['modified'] = pd.to_datetime(metaobj['modified'], unit='ms', utc=True).isoformat()
+    metaobj['created'] = pd.to_datetime(metaobj['created'], unit='ms').isoformat(sep='T', timespec='milliseconds') + 'Z'
+    metaobj['modified'] = pd.to_datetime(metaobj['modified'], unit='ms').isoformat(sep='T', timespec='milliseconds') + 'Z'
     metaobj['description'] = ""
     metaobj['licenseInfo'] = "Die Daten sind die Fallzahlen in Deutschland des Robert Koch-Institut (RKI) und stehen unter der Open Data Datenlizenz Deutschland – Namensnennung – Version 2.0 zur Verfügung."
     metaobj['accessInformation'] = "Bundesamt für Kartographie und Geodäsie Robert Koch-Institut"

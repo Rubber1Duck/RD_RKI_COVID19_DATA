@@ -1,4 +1,4 @@
-name: Download and Update all
+name: Download and Update
 
 on:
   schedule:

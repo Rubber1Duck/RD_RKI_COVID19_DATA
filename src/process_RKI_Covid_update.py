@@ -13,7 +13,7 @@ print(f"Starting at {t_now}")
 
 # %%
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-path_BV_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Bevoelkerung',
+BV_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Bevoelkerung',
                                'Bevoelkerung.csv')
 
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
@@ -31,7 +31,7 @@ key_list_LK = ['Datenstand', 'IdBundesland', 'IdLandkreis']
 key_list_BL = ['Datenstand', 'IdBundesland']
 
 # %% open bevoelkerung.csv
-BV = pd.read_csv(path_BV_csv, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
+BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
 BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
 BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
@@ -73,7 +73,7 @@ LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['GueltigAb'] <= datensta
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['population'] = LK_pop['Einwohner']
-LK['Landkreis'] = LK_pop['Name']
+LK.insert(loc=3, column='Landkreis', value=LK_pop['Name'])
 LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
 LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['population'] * 100000
 LK.drop(['population'], inplace=True, axis=1)
@@ -81,20 +81,33 @@ BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['GueltigAb'] <= datenst
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
-BL['Bundesland'] = BL_pop['Name']
+BL.insert(loc=2, column='Bundesland', value=BL_pop['Name'])
 BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
 BL.drop(['population'], inplace=True, axis=1)
 LK_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
                             'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_LK.csv')
+LK_json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                            'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_LK.json')
 BL_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
                             'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_BL.csv')
+BL_json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen',
+                            'FixFallzahlen_' + date_latest.strftime("%Y-%m-%d") + '_BL.json')
 with open(LK_csv_path, 'wb') as csvfile:
     LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=LK_dtypes.keys())
 with open(BL_csv_path, 'wb') as csvfile:
     BL.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=BL_dtypes.keys())
+LK['IdLandkreisStr'] = LK['IdLandkreis']
+LK['IdLandkreisStr'] = LK['IdLandkreisStr'].astype(str)
+LK['IdLandkreisStr'] = LK['IdLandkreisStr'].str.zfill(5)
+LK.set_index(['IdLandkreisStr'], inplace=True, drop=True)
+LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False)
+BL['IdBundeslandStr'] = BL['IdBundesland']
+BL.set_index(['IdBundeslandStr'], inplace=True, drop=True)
+BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False)
+
 # %% limit files to the last 8 days
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen')
 

@@ -127,7 +127,7 @@ for file in file_list:
             report_date = date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
 
-day_range = pd.date_range(end=datetime.today(), periods=8).tolist()
+day_range = pd.date_range(end=datetime.today(), periods=10).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))

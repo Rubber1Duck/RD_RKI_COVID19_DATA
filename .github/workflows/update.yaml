@@ -23,19 +23,19 @@ jobs:
           python-version: 3.9
           miniconda-version: "latest"
           channels: conda-forge,defaults
-      - name: Install requirements from requirements.txt
+      - name: Install requirements
         run: pip install -r ./requirements.txt
         working-directory: ./
-      - name: Run Data Download scheduler
+      - name: Data Download
         run: python ./schedule.py
         continue-on-error: false
         working-directory: ./src/
-      - name: process Fallzahlen
+      - name: update Fallzahlen
         run: python ./process_RKI_Covid_update.py
         continue-on-error: false
         working-directory: ./src/
         timeout-minutes: 60
-      - name: Run Meta Download scheduler
+      - name: Meta Download
         run: python ./schedule_meta.py
         continue-on-error: false
         working-directory: ./src/ 

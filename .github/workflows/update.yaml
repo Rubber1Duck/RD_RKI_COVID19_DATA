@@ -2,7 +2,7 @@ name: Download and Update
 
 on:
   schedule:
-    - cron: "33 1 * * *"
+    - cron: "58 1 * * *"
 
   workflow_dispatch:
 
@@ -46,7 +46,7 @@ jobs:
           git add ':/*.csv'
           git add ':/*.json'
           git status -s
-          git commit -m "update on $(date '+%Y-%m-%d')"
+          git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:

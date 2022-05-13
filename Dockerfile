@@ -7,15 +7,17 @@ WORKDIR /usr/src/app
 COPY . .
 
 RUN apt-get update \
+  && apt-get upgrade -y \
   && apt-get install -y cron \
-  && service cron start \
+  && which cron \
+  && rm -rf /etc/cron.*/* \
   && crontab crontab.file \
-  && chmod 755 update.sh
+  && chmod 755 update.sh \
+  && source $VIRTUAL_ENV/bin/activate
 
-RUN source $VIRTUAL_ENV/bin/activate
-
-RUN touch /var/log/cron.log
+COPY entrypoint.sh /entrypoint.sh
 
 VOLUME [ "/usr/src/app/Fallzahlen" ]
 
-CMD cron && tail -f /var/log/cron.log
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["cron","-f", "-l", "2"]

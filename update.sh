@@ -1,4 +1,4 @@
-export LC_NUMERIC="en_US.UTF-8"
+#!/bin/bash
 DATE=$(date '+%Y-%m-%d')
 
 URL_METADATA="https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74?f=json"

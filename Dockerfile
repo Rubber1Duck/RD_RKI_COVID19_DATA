@@ -8,7 +8,7 @@ COPY . .
 
 RUN apt-get update \
   && apt-get upgrade -y \
-  && apt-get install -y cron \
+  && apt-get install -y cron curl \
   && which cron \
   && rm -rf /etc/cron.*/* \
   && crontab crontab.file \

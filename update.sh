@@ -19,8 +19,16 @@ if [[ "$DATE" = "$modified" ]]; then
   echo "modified data already downloaded for $DATE (modified date: $modified)"
   exit 1
 fi
-
+if [ -f /tmp/update.pid ]; then
+  echo "update is still in progress!"
+  exit 1
+fi
 # do the action
+touch /tmp/update.pid
+echo "Start update"
 python schedule.py
 python process_RKI_Covid_update.py
 python schedule_meta.py
+rm /tmp/update.pid
+echo "update finished"
+

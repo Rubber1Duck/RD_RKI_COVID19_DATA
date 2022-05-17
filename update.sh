@@ -26,10 +26,11 @@ if [ -f /tmp/update.pid ]; then
 fi
 # do the action
 touch /tmp/update.pid
-echo "Start update"
+echo "$Date2: Start update"
 python schedule.py
 python process_update_docker.py
 python schedule_meta.py
 rm /tmp/update.pid
-echo "update finished"
+Date2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$Date2: Update finished"
 

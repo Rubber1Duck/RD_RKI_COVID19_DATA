@@ -17,8 +17,6 @@ def download_RKI_COVID19_meta():
     with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
         metaobj = json.load(file)
      
-    metaobj['created'] = pd.to_datetime(metaobj['created'], unit='ms').isoformat(sep='T', timespec='milliseconds') + 'Z'
-    metaobj['modified'] = pd.to_datetime(metaobj['modified'], unit='ms').isoformat(sep='T', timespec='milliseconds') + 'Z'
     metaobj['description'] = ""
     metaobj['licenseInfo'] = "Die Daten sind die Fallzahlen in Deutschland des Robert Koch-Institut (RKI) und stehen unter der Open Data Datenlizenz Deutschland – Namensnennung – Version 2.0 zur Verfügung."
     metaobj['accessInformation'] = "Bundesamt für Kartographie und Geodäsie Robert Koch-Institut"

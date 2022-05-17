@@ -12,12 +12,11 @@ RUN apt-get update \
   && which cron \
   && rm -rf /etc/cron.*/* \
   && crontab crontab.file \
-  && chmod 755 update.sh \
-  && source $VIRTUAL_ENV/bin/activate
+  && chmod 755 update.sh
 
 COPY entrypoint.sh /entrypoint.sh
 
 VOLUME [ "/usr/src/app/Fallzahlen" ]
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["cron","-f", "-l", "2"]
+CMD ["cron","-f", "-L", "15"]

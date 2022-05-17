@@ -94,6 +94,9 @@ BL['IdBundeslandStr'] = BL['IdBundesland']
 BL.set_index(['IdBundeslandStr'], inplace=True, drop=True)
 BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False)
 
+# %% delete datafile
+os.remove(CV_path_latest)
+
 # %% limit files to the last 8 days
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Fallzahlen')
 

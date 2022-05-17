@@ -27,7 +27,7 @@ fi
 touch /tmp/update.pid
 echo "Start update"
 python schedule.py
-python process_RKI_Covid_update.py
+python process_update_docker.py
 python schedule_meta.py
 rm /tmp/update.pid
 echo "update finished"

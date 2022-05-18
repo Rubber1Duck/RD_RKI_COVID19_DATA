@@ -11,7 +11,7 @@ RUN apt-get update \
   && rm -rf /etc/cron.*/* \
   && rm -rf /usr/src/app/* \
   && git clone https://github.com/Rubber1Duck/RD_RKI_COVID19_DATA.git /usr/src/app \
-  && rm -rf .git .github .dockerignore .gitignore README.md requirements.txt Dockerfile.base Dockerfile \
+  && rm -rf .git .github .dockerignore .gitignore README.md requirements.txt Dockerfile.base Dockerfile Fallzahlen/*.csv\
   && apt-get purge -y git \
   && apt-get --purge -y autoremove \
   && apt-get clean \

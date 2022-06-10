@@ -3,8 +3,6 @@
 
 from . import DownloadFile
 import os
-import json
-import pandas as pd
 
 def download_RKI_COVID19():
     data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data')

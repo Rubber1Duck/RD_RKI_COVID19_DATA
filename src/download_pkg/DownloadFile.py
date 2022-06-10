@@ -8,6 +8,7 @@ def get_root_directory():
 
 class DownloadFile():
     def __init__(self,url,filename,download_path,compress=True,add_date=True,add_latest=False, verbose=True):
+        self.verbose=verbose
         self.url=url
         self.filename=filename
         self.download_path=os.path.normpath(download_path)
@@ -18,8 +19,7 @@ class DownloadFile():
         self.content=self.get_content()
         self.full_path = self.get_full_path()
         self.full_path_latest=self.get_full_path_latest()
-        self.verbose=verbose
-
+        
     def get_full_path(self):
         path = os.path.join(self.download_path,self._file_name_root)
         if self.add_date:

@@ -26,17 +26,13 @@ jobs:
       - name: Install requirements
         run: pip install -r ./requirements.txt
         working-directory: ./
-      - name: Data Download
-        run: python ./schedule.py
-        continue-on-error: false
-        working-directory: ./src/
-      - name: update Fallzahlen
-        run: python ./process_RKI_Covid_update.py
+      - name: update
+        run: python ./update.py
         continue-on-error: false
         working-directory: ./src/
         timeout-minutes: 60
       - name: Meta Download
-        run: python ./schedule_meta.py
+        run: python ./download_meta.py
         continue-on-error: false
         working-directory: ./src/ 
       - name: Commit files

@@ -3,8 +3,7 @@
 ~$*
 
 # data
-data/*
-Fallzahlen/*.xlsm
+data
 
 # Python defaults
 # Byte-compiled / optimized / DLL files

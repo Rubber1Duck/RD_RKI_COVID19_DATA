@@ -21,11 +21,11 @@ BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
 BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
 # %% load covid latest from web
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-testfile = os.path.join(path, 'RKI_COVID19_2022-06-10.csv.xz')
-data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-#data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-#data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
+#path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+#testfile = os.path.join(path, 'RKI_COVID19_2022-06-10.csv.gz')
+#data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 
 # %% accumulated cases, deaths, recovered
 # DistrictsRecoveredData, StatesRecoveredData
@@ -183,15 +183,12 @@ agg_key = {
     if c not in key_list_BL
 }
 BL = BL.groupby(key_list_BL, as_index=False).agg(agg_key)
-BL['IdBundesland'] = BL['IdBundesland'].str.zfill(2)
-BL.sort_values(by=key_list_BL, inplace=True)
 BL.reset_index(inplace=True, drop=True)
 ID0 = ID0.groupby(key_list_BL, as_index=False).agg(agg_key)
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
 BL.drop(['Meldedatum'], inplace=True, axis=1)
 LK.drop(['Meldedatum'], inplace=True, axis=1)
-LK.sort_values(by=key_list_LK, inplace=True)
 LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
@@ -227,7 +224,7 @@ BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strfti
 LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False)
 
-# %% limit frozen-incidence files to the last 10 days
+# %% limit frozen-incidence files to the last 30 days
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path)
 file_list.sort(reverse=False)
@@ -242,7 +239,7 @@ for file in file_list:
         if re_search and re_filename:
             report_date = date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
-day_range = pd.date_range(end=datetime.today(), periods=10).tolist()
+day_range = pd.date_range(end=datetime.today(), periods=30).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))

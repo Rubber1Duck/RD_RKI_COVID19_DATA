@@ -263,7 +263,7 @@ for file in file_list:
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
-period = dt.timedelta(days=today.weekday()).days
+period = dt.timedelta(days=today.weekday()).days + 1
 day_range = pd.date_range(end=today, periods=period).tolist()
 day_range_str = []
 for datum in day_range:

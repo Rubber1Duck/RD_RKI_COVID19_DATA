@@ -1,3 +1,4 @@
 .git
 .github
 data/*
+dataStore/frozen-incidence/csv

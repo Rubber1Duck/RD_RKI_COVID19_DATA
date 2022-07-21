@@ -206,16 +206,6 @@ BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
 BL.drop(['population'], inplace=True, axis=1)
 
-# %% store csv files
-# LK_csv_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
-# BL_csv_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.csv')
-# with open(LK_csv_path, 'wb') as csvfile:
-#     LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
-#                 date_format='%Y-%m-%d', columns=LK_dtypes.keys())
-# with open(BL_csv_path, 'wb') as csvfile:
-#     BL.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
-#                date_format='%Y-%m-%d', columns=BL_dtypes.keys())
-
 # %% store json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
@@ -240,8 +230,8 @@ for file in file_list:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
 today = dt.date.today()
-last_monday = today - dt.timedelta(days=today.weekday())
-day_range = pd.date_range(start=last_monday, end=today).tolist()
+period = dt.timedelta(days=today.weekday())
+day_range = pd.date_range(end=today, periods=period).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))

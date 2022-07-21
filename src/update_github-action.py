@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import *
+import datetime as dt
 import numpy as np
 import pandas as pd
 
@@ -157,13 +157,14 @@ BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 # %% fixed-incidence
 LK = data_Base.copy()
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence')
+path_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence', 'csv')
 key_list_LK = ['IdLandkreis']
 key_list_BL = ['IdBundesland']
 LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
 datenstand = pd.to_datetime(LK['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
 LK['AnzahlFall_neu'] = np.where(LK['NeuerFall'].isin([-1, 1]), LK['AnzahlFall'], 0)
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0)
-LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (datenstand.date() - timedelta(days=8)), LK['AnzahlFall'], 0)
+LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0)
 LK['Datenstand'] = datenstand.date()
 LK.drop(['NeuerFall', 'NeuerTodesfall', 'AnzahlFall', 'AnzahlTodesfall', 'AnzahlFall_neu', 'Landkreis', 'Bundesland', 'NeuGenesen', 'AnzahlGenesen'], inplace=True, axis=1)
 BL = LK.copy()
@@ -206,15 +207,38 @@ BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
 BL.drop(['population'], inplace=True, axis=1)
 
-# %% store csv files
-LK_csv_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
-BL_csv_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.csv')
+# %% store csv files, i need this csv files for personal reasons! they are not nessasary for the api!
+LK_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
+BL_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.csv')
 with open(LK_csv_path, 'wb') as csvfile:
     LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=LK_dtypes.keys())
 with open(BL_csv_path, 'wb') as csvfile:
     BL.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=BL_dtypes.keys())
+# %% limit frozen-incidence csv files to the last 30 days
+iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
+file_list = os.listdir(path_csv)
+file_list.sort(reverse=False)
+pattern = 'frozen-incidence'
+all_files = []
+for file in file_list:
+    file_path_full = os.path.join(path, file)
+    if not os.path.isdir(file_path_full):
+        filename = os.path.basename(file)
+        re_filename = re.search(pattern, filename)
+        re_search = re.search(iso_date_re, filename)
+        if re_search and re_filename:
+            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
+            all_files.append((file_path_full, report_date))
+today = dt.date.today()
+day_range = pd.date_range(end=today, periods=30).tolist()
+day_range_str = []
+for datum in day_range:
+    day_range_str.append(datum.strftime('%Y-%m-%d'))
+for file_path_full, report_date in all_files:
+    if report_date not in day_range_str:
+        os.remove(file_path_full)
 
 # %% store json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
@@ -224,7 +248,7 @@ BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strfti
 LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False)
 
-# %% limit frozen-incidence files to the last 30 days
+# %% limit frozen-incidence json files to from last monday to today
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path)
 file_list.sort(reverse=False)
@@ -237,9 +261,10 @@ for file in file_list:
         re_filename = re.search(pattern, filename)
         re_search = re.search(iso_date_re, filename)
         if re_search and re_filename:
-            report_date = date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
+            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
-day_range = pd.date_range(end=datetime.today(), periods=30).tolist()
+period = dt.timedelta(days=today.weekday())
+day_range = pd.date_range(end=today, periods=period).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))

@@ -27,7 +27,7 @@ jobs:
         run: pip install -r ./requirements.txt
         working-directory: ./
       - name: update
-        run: python ./update.py
+        run: python ./update_github-action.py
         continue-on-error: false
         working-directory: ./src/
         timeout-minutes: 60

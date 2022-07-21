@@ -1,26 +1,32 @@
-FROM rubber4duck/fixbase:latest
+FROM python:3.9-slim
 
 SHELL ["/bin/bash", "-c"]
 
 WORKDIR /usr/src/app
 
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY . .
+
 RUN apt-get update \
-  && apt-get upgrade -y \
-  && apt-get install -y cron curl git \
+  && apt-get -y upgrade \
+  && apt-get -y install cron curl wget build-essential manpages-dev \
+  && source $VIRTUAL_ENV/bin/activate \
+  && pip install --upgrade pip \
+  && pip install --no-cache-dir -r requirements.txt \
   && which cron \
   && rm -rf /etc/cron.*/* \
-  && rm -rf /usr/src/app/* \
-  && git clone https://github.com/Rubber1Duck/RD_RKI_COVID19_DATA.git /usr/src/app \
-  && rm -rf .git .github .dockerignore .gitignore README.md requirements.txt Dockerfile.base Dockerfile Fallzahlen/*.csv\
-  && apt-get purge -y git \
-  && apt-get --purge -y autoremove \
+  && crontab crontab2.file \
+  && chmod 755 update1.sh update2.sh downloadDataDockerBuild.sh entrypoint.sh \
+  && ./downloadDataDockerBuild.sh \
+  && apt-get -y purge wget build-essential manpages-dev \
+  && apt-get -y --purge autoremove \
   && apt-get clean \
-  && crontab crontab.file \
-  && chmod 755 update.sh
+  && apt-get autoclean
 
-COPY entrypoint.sh /entrypoint.sh
+VOLUME [ "/usr/src/app/dataStore" ]
 
-VOLUME [ "/usr/src/app/Fallzahlen" ]
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 CMD ["cron","-f", "-L", "15"]

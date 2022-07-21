@@ -4,6 +4,7 @@
 
 # data
 data
+dataStore/frozen-incidence/*.xlsm
 
 # Python defaults
 # Byte-compiled / optimized / DLL files

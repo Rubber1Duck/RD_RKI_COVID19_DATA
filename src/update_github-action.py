@@ -223,7 +223,7 @@ file_list.sort(reverse=False)
 pattern = 'frozen-incidence'
 all_files = []
 for file in file_list:
-    file_path_full = os.path.join(path, file)
+    file_path_full = os.path.join(path_csv, file)
     if not os.path.isdir(file_path_full):
         filename = os.path.basename(file)
         re_filename = re.search(pattern, filename)

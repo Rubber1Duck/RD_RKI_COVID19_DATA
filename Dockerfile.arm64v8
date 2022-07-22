@@ -1,11 +1,11 @@
-FROM --platform=linux/arm64 python:3.9-slim
+FROM --platform=linux/arm64/v8 python:3.9-slim
 
 SHELL ["/bin/bash", "-c"]
 
 WORKDIR /usr/src/app
 
 ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
+RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .

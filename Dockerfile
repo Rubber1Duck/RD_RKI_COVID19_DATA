@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-c"]
 WORKDIR /usr/src/app
 
 ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
+RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .

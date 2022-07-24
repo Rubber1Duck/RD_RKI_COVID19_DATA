@@ -1,8 +1,8 @@
 name: Create/update tag
 on:
   push:
-    branch: "master"
-permissions: write-all
+    branches: "master"
+
 jobs:
   create-tag:
     runs-on: ubuntu-latest
@@ -12,6 +12,7 @@ jobs:
         run:  echo "TAG=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
       - uses: rickstaa/action-create-tag@v1
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.TAG }}
           message: "${{ env.TAG }} release"
           

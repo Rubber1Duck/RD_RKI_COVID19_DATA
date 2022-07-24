@@ -11,6 +11,6 @@ jobs:
         run:  echo "TAG=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
       - uses: rickstaa/action-create-tag@v1
         with:
-          tag: echo ${{ env.TAG }}
-          message: "$tagname release"
+          tag: ${{ env.TAG }}
+          message: "${{ env.TAG }} release"
           

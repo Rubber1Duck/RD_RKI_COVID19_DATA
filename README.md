@@ -1,4 +1,4 @@
-# cronjob
+# RD_RKI_COVID19_DATA
 
 Repo wurde initial geforkt von https://github.com/HrRodan/RKI_COVID19_DATA und anschließend auf meine Bedürfnisse verändert.
 
@@ -6,6 +6,7 @@ Quellenvermerk:
 
 - Robert Koch-Institut (RKI), [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0)
 
-Täglich zwischen 1 und 6 Uhr GMT alle 15 Minuten schaut der cronjob nach neuen Daten vom RKI, sofern vorhanden werden sie geladen, aggregiert und die 7-Tage Neuinfektionen sowie die berechneten Inzidenzen in je eine Json Datei auf Landkreisebene und Bundeslandebene abgespeichert.
-Ist der cronjob einmal erfolgreich durchgelaufen werden weitere cronjobs abgebrochen.
-Die Bereitstellung der fixierten Inzidenzen erfolgt immer zuerst aus der offiziellen RKI Exceldatei. Fehlende Werte seit letzen Montag werden durch die Daten aus den beiden json Dateien ergänzt. Vorgehalten werden hier nur die letzen 10 Tage. (eventuell ist der Montag ein Feiertag, dann werden die Exceldaten erst Dienstags aktualiesiert, weitere bis zu drei Tage können dadurch abgefangen werden Datenumfang für 10 Tage ca. 800 kb)
+Täglich ab 1 Uhr GMT wird alle 15 Minuten geprüft ob ein neues Dump beim RKI vorliegt, sofern vorhanden werden es geladen, aggregiert und die "new",  "accumulated", "history" sowie die "frozen-incidence" Werte im Ordner dataStore gespeichert.
+Die new, accumulated und history Daten sind von diesem Tag. Die Frozen-incidence Werte werden seit dem vergangenen Montag vorgehalten (frühere Daten sind bei RKI abrufbar, jedoch wird die Datei mit den frozen-incidence Werten nur Montags aktualisiert
+
+Ist der cronjob einmal erfolgreich durchgelaufen started der nächste cronjob erst wieder um 1 Uhr GMT des Folgetages.

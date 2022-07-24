@@ -6,9 +6,12 @@ jobs:
   create-tag:
     runs-on: ubuntu-latest
     steps:
+      - name: create Tagname
+        run: |
+          tagname="$(date '+%Y-%m-%d')"
       - uses: actions/checkout@v3
       - uses: rickstaa/action-create-tag@v1
         with:
-          tag: "$(date '+%Y%m%d')"
-          message: "$(date '+%Y%m%d') release"
+          tag: $tagname
+          message: "$tagname release"
           

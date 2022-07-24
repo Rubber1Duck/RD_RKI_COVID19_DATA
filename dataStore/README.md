@@ -1,10 +1,11 @@
-# Fallzahlen
+# dataStore
 
-Täglicher Abzug der aggregierten Fallzahlen vom RKI der vergangenen 10 Tage
-
-Die Datei FixFallzahlen_JJJJMMDD_LK.csv fasst die Fallzahlen (Todesfälle und Neuinfektionen) vom JJJJMMDD der RKI-Dumps auf Landkreisebene zusammen.
-Die Datei FixFallzahlen_JJJJMMDD_BL.csv fasst die Fallzahlen (Todesfälle und Neuinfektionen) vom JJJJMMDD der RKI-Dumps auf Bundeslandebene (ebenso für gesamt Deutschland = IdBundesland = 0) zusammen.
-Die selben Daten auch als JSON Datei.
+Enthält in Unterordnern
+- die NEW Fälle (cases, deaths, recovered) für districts und states des heutigen Tages als JSON Datei
+- die accumulierten Fälle (cases, deaths, recovered) für districts und states seit dem Beginn der Pandemie als JSON Datei
+- die historische dynamische Entwicklung (cases, deaths, recovered) für districts und states als JSON Datei
+- die frozen-incidence history Werte für seit letztem Montag als JSON Datei, und in einem Unterordner csv die csv Dateinen der vergangen 30 Tage
+- die meta Daten des zuletzt verwendeten Dumps des RKI 
 
 Quellenvermerk:
 

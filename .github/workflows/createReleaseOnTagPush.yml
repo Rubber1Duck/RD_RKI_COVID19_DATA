@@ -5,7 +5,7 @@ on:
   # Triggers the workflow on push or pull request events but only for the master branch
  push:
   tags:
-    - '[0-9][0-9][0-9][0-9][0-1][0-9][0-3][0-9]'
+    - '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -26,7 +26,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ github.ref }}
-          release_name: v1.0.0-${{ github.ref }}
+          release_name: v1.0.0_${{ github.ref }}
           body: ${{ github.event.head_commit.message }}
           draft: false
           prerelease: false

@@ -1,6 +1,6 @@
 # meta
 
-Meta Daten des verwendeten RKI Data files
+die meta Daten des zuletzt verwendeten Dumps des RKI
 
 Quellenvermerk:
 

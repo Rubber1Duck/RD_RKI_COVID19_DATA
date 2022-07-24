@@ -1,6 +1,6 @@
 # frozen-incidence
 
-Frozen-Incidence Werte je Datum
+Frozen-Incidence Werte je Datum seit vergangenen Montag
 
 Quellenvermerk:
 

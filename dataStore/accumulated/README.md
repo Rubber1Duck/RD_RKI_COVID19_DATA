@@ -1,6 +1,6 @@
 # recoveredData
 
-Summe recoverd für district und states.
+die accumulierten Fälle (cases, deaths, recovered) für districts und states seit dem Beginn der Pandemie als JSON Datei
 
 Quellenvermerk:
 

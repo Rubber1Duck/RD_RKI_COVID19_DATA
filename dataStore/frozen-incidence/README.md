@@ -1,6 +1,7 @@
 # frozen-incidence
 
-Frozen-Incidence Werte je Datum
+die frozen-incidence history Werte für seit letztem Montag als JSON Datei, und in einem Unterordner csv die csv Dateinen der vergangen 30 Tage. Die csv Dateien werden aber nicht ins Dockerimage tranferiert!
+Im Container werden nur die JSON Dateien erzeugt!
 
 Quellenvermerk:
 

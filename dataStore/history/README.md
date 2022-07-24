@@ -1,6 +1,6 @@
 # history
 
-dynamische history Werte für district, state und Bundesgebiet
+dynamische history Werte für district, state und Bundesgebietdie historische dynamische Entwicklung (cases, deaths, recovered) für districts und states als JSON Datei
 
 Quellenvermerk:
 

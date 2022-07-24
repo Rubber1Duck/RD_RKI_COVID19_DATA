@@ -1,6 +1,6 @@
 # new
 
-New cases, new recovered und new deaths für districts, states und Bundesgebiet
+die NEW Fälle (cases, deaths, recovered) für districts und states des heutigen Tages als JSON Datei
 
 Quellenvermerk:
 

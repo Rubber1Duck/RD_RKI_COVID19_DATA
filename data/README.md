@@ -1,1 +1,3 @@
-This folder is to store the downloaded compressed RKI dumps
+# data
+
+Hier können RKI Dumps zum testen abgelegt werden.

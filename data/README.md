@@ -1,3 +1,3 @@
 # data
 
-Hier können RKI Dumps zum testen abgelegt werden.
+Hier können RKI Dumps zum localem testen abgelegt werden. Spielt keine Rolle im image!

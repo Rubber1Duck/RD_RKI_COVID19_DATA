@@ -1,5 +1,6 @@
 import os
 import re
+import requests as r
 import datetime as dt
 import numpy as np
 import pandas as pd
@@ -263,8 +264,10 @@ for file in file_list:
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
-period = dt.timedelta(days=today.weekday()).days + 1
-day_range = pd.date_range(end=today, periods=period).tolist()
+excelResonse = r.head("https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab_aktuell.xlsx?__blob=publicationFile")
+lastModifiedStr = excelResonse.headers["last-modified"]
+lastModified = pd.to_datetime(lastModifiedStr, format='%a, %d %b %Y %H:%M:%S %Z').date()
+day_range = pd.date_range(start=lastModified, end=today).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))

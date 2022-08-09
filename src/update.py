@@ -28,7 +28,7 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 
-# %% accumulated cases, deaths, recovered
+# %% accumulated cases, deaths, recovered, casesPerWeek, deathsPerWeek
 # DistrictsRecoveredData, StatesRecoveredData
 LK = data_Base.copy()
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'accumulated')
@@ -40,23 +40,30 @@ LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
 datenstand = pd.to_datetime(LK['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
 LK['Datenstand'] = datenstand.date()
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([1, 0]), LK['AnzahlFall'], 0)
-LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([1, 0]), LK['AnzahlTodesfall'], 0)
+LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0)
+LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([1, 0, -9]), LK['AnzahlTodesfall'], 0)
+LK['AnzahlTodesfall_7d'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlTodesfall'], 0)
 LK['AnzahlGenesen'] = np.where(LK['NeuGenesen'].isin([1, 0]), LK['AnzahlGenesen'], 0)
-LK.drop(['NeuGenesen', 'NeuerFall', 'NeuerTodesfall', 'Bundesland', 'Landkreis'], inplace=True, axis=1)
-LK.rename(columns={'AnzahlGenesen': 'recovered', 'AnzahlFall': 'cases', 'AnzahlTodesfall': 'deaths'}, inplace=True)
+LK.drop(['NeuGenesen', 'NeuerFall', 'NeuerTodesfall'], inplace=True, axis=1)
+LK.rename(columns={'AnzahlGenesen': 'recovered', 'AnzahlFall': 'cases', 'AnzahlTodesfall': 'deaths', 'AnzahlFall_7d': 'casesPerWeek', 'AnzahlTodesfall_7d': 'deathsPerWeek'}, inplace=True)
 BL = LK.copy()
-LK.drop(['IdBundesland'], inplace=True, axis=1)
-BL.drop(['IdLandkreis'], inplace=True, axis=1)
+LK.drop(['IdBundesland', 'Bundesland'], inplace=True, axis=1)
+BL.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0 = BL.copy()
 ID0['IdBundesland'] = '00'
+ID0['Bundesland'] = 'Bundesgebiet'
 agg_key = {
-    c: 'max' if c in ['Meldedatum', 'Datenstand'] else 'sum'
+    c: 'max' if c in ['Meldedatum', 'Datenstand', 'Landkreis'] else 'sum'
     for c in LK.columns
     if c not in key_list_LK
 }
 LK = LK.groupby(key_list_LK, as_index=False).agg(agg_key)
+LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+LK_pop = BV[LK_pop_mask]
+LK_pop.reset_index(inplace=True, drop=True)
+LK['population'] = LK_pop['Einwohner']
 agg_key = {
-    c: 'max' if c in ['Meldedatum', 'Datenstand'] else 'sum'
+    c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland'] else 'sum'
     for c in BL.columns
     if c not in key_list_BL
 }
@@ -64,6 +71,10 @@ BL = BL.groupby(key_list_BL, as_index=False).agg(agg_key)
 ID0 = ID0.groupby(key_list_BL, as_index=False).agg(agg_key)
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
+BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+BL_pop = BV[BL_pop_mask]
+BL_pop.reset_index(inplace=True, drop=True)
+BL['population'] = BL_pop['Einwohner']
 
 # %% store json files
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)

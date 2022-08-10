@@ -1,5 +1,7 @@
 name: Create tag and release
 on:
+  workflow_dispatch:
+  
   workflow_run:
     workflows: ["Download and Update"]
     types:

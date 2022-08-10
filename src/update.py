@@ -47,13 +47,13 @@ LK['AnzahlGenesen'] = np.where(LK['NeuGenesen'].isin([1, 0]), LK['AnzahlGenesen'
 LK.drop(['NeuGenesen', 'NeuerFall', 'NeuerTodesfall'], inplace=True, axis=1)
 LK.rename(columns={'AnzahlGenesen': 'recovered', 'AnzahlFall': 'cases', 'AnzahlTodesfall': 'deaths', 'AnzahlFall_7d': 'casesPerWeek', 'AnzahlTodesfall_7d': 'deathsPerWeek'}, inplace=True)
 BL = LK.copy()
-LK.drop(['IdBundesland', 'Bundesland'], inplace=True, axis=1)
+LK.drop(['IdBundesland'], inplace=True, axis=1)
 BL.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0 = BL.copy()
 ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 agg_key = {
-    c: 'max' if c in ['Meldedatum', 'Datenstand', 'Landkreis'] else 'sum'
+    c: 'max' if c in ['Meldedatum', 'Datenstand', 'Landkreis', 'Bundesland'] else 'sum'
     for c in LK.columns
     if c not in key_list_LK
 }

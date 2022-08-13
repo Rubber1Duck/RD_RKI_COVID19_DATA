@@ -3,4 +3,3 @@
 data
 dataStore/frozen-incidence/csv
 src/update_github-action.py
-qemu*

@@ -24,7 +24,7 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
 # %% load covid latest from web
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-#testfile = os.path.join(path, 'RKI_COVID19_2022-06-10.csv.gz')
+#testfile = os.path.join(path, 'RKI_COVID19_2022-09-08.csv.xz')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
@@ -280,7 +280,8 @@ for file in file_list:
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
-excelResonse = r.head("https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab_aktuell.xlsx?__blob=publicationFile")
+url = "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab_aktuell.xlsx?__blob=publicationFile"
+excelResonse = r.get(url)
 lastModifiedStr = excelResonse.headers["last-modified"]
 lastModified = pd.to_datetime(lastModifiedStr, format='%a, %d %b %Y %H:%M:%S %Z').date()
 day_range = pd.date_range(start=lastModified, end=today).tolist()

@@ -34,8 +34,8 @@ data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 LK = data_Base.copy()
 LK.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'accumulated')
-LK_json_path = os.path.join(path, 'districts.json')
-BL_json_path = os.path.join(path, 'states.json')
+LK_json_path = os.path.join(path, 'districts.json.gz')
+BL_json_path = os.path.join(path, 'states.json.gz')
 key_list_LK = ['IdLandkreis' ]
 key_list_BL = ['IdBundesland']
 LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
@@ -79,8 +79,8 @@ BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
 
 # %% store json files
-LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 
 # %% New
 # DistrictsCases, DistrictsDeaths, DistrictsRecovered
@@ -88,8 +88,8 @@ BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 LK = data_Base.copy()
 LK.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'new')
-LK_json_path = os.path.join(path, 'districts.json')
-BL_json_path = os.path.join(path, 'states.json')
+LK_json_path = os.path.join(path, 'districts.json.gz')
+BL_json_path = os.path.join(path, 'states.json.gz')
 key_list_LK = ['IdLandkreis' ]
 key_list_BL = ['IdBundesland']
 LK.drop(['Bundesland', 'Landkreis'], inplace=True, axis=1)
@@ -123,8 +123,8 @@ BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
 
 # %% store json files
-LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 
 # %% History
 # DistrictCasesHistory, DistrictDeathsHistory, DistrictRecoveredHistory
@@ -132,8 +132,8 @@ BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 LK = data_Base.copy()
 LK.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'history')
-LK_json_path = os.path.join(path, 'districts.json')
-BL_json_path = os.path.join(path, 'states.json')
+LK_json_path = os.path.join(path, 'districts.json.gz')
+BL_json_path = os.path.join(path, 'states.json.gz')
 key_list_LK = ['IdLandkreis', 'Meldedatum']
 key_list_BL = ['IdBundesland', 'Meldedatum']
 LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
@@ -167,8 +167,8 @@ BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
 
 # %% store json files
-LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 
 # %% fixed-incidence
 LK = data_Base.copy()
@@ -260,10 +260,10 @@ for file_path_full, report_date in all_files:
 # %% store json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
-LK_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.json')
-BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.json')
-LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False)
-BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False)
+LK_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.json.gz')
+BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.json.gz')
+LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False, compression='gzip')
+BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False, compression='gzip')
 
 # %% limit frozen-incidence json files to from last monday to today
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
@@ -295,7 +295,7 @@ for file_path_full, report_date in all_files:
 # %% ageGroup Data (states only!)
 BL = data_Base.copy()
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'agegroup')
-BL_json_path = os.path.join(path, 'states.json')
+BL_json_path = os.path.join(path, 'states.json.gz')
 key_list_BL = ['IdBundesland', 'Altersgruppe']
 BL['Meldedatum'] = pd.to_datetime(BL['Meldedatum']).dt.date
 datenstand = pd.to_datetime(BL['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
@@ -335,4 +335,4 @@ BL['deaths100kW'] = round(BL['AnzahlTodesfallW'] / BL['populationW'] * 100000, 1
 BL.drop(['populationM', 'populationW'], inplace=True, axis=1)
 BL.rename(columns={'AnzahlFallM': 'casesMale', 'AnzahlFallW': 'casesFemale', 'AnzahlTodesfallM': 'deathsMale', 'AnzahlTodesfallW': 'deathsFemale'}, inplace=True)
 BL.rename(columns={'cases100kM': 'casesMalePer100k', 'cases100kW': 'casesFemalePer100k', 'deaths100kM': 'deathsMalePer100k', 'deaths100kW': 'deathsFemalePer100k'}, inplace=True)
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')

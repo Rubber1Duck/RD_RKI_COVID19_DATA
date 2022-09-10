@@ -64,7 +64,7 @@ echo "$DATE2: Start update"
 
 # Print message, crate new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: executing python process_update_docker.py"
+echo "$DATE2: executing python update.py"
 python update.py
 
 # Print message, download and modify meta data from RKI server

@@ -10,8 +10,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .
 
-RUN gzip -dv dataStore/**/*.gz \
-  && apt-get update \
+RUN apt-get update \
   && apt-get -y upgrade \
   && apt-get -y install cron curl wget build-essential manpages-dev \
   && source $VIRTUAL_ENV/bin/activate \

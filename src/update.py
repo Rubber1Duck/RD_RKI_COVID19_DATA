@@ -97,10 +97,10 @@ BL.rename(columns={ 'AnzahlFallM': 'casesMale',
                     'deaths100kM': 'deathsMalePer100k',
                     'deaths100kW': 'deathsFemalePer100k'}, inplace=True)
 
-# store as gz compresed json
+# store json
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'agegroup')
-BL_json_path = os.path.join(path, 'states.json.gz')
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
+BL_json_path = os.path.join(path, 'states.json')
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 
 # %% accumulated and new cases, deaths, recovered, casesPerWeek, deathsPerWeek
 # add country column
@@ -169,12 +169,12 @@ BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
 
-# store as gz compressed json
+# store json
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'cases')
-LK_json_path = os.path.join(path, 'districts.json.gz')
-BL_json_path = os.path.join(path, 'states.json.gz')
-LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
+LK_json_path = os.path.join(path, 'districts.json')
+BL_json_path = os.path.join(path, 'states.json')
+LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 
 # %% History
 # DistrictCasesHistory, DistrictDeathsHistory, DistrictRecoveredHistory
@@ -217,12 +217,12 @@ ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
 
-# %% store gz compressed json
+# %% store json
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'history')
-LK_json_path = os.path.join(path, 'districts.json.gz')
-BL_json_path = os.path.join(path, 'states.json.gz')
-LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
-BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
+LK_json_path = os.path.join(path, 'districts.json')
+BL_json_path = os.path.join(path, 'states.json')
+LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
+BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 
 # %% fixed-incidence
 LK = data_Base.copy()
@@ -288,6 +288,7 @@ BL.drop(['population'], inplace=True, axis=1)
 # %% store json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
+path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence')
 LK_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.json')
 BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.json')
 LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False)

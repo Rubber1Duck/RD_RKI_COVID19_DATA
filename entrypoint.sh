@@ -2,7 +2,7 @@
 
 env >> /etc/environment
 
-gzip -dv /usr/src/app/dataStore/**/*.gz
+gzip -dvf /usr/src/app/dataStore/**/*.gz
 
 # execute CMD
 echo "$@"

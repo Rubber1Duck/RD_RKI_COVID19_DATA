@@ -291,10 +291,10 @@ path_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataS
 LK_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
 BL_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.csv')
 with open(LK_csv_path, 'wb') as csvfile:
-    LK.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
+    LK.to_csv(csvfile, index=False, header=True, lineterminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=LK_dtypes.keys())
 with open(BL_csv_path, 'wb') as csvfile:
-    BL.to_csv(csvfile, index=False, header=True, line_terminator='\n', encoding='utf-8',
+    BL.to_csv(csvfile, index=False, header=True, lineterminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=BL_dtypes.keys())
 # %% limit frozen-incidence csv files to the last 30 days
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'

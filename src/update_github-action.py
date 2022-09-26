@@ -17,12 +17,12 @@ CV_dtypes = {'Datenstand': 'object', 'IdBundesland': 'str', 'Bundesland': 'str',
             'Altersgruppe': 'str', 'Geschlecht': 'str', 'NeuerFall': 'Int8', 'NeuerTodesfall': 'Int8', 'NeuGenesen': 'Int8',
             'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'AnzahlGenesen': 'Int32', 'Meldedatum': 'object'}
 
-# %% open bevoelkerung.csv
+# open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
 BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
 BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
-# %% load covid latest from web
+# load covid latest from web
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 #testfile = os.path.join(path, 'RKI_COVID19_2022-09-14.csv.xz')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
@@ -32,11 +32,18 @@ data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date
 datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
 data_Base['Datenstand'] = datenstand.date()
 
-# %% ageGroup Data (states only!)
+# ageGroup Data (states only!)
 BL = data_Base.copy()
 
 # Altergruppe und Geschlecht wird jetzt nicht mehr gebraucht
 data_Base.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
+
+# delete datasets with Altergruppe = unbekannt 
+BL.drop(BL[BL['Altersgruppe'] == 'unbekannt'].index, axis= 0, inplace= True)
+BL.reset_index (inplace=True, drop=True)
+# delete datasets with Geschlecht = unbekannt
+BL.drop(BL[(BL['Geschlecht'] == 'unbekannt')].index, axis= 0, inplace= True)
+BL.reset_index(inplace=True, drop=True)
 
 # used keylists
 key_list_BL_age = ['IdBundesland', 'Altersgruppe']
@@ -102,7 +109,7 @@ path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore
 BL_json_path = os.path.join(path, 'states.json.gz')
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 
-# %% accumulated and new cases, deaths, recovered, casesPerWeek, deathsPerWeek
+# accumulated and new cases, deaths, recovered, casesPerWeek, deathsPerWeek
 # add country column
 data_Base.insert(loc=0, column='IdStaat', value='00')
 
@@ -176,7 +183,7 @@ BL_json_path = os.path.join(path, 'states.json.gz')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 
-# %% History
+# History
 # DistrictCasesHistory, DistrictDeathsHistory, DistrictRecoveredHistory
 # StateCasesHistory, StateDeathsHistory, StateRecoveredHistory
 LK = data_Base.copy()
@@ -217,14 +224,14 @@ ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
 
-# %% store gz compressed json
+# store gz compressed json
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'history')
 LK_json_path = os.path.join(path, 'districts.json.gz')
 BL_json_path = os.path.join(path, 'states.json.gz')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False, compression='gzip')
 
-# %% fixed-incidence
+# fixed-incidence
 LK = data_Base.copy()
 
 # used keylists
@@ -285,7 +292,7 @@ BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
 BL.drop(['population'], inplace=True, axis=1)
 
-# %% store csv files, i need this csv files for personal reasons! they are not nessasary for the api!
+# store csv files, i need this csv files for personal reasons! they are not nessasary for the api!
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence')
 path_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence', 'csv')
 LK_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
@@ -296,7 +303,8 @@ with open(LK_csv_path, 'wb') as csvfile:
 with open(BL_csv_path, 'wb') as csvfile:
     BL.to_csv(csvfile, index=False, header=True, lineterminator='\n', encoding='utf-8',
                 date_format='%Y-%m-%d', columns=BL_dtypes.keys())
-# %% limit frozen-incidence csv files to the last 30 days
+
+# limit frozen-incidence csv files to the last 30 days
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path_csv)
 file_list.sort(reverse=False)
@@ -320,7 +328,7 @@ for file_path_full, report_date in all_files:
     if report_date not in day_range_str:
         os.remove(file_path_full)
 
-# %% store json files
+# store compressed json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
 LK_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.json.gz')
@@ -328,7 +336,7 @@ BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strfti
 LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False, compression='gzip')
 BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False, compression='gzip')
 
-# %% limit frozen-incidence json files to from last monday to today
+# limit frozen-incidence json files to from last modified Excel Date to today
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path)
 file_list.sort(reverse=False)

@@ -31,7 +31,6 @@ if [[ "$DATE" != "$lastModified" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2: set crontab to crontab1.file"
   crontab /usr/src/app/crontab1.file
-  crontab -l
   exit 1
 fi
 
@@ -47,7 +46,6 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2: set crontab to crontab1.file"
   crontab /usr/src/app/crontab1.file
-  crontab -l
   exit 1
 fi
 
@@ -61,6 +59,11 @@ touch /tmp/update.pid
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2: Start update"
+
+#Print message, check/update Bevoelkerung.csv
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2: executing python calc_population.py"
+python calc_population.py
 
 # Print message, crate new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
@@ -83,4 +86,3 @@ rm /tmp/update.pid
 crontab /usr/src/app/crontab2.file
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2: crontab set to crontab2.file"
-crontab -l

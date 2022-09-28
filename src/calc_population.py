@@ -78,20 +78,20 @@ try:
         print('in einigen Zeile/n stimmt auf Landkreisebene die berechnete Einwohnerzahl nicht mit der vom RKI verwendeten überein:')
         print(LKA00plus[LKA00plusMask])
         sys.exit('CrossCheck 2 failed')
-    CALCBEV = pd.concat([LKA00plus, LK])
-    CALCBEV.sort_values(['AGS', 'Altersgruppe'],axis=0, inplace=True)
-    CALCBEV.reset_index(inplace=True, drop=True)
+    calcBV = pd.concat([LKA00plus, LK])
+    calcBV.sort_values(['AGS', 'Altersgruppe'],axis=0, inplace=True)
+    calcBV.reset_index(inplace=True, drop=True)
     keyListBL = ['BundeslandId', 'Altersgruppe']
     sumListBL = ['AnzFallM', 'AnzFallW', 'männlich', 'weiblich', 'Einwohner']
     agg_key = {
         c: 'max' if c not in sumListBL else 'sum'
-        for c in CALCBEV.columns
+        for c in calcBV.columns
         if c not in keyListBL}
-    BL = CALCBEV.groupby(keyListBL, as_index=False).agg(agg_key)
-    CALCBEV.drop(['BundeslandId'], inplace=True, axis=1)
+    BL = calcBV.groupby(keyListBL, as_index=False).agg(agg_key)
+    calcBV.drop(['BundeslandId'], inplace=True, axis=1)
     BL.drop(['AGS'], inplace=True, axis=1)
     BL.rename(columns={'BundeslandId': 'AGS'}, inplace=True)
-    CALCBEV = pd.concat([CALCBEV, BL])
+    calcBV = pd.concat([calcBV, BL])
     BL['AGS'] = '00'
     keyListBL0 = ['AGS', 'Altersgruppe']
     sumListBL0 = ['AnzFallM', 'AnzFallW', 'männlich', 'weiblich', 'Einwohner']
@@ -100,10 +100,10 @@ try:
         for c in BL.columns
         if c not in keyListBL0}
     BL0 = BL.groupby(keyListBL0, as_index= False).agg(agg_key)
-    CALCBEV = pd.concat([CALCBEV, BL0])
-    CALCBEV.sort_values(['AGS', 'Altersgruppe'], axis=0, inplace=True)
-    CALCBEV.reset_index(inplace=True, drop=True)
-    CALCBEV.drop([
+    calcBV = pd.concat([calcBV, BL0])
+    calcBV.sort_values(['AGS', 'Altersgruppe'], axis=0, inplace=True)
+    calcBV.reset_index(inplace=True, drop=True)
+    calcBV.drop([
         'AnzFallM',
         'AnzFallW',
         'AnzFall100kM',
@@ -132,16 +132,16 @@ try:
     BVAktuell = BV[maskBV].copy()
     BVAktuell.sort_values(['AGS', 'Altersgruppe', 'GueltigBis'], axis=0, inplace=True)
     BVAktuell.reset_index(drop=True, inplace=True)
-    Filtered = BV.merge(BVAktuell, how='outer', indicator=True).copy()
-    oldEntrys = Filtered[Filtered['_merge'] == 'left_only']
+    filtered = BV.merge(BVAktuell, how='outer', indicator=True).copy()
+    oldEntrys = filtered[filtered['_merge'] == 'left_only']
     oldEntrys.reset_index(drop=True, inplace=True)
     oldEntrys.drop(['_merge'], axis=1)
-    CALCBEV.insert(loc=2, column='Name', value=BVAktuell['Name'])
-    CALCBEV.insert(loc=3, column='GueltigAb', value=BVAktuell['GueltigAb'])
-    CALCBEV.insert(loc=4, column='GueltigBis', value=BVAktuell['GueltigBis'])
-    innerMerge = BVAktuell.merge(CALCBEV, how='inner').copy()
+    calcBV.insert(loc=2, column='Name', value=BVAktuell['Name'])
+    calcBV.insert(loc=3, column='GueltigAb', value=BVAktuell['GueltigAb'])
+    calcBV.insert(loc=4, column='GueltigBis', value=BVAktuell['GueltigBis'])
+    innerMerge = BVAktuell.merge(calcBV, how='inner').copy()
     if innerMerge.shape[0] < BVAktuell.shape[0]:
-        outerMerge = BVAktuell.merge(CALCBEV, how='outer', indicator=True).copy()
+        outerMerge = BVAktuell.merge(calcBV, how='outer', indicator=True).copy()
         newRows = outerMerge[outerMerge['_merge'] == 'right_only'].copy()
         newRows.drop(['_merge'], axis=1, inplace=True)
         newRows['GueltigAb'] = todayStr

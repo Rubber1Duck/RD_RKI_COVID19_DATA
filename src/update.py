@@ -6,15 +6,47 @@ import numpy as np
 import pandas as pd
 
 url = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
-BV_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Bevoelkerung',
-                               'Bevoelkerung.csv')
-LK_dtypes = {'Datenstand': 'object', 'IdLandkreis': 'str','Landkreis': 'str', 'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'}
-BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'str','Bundesland': 'str', 'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'}
-BV_dtypes = {'AGS': 'str', 'Altersgruppe': 'str', 'Name': 'str', 'GueltigAb': 'object', 'GueltigBis': 'object', 'Einwohner': 'Int32',
-            'männlich': 'Int32', 'weiblich': 'Int32'}
-CV_dtypes = {'Datenstand': 'object', 'IdBundesland': 'str', 'Bundesland': 'str', 'IdLandkreis': 'str', 'Landkreis': 'str',
-            'Altersgruppe': 'str', 'Geschlecht': 'str', 'NeuerFall': 'Int8', 'NeuerTodesfall': 'Int8', 'NeuGenesen': 'Int8',
-            'AnzahlFall': 'Int32', 'AnzahlTodesfall': 'Int32', 'AnzahlGenesen': 'Int32', 'Meldedatum': 'object'}
+BV_csv_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'Bevoelkerung',
+    'Bevoelkerung.csv')
+LK_dtypes = {
+    'Datenstand': 'object',
+    'IdLandkreis': 'str',
+    'Landkreis': 'str',
+    'AnzahlFall_7d': 'Int32',
+    'incidence_7d': 'float64'}
+BL_dtypes = {
+    'Datenstand': 'object',
+    'IdBundesland': 'str',
+    'Bundesland': 'str',
+    'AnzahlFall_7d': 'Int32',
+    'incidence_7d': 'float64'}
+BV_dtypes = {
+    'AGS': 'str',
+    'Altersgruppe': 'str',
+    'Name': 'str',
+    'GueltigAb': 'object',
+    'GueltigBis': 'object',
+    'Einwohner': 'Int32',
+    'männlich': 'Int32',
+    'weiblich': 'Int32'}
+CV_dtypes = {
+    'Datenstand': 'object',
+    'IdBundesland': 'str',
+    'Bundesland': 'str',
+    'IdLandkreis': 'str',
+    'Landkreis': 'str',
+    'Altersgruppe': 'str',
+    'Geschlecht': 'str',
+    'NeuerFall': 'Int32',
+    'NeuerTodesfall': 'Int32',
+    'NeuGenesen': 'Int32',
+    'AnzahlFall': 'Int32',
+    'AnzahlTodesfall': 'Int32',
+    'AnzahlGenesen': 'Int32',
+    'Meldedatum': 'object'}
 
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
@@ -67,20 +99,22 @@ BL.drop([   'NeuGenesen',
 agg_key = {
     c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland'] else 'sum'
     for c in BL.columns
-    if c not in key_list_BL_age
-}
+    if c not in key_list_BL_age}
 BL = BL.groupby(key_list_BL_age, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland', 'IdBundesland']  else 'sum'
     for c in BL.columns
-    if c not in key_list_ID0_age
-}
+    if c not in key_list_ID0_age}
 ID0 = BL.groupby(key_list_ID0_age, as_index=False).agg(agg_key)
 ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
-BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['Altersgruppe'].isin(BL['Altersgruppe'])) & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+BL_pop_mask = (
+    (BV['AGS'].isin(BL['IdBundesland'])) &
+    (BV['Altersgruppe'].isin(BL['Altersgruppe'])) &
+    (BV['GueltigAb'] <= datenstand) &
+    (BV['GueltigBis'] >= datenstand))
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['populationM'] = BL_pop['männlich']
@@ -94,14 +128,15 @@ BL['cases100kW'] = round(BL['AnzahlFallW'] / BL['populationW'] * 100000, 1)
 BL['deaths100kM'] = round(BL['AnzahlTodesfallM'] / BL['populationM'] * 100000, 1)
 BL['deaths100kW'] = round(BL['AnzahlTodesfallW'] / BL['populationW'] * 100000, 1)
 BL.drop(['populationM', 'populationW'], inplace=True, axis=1)
-BL.rename(columns={ 'AnzahlFallM': 'casesMale',
-                    'AnzahlFallW': 'casesFemale',
-                    'AnzahlTodesfallM': 'deathsMale',
-                    'AnzahlTodesfallW': 'deathsFemale',
-                    'cases100kM': 'casesMalePer100k',
-                    'cases100kW': 'casesFemalePer100k',
-                    'deaths100kM': 'deathsMalePer100k',
-                    'deaths100kW': 'deathsFemalePer100k'}, inplace=True)
+BL.rename(columns={
+    'AnzahlFallM': 'casesMale',
+    'AnzahlFallW': 'casesFemale',
+    'AnzahlTodesfallM': 'deathsMale',
+    'AnzahlTodesfallW': 'deathsFemale',
+    'cases100kM': 'casesMalePer100k',
+    'cases100kW': 'casesFemalePer100k',
+    'deaths100kM': 'deathsMalePer100k',
+    'deaths100kW': 'deathsFemalePer100k'}, inplace=True)
 
 # store json
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'agegroup')
@@ -115,7 +150,7 @@ data_Base.insert(loc=0, column='IdStaat', value='00')
 LK = data_Base.copy()
 
 # used keylists
-key_list_LK_cases = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
+key_list_LK_cases = ['IdStaat', 'IdBundesland', 'IdLandkreis']
 key_list_BL_cases = ['IdStaat', 'IdBundesland']
 key_list_ID0_cases = ['IdStaat']
 
@@ -131,36 +166,38 @@ LK['AnzahlTodesfall7dNeu'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt
 LK['AnzahlGenesenAccu'] = np.where(LK['NeuGenesen'].isin([1, 0]), LK['AnzahlGenesen'], 0)
 LK['AnzahlGenesenNeu'] = np.where(LK['NeuGenesen'].isin([1, -1]), LK['AnzahlGenesen'], 0)
 LK.drop(['NeuGenesen', 'NeuerFall', 'NeuerTodesfall', 'AnzahlFall', 'AnzahlTodesfall', 'AnzahlGenesen'], inplace=True, axis=1)
-LK.rename(columns={ 'AnzahlFallAccu': 'accuCases',
-                    'AnzahlFallNeu': 'newCases',
-                    'AnzahlFall7dAccu': 'accuCasesPerWeek',
-                    'AnzahlFall7dNeu': 'newCasesPerWeek',
-                    'AnzahlTodesfallAccu': 'accuDeaths',
-                    'AnzahlTodesfallNeu': 'newDeaths',
-                    'AnzahlTodesfall7dAccu': 'accuDeathsPerWeek',
-                    'AnzahlTodesfall7dNeu': 'newDeathsPerWeek',
-                    'AnzahlGenesenAccu': 'accuRecovered',
-                    'AnzahlGenesenNeu': 'newRecovered' }, inplace=True)
+LK.rename(columns={
+    'AnzahlFallAccu': 'accuCases',
+    'AnzahlFallNeu': 'newCases',
+    'AnzahlFall7dAccu': 'accuCasesPerWeek',
+    'AnzahlFall7dNeu': 'newCasesPerWeek',
+    'AnzahlTodesfallAccu': 'accuDeaths',
+    'AnzahlTodesfallNeu': 'newDeaths',
+    'AnzahlTodesfall7dAccu': 'accuDeathsPerWeek',
+    'AnzahlTodesfall7dNeu': 'newDeathsPerWeek',
+    'AnzahlGenesenAccu': 'accuRecovered',
+    'AnzahlGenesenNeu': 'newRecovered' }, inplace=True)
 agg_key = {
     c: 'max' if c in ['Meldedatum', 'Datenstand', 'Landkreis', 'Bundesland'] else 'sum'
     for c in LK.columns
-    if c not in key_list_LK_cases
-}
+    if c not in key_list_LK_cases}
 LK = LK.groupby(key_list_LK_cases, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland', 'IdLandkreis', 'Landkreis'] else 'sum'
     for c in LK.columns
-    if c not in key_list_BL_cases
-}
+    if c not in key_list_BL_cases}
 BL = LK.groupby(key_list_BL_cases, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland', 'IdLandkreis', 'Landkreis', 'IdBundesland'] else 'sum'
     for c in BL.columns
-    if c not in key_list_ID0_cases
-}
+    if c not in key_list_ID0_cases}
 ID0 = BL.groupby(key_list_ID0_cases, as_index=False).agg(agg_key)
 LK.drop(['IdStaat', 'IdBundesland'], inplace=True, axis=1)
-LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+LK_pop_mask = (
+    (BV['AGS'].isin(LK['IdLandkreis'])) &
+    (BV['Altersgruppe'] == "A00+") &
+    (BV['GueltigAb'] <= datenstand) &
+    (BV['GueltigBis'] >= datenstand))
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['population'] = LK_pop['Einwohner']
@@ -170,7 +207,11 @@ ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
-BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+BL_pop_mask = (
+    (BV['AGS'].isin(BL['IdBundesland'])) &
+    (BV['Altersgruppe'] == "A00+") &
+    (BV['GueltigAb'] <= datenstand) &
+    (BV['GueltigBis'] >= datenstand))
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
@@ -200,20 +241,17 @@ LK.rename(columns={'AnzahlFall': 'cases', 'AnzahlTodesfall': 'deaths', 'AnzahlGe
 agg_key = {
     c: 'max' if c in ['Datenstand', 'Landkreis', 'Bundesland'] else 'sum'
     for c in LK.columns
-    if c not in key_list_LK_hist
-}
+    if c not in key_list_LK_hist}
 LK = LK.groupby(key_list_LK_hist, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdLandkreis', 'Datenstand', 'Landkreis', 'Bundesland', ] else 'sum'
     for c in LK.columns
-    if c not in key_list_BL_hist
-}
+    if c not in key_list_BL_hist}
 BL = LK.groupby(key_list_BL_hist, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdBundesland', 'IdLandkreis', 'Datenstand', 'Bundesland', 'Landkreis'] else 'sum'
     for c in BL.columns
-    if c not in key_list_ID0_hist
-}
+    if c not in key_list_ID0_hist}
 ID0 = BL.groupby(key_list_ID0_hist, as_index=False).agg(agg_key)
 LK.drop(['IdStaat', 'IdBundesland', 'Bundesland'], inplace=True, axis=1)
 BL.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
@@ -234,39 +272,37 @@ BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 LK = data_Base.copy()
 
 # used keylists
-key_list_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
+key_list_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis']
 key_list_BL_fix = ['IdStaat', 'IdBundesland']
 key_list_ID0_fix = ['IdStaat']
 
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0)
 LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0)
 LK['Datenstand'] = datenstand.date()
-LK.drop([   'Meldedatum',
-            'NeuerFall',
-            'NeuerTodesfall',
-            'AnzahlFall',
-            'AnzahlTodesfall',
-            'Landkreis',
-            'Bundesland',
-            'NeuGenesen',
-            'AnzahlGenesen'], inplace=True, axis=1)
+LK.drop([
+    'Meldedatum',
+    'NeuerFall',
+    'NeuerTodesfall',
+    'AnzahlFall',
+    'AnzahlTodesfall',
+    'Landkreis',
+    'Bundesland',
+    'NeuGenesen',
+    'AnzahlGenesen'], inplace=True, axis=1)
 agg_key = {
     c: 'max' if c in ['Datenstand'] else 'sum'
     for c in LK.columns
-    if c not in key_list_LK_fix
-}
+    if c not in key_list_LK_fix}
 LK = LK.groupby(key_list_LK_fix, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdLandkreis', 'Datenstand'] else 'sum'
     for c in LK.columns
-    if c not in key_list_BL_fix
-}
+    if c not in key_list_BL_fix}
 BL = LK.groupby(key_list_BL_fix, as_index=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdBundesland', 'IdLandkreis', 'Datenstand'] else 'sum'
     for c in BL.columns
-    if c not in key_list_ID0_fix
-}
+    if c not in key_list_ID0_fix}
 ID0 = BL.groupby(key_list_ID0_fix, as_index=False).agg(agg_key)
 LK.drop(['IdStaat', 'IdBundesland'], inplace=True, axis=1)
 BL.drop(['IdStaat', 'IdLandkreis'], inplace=True, axis=1)
@@ -274,7 +310,11 @@ ID0.drop(['IdStaat', 'IdLandkreis'], inplace=True, axis=1)
 ID0['IdBundesland'] = '00'
 BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
-LK_pop_mask = (BV['AGS'].isin(LK['IdLandkreis'])) & (BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+LK_pop_mask = (
+    (BV['AGS'].isin(LK['IdLandkreis'])) &
+    (BV['Altersgruppe'] == "A00+") &
+    (BV['GueltigAb'] <= datenstand) &
+    (BV['GueltigBis'] >= datenstand))
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['population'] = LK_pop['Einwohner']
@@ -282,7 +322,11 @@ LK.insert(loc=0, column='Landkreis', value=LK_pop['Name'])
 LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
 LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['population'] * 100000
 LK.drop(['population'], inplace=True, axis=1)
-BL_pop_mask = (BV['AGS'].isin(BL['IdBundesland'])) & (BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= datenstand) & (BV['GueltigBis'] >= datenstand)
+BL_pop_mask = (
+    (BV['AGS'].isin(BL['IdBundesland'])) &
+    (BV['Altersgruppe'] == "A00+") &
+    (BV['GueltigAb'] <= datenstand) &
+    (BV['GueltigBis'] >= datenstand))
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
@@ -313,7 +357,10 @@ for file in file_list:
         re_filename = re.search(pattern, filename)
         re_search = re.search(iso_date_re, filename)
         if re_search and re_filename:
-            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
+            report_date = dt.date(
+                int(re_search.group(1)),
+                int(re_search.group(3)),
+                int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
 today = dt.date.today()
 url = "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab_aktuell.xlsx?__blob=publicationFile"

@@ -132,10 +132,13 @@ try:
     BVAktuell = BV[maskBV].copy()
     BVAktuell.sort_values(['AGS', 'Altersgruppe', 'GueltigBis'], axis=0, inplace=True)
     BVAktuell.reset_index(drop=True, inplace=True)
+    if BVAktuell.shape[0] != calcBV.shape[0]:
+        print('Die Anzahl der Datensätze neu und BV sind unterschiedlich! ABRUCH!')
+        sys.exit('unterschiedliche Anzahl von Datensätzen!')
     filtered = BV.merge(BVAktuell, how='outer', indicator=True).copy()
-    oldEntrys = filtered[filtered['_merge'] == 'left_only']
+    oldEntrys = filtered[filtered['_merge'] == 'left_only'].copy()
     oldEntrys.reset_index(drop=True, inplace=True)
-    oldEntrys.drop(['_merge'], axis=1)
+    oldEntrys.drop(['_merge'], axis=1, inplace=True)
     calcBV.insert(loc=2, column='Name', value=BVAktuell['Name'])
     calcBV.insert(loc=3, column='GueltigAb', value=BVAktuell['GueltigAb'])
     calcBV.insert(loc=4, column='GueltigBis', value=BVAktuell['GueltigBis'])

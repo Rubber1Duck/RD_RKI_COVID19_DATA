@@ -42,7 +42,6 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   crontab /usr/src/app/crontab2.file
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2: crontab set to crontab2.file"
-  crontab -l
   exit 1
 fi
 
@@ -57,9 +56,14 @@ touch /tmp/update.pid
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2: Start update"
 
+#Print message, check/update Bevoelkerung.csv
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2: executing python calc_population.py"
+python calc_population.py
+
 # Print message, crate new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: executing python process_update_docker.py"
+echo "$DATE2: executing python update.py"
 python update.py
 
 # Print message, download and modify meta data from RKI server
@@ -78,4 +82,3 @@ rm /tmp/update.pid
 crontab /usr/src/app/crontab2.file
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2: crontab set to crontab2.file"
-crontab -l

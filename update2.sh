@@ -3,7 +3,7 @@
 # first check if this script is already running
 if [ -f /tmp/update.pid ]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2: Update is still in progress!"
+  echo "$DATE2 : Update is still in progress!"
   exit 1
 fi
 
@@ -26,10 +26,10 @@ lastModified=$(date -d "@$lastModified" '+%Y-%m-%d')
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModified" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2: Updated data for $DATE does not yet exist (modified date: $lastModified)"
+  echo "$DATE2 : Updated data for $DATE does not yet exist (modified date: $lastModified)"
   # set new crontab to run update1.sh every 15 minutes
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2: set crontab to crontab1.file"
+  echo "$DATE2 : set crontab to crontab1.file"
   crontab /usr/src/app/crontab1.file
   exit 1
 fi
@@ -41,10 +41,10 @@ lastModifiedLocal=$(date -d "@$lastModifiedLocal" '+%Y-%m-%d')
 # if todays date equal to local last modified date, then the update is allready done, print message and exit
 if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2: data is already updated for $DATE (local modified date: $lastModifiedLocal)"
+  echo "$DATE2 : data is already updated for $DATE (local modified date: $lastModifiedLocal)"
   # set new crontab to run update1.sh every 15 minutes
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2: set crontab to crontab1.file"
+  echo "$DATE2 : set crontab to crontab1.file"
   crontab /usr/src/app/crontab1.file
   exit 1
 fi
@@ -58,26 +58,26 @@ touch /tmp/update.pid
 
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: Start update"
+echo "$DATE2 : Start update"
 
 #Print message, check/update Bevoelkerung.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: executing python calc_population.py"
+echo "$DATE2 : executing python calc_population.py"
 python calc_population.py
 
 # Print message, crate new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: executing python update.py"
+echo "$DATE2 : executing python update.py"
 python update.py
 
 # Print message, download and modify meta data from RKI server
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: executing python download_meta.py"
+echo "$DATE2 : executing python download_meta.py"
 python download_meta.py
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: Update finished"
+echo "$DATE2 : Update finished"
 
 # update is done, delete /tmp/update.pid
 rm /tmp/update.pid
@@ -85,4 +85,4 @@ rm /tmp/update.pid
 # set new crontab to run update2.sh at 1 o'clock (GMT)
 crontab /usr/src/app/crontab2.file
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2: crontab set to crontab2.file"
+echo "$DATE2 : crontab set to crontab2.file"

@@ -4,6 +4,7 @@ import requests as r
 import datetime as dt
 import numpy as np
 import pandas as pd
+import lzma as lz
 
 url = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
 BV_csv_path = os.path.join(
@@ -33,20 +34,24 @@ BV_dtypes = {
     'männlich': 'Int32',
     'weiblich': 'Int32'}
 CV_dtypes = {
-    'Datenstand': 'object',
+    'FID': 'Int64',
     'IdBundesland': 'str',
     'Bundesland': 'str',
-    'IdLandkreis': 'str',
     'Landkreis': 'str',
     'Altersgruppe': 'str',
     'Geschlecht': 'str',
+    'AnzahlFall': 'Int32',
+    'AnzahlTodesfall':'Int32',
+    'Meldedatum':'object',
+    'IdLandkreis': 'str',
+    'Datenstand': 'object',
     'NeuerFall': 'Int32',
     'NeuerTodesfall': 'Int32',
+    'Refdatum': 'object',
     'NeuGenesen': 'Int32',
-    'AnzahlFall': 'Int32',
-    'AnzahlTodesfall': 'Int32',
     'AnzahlGenesen': 'Int32',
-    'Meldedatum': 'object'}
+    'IstErkrankungsbeginn': 'Int32',
+    'Altersgruppe2': 'str'}
 
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
@@ -57,77 +62,167 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 #testfile = os.path.join(path, 'RKI_COVID19_2022-09-26.csv.gz')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": loading RKI data to Dataframe ...")
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": complete.")
+datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
+Datum = datenstand.date().strftime('%Y-%m-%d')
+
+data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+filename = 'RKI_COVID19_' + Datum + '.csv.xz'
+full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,filename)
+data_path = os.path.normpath(data_path)
+full_path = os.path.normpath(full_path)
+istDatei = os.path.isfile(full_path)
+if not os.path.isfile(full_path):
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ": writing DataFrame to xz compressed csv file ...")
+    with lz.open(full_path, 'wb') as file:
+        data_Base.to_csv(
+            file,
+            index=False,
+            header=True,
+            lineterminator='\n',
+            encoding='utf-8',
+            date_format='%Y-%m-%d',
+            columns=CV_dtypes.keys())
+        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+        print(aktuelleZeit, ": complete.")
+else:
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ":", filename, "already exists.")
+# limit RKI_COVID19 Data files to the last 30 days
+iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
+file_list = os.listdir(data_path)
+file_list.sort(reverse=False)
+pattern = 'RKI_COVID19'
+all_files = []
+for file in file_list:
+    file_path_full = os.path.join(data_path, file)
+    if not os.path.isdir(file_path_full):
+        filename = os.path.basename(file)
+        re_filename = re.search(pattern, filename)
+        re_search = re.search(iso_date_re, filename)
+        if re_search and re_filename:
+            report_date = dt.date(
+                int(re_search.group(1)),
+                int(re_search.group(3)),
+                int(re_search.group(4))).strftime('%Y-%m-%d')
+            all_files.append((file_path_full, report_date))
+today = dt.date.today()
+day_range = pd.date_range(end=today, periods=30).tolist()
+day_range_str = []
+for datum in day_range:
+    day_range_str.append(datum.strftime('%Y-%m-%d'))
+for file_path_full, report_date in all_files:
+    if report_date not in day_range_str:
+        os.remove(file_path_full)
+# delete not needed stuff
+data_Base.drop([
+    'FID',
+    'Refdatum',
+    'IstErkrankungsbeginn',
+    'Altersgruppe2'], axis=1, inplace=True)
+
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date
-datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
 data_Base['Datenstand'] = datenstand.date()
 
-# ageGroup Data (states only!)
-BL = data_Base.copy()
+# ageGroup Data
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": calculating age-group data ...")
+LK = data_Base.copy()
 
 # Altergruppe und Geschlecht wird jetzt nicht mehr gebraucht
 data_Base.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
 
 # delete datasets with Altergruppe = unbekannt 
-BL.drop(BL[BL['Altersgruppe'] == 'unbekannt'].index, axis= 0, inplace= True)
-BL.reset_index (inplace=True, drop=True)
+LK.drop(LK[LK['Altersgruppe'] == 'unbekannt'].index, axis= 0, inplace= True)
+LK.reset_index (inplace=True, drop=True)
 # delete datasets with Geschlecht = unbekannt
-BL.drop(BL[(BL['Geschlecht'] == 'unbekannt')].index, axis= 0, inplace= True)
-BL.reset_index(inplace=True, drop=True)
+LK.drop(LK[(LK['Geschlecht'] == 'unbekannt')].index, axis= 0, inplace= True)
+LK.reset_index(inplace=True, drop=True)
+LK.drop(['Bundesland', 'Landkreis', 'Meldedatum', 'Datenstand'], inplace=True, axis=1)
 
 # used keylists
+key_list_LK_age = ['IdLandkreis', 'Altersgruppe']
 key_list_BL_age = ['IdBundesland', 'Altersgruppe']
 key_list_ID0_age = ['Altersgruppe']
 
 # calculate the age group data
-BL['AnzahlFall'] = np.where(BL['NeuerFall'].isin([1, 0]), BL['AnzahlFall'], 0)
-BL['AnzahlFallM'] = np.where(BL['Geschlecht'] == "M", BL['AnzahlFall'], 0)
-BL['AnzahlFallW'] = np.where(BL['Geschlecht'] == "W", BL['AnzahlFall'], 0)
-BL['AnzahlTodesfall'] = np.where(BL['NeuerTodesfall'].isin([1, 0, -9]), BL['AnzahlTodesfall'], 0)
-BL['AnzahlTodesfallM'] = np.where(BL['Geschlecht'] == "M", BL['AnzahlTodesfall'], 0)
-BL['AnzahlTodesfallW'] = np.where(BL['Geschlecht'] == "W", BL['AnzahlTodesfall'], 0)
-BL.drop([   'NeuGenesen',
-            'NeuerFall',
-            'NeuerTodesfall',
-            'AnzahlFall',
-            'AnzahlTodesfall',
-            'AnzahlGenesen',
-            'IdLandkreis',
-            'Landkreis',
-            'Geschlecht'], inplace=True, axis=1)
+LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([1, 0]), LK['AnzahlFall'], 0)
+LK['AnzahlFallM'] = np.where(LK['Geschlecht'] == "M", LK['AnzahlFall'], 0)
+LK['AnzahlFallW'] = np.where(LK['Geschlecht'] == "W", LK['AnzahlFall'], 0)
+LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([1, 0, -9]), LK['AnzahlTodesfall'], 0)
+LK['AnzahlTodesfallM'] = np.where(LK['Geschlecht'] == "M", LK['AnzahlTodesfall'], 0)
+LK['AnzahlTodesfallW'] = np.where(LK['Geschlecht'] == "W", LK['AnzahlTodesfall'], 0)
+LK.drop([
+    'NeuGenesen',
+    'NeuerFall',
+    'NeuerTodesfall',
+    'AnzahlFall',
+    'AnzahlTodesfall',
+    'AnzahlGenesen',
+    'Geschlecht'], inplace=True, axis=1)
 agg_key = {
-    c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland'] else 'sum'
-    for c in BL.columns
-    if c not in key_list_BL_age}
-BL = BL.groupby(key_list_BL_age, as_index=False).agg(agg_key)
-agg_key = {
-    c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland', 'IdBundesland']  else 'sum'
-    for c in BL.columns
-    if c not in key_list_ID0_age}
-ID0 = BL.groupby(key_list_ID0_age, as_index=False).agg(agg_key)
-ID0['IdBundesland'] = '00'
-ID0['Bundesland'] = 'Bundesgebiet'
-BL = pd.concat([ID0, BL])
-BL.reset_index(inplace=True, drop=True)
-BL_pop_mask = (
-    (BV['AGS'].isin(BL['IdBundesland'])) &
-    (BV['Altersgruppe'].isin(BL['Altersgruppe'])) &
+    c: 'max' if c in ['IdBundesland'] else 'sum'
+    for c in LK.columns
+    if c not in key_list_LK_age}
+LK = LK.groupby(key_list_LK_age, as_index=False).agg(agg_key)
+LK.reset_index(inplace=True, drop=True)
+LK_pop_mask = (
+    (BV['AGS'].isin(LK['IdLandkreis'])) &
+    (BV['Altersgruppe'].isin(LK['Altersgruppe'])) &
     (BV['GueltigAb'] <= datenstand) &
     (BV['GueltigBis'] >= datenstand))
-BL_pop = BV[BL_pop_mask]
-BL_pop.reset_index(inplace=True, drop=True)
-BL['populationM'] = BL_pop['männlich']
-BL['populationW'] = BL_pop['weiblich']
-BL['AnzahlFallM'] = BL['AnzahlFallM'].astype(int)
-BL['AnzahlFallW'] = BL['AnzahlFallW'].astype(int)
-BL['AnzahlTodesfallM'] = BL['AnzahlTodesfallM'].astype(int)
-BL['AnzahlTodesfallW'] = BL['AnzahlTodesfallW'].astype(int)
+LK_pop = BV[LK_pop_mask]
+LK_pop.reset_index(inplace=True, drop=True)
+LK['populationM'] = LK_pop['männlich']
+LK['populationW'] = LK_pop['weiblich']
+LK['AnzahlFallM'] = LK['AnzahlFallM'].astype(int)
+LK['AnzahlFallW'] = LK['AnzahlFallW'].astype(int)
+LK['AnzahlTodesfallM'] = LK['AnzahlTodesfallM'].astype(int)
+LK['AnzahlTodesfallW'] = LK['AnzahlTodesfallW'].astype(int)
+LK['cases100kM'] = round(LK['AnzahlFallM'] / LK['populationM'] * 100000, 1)
+LK['cases100kW'] = round(LK['AnzahlFallW'] / LK['populationW'] * 100000, 1)
+LK['deaths100kM'] = round(LK['AnzahlTodesfallM'] / LK['populationM'] * 100000, 1)
+LK['deaths100kW'] = round(LK['AnzahlTodesfallW'] / LK['populationW'] * 100000, 1)
+agg_key = {
+    c: 'max' if c in ['IdLandkreis']  else 'sum'
+    for c in LK.columns
+    if c not in key_list_BL_age}
+BL = LK.groupby(key_list_BL_age, as_index=False).agg(agg_key).copy()
 BL['cases100kM'] = round(BL['AnzahlFallM'] / BL['populationM'] * 100000, 1)
 BL['cases100kW'] = round(BL['AnzahlFallW'] / BL['populationW'] * 100000, 1)
 BL['deaths100kM'] = round(BL['AnzahlTodesfallM'] / BL['populationM'] * 100000, 1)
 BL['deaths100kW'] = round(BL['AnzahlTodesfallW'] / BL['populationW'] * 100000, 1)
+BL.drop(['IdLandkreis'],inplace=True, axis=1)
+agg_key = {
+    c: 'max' if c in ['IdBundesland', 'IdLandkreis']  else 'sum'
+    for c in BL.columns
+    if c not in key_list_ID0_age}
+ID0 = BL.groupby(key_list_ID0_age, as_index=False).agg(agg_key).copy()
+ID0['IdBundesland'] ='00'
+ID0['cases100kM'] = round(ID0['AnzahlFallM'] / ID0['populationM'] * 100000, 1)
+ID0['cases100kW'] = round(ID0['AnzahlFallW'] / ID0['populationW'] * 100000, 1)
+ID0['deaths100kM'] = round(ID0['AnzahlTodesfallM'] / ID0['populationM'] * 100000, 1)
+ID0['deaths100kW'] = round(ID0['AnzahlTodesfallW'] / ID0['populationW'] * 100000, 1)
+LK.drop(['populationM', 'populationW', 'IdBundesland'], inplace=True, axis=1)
 BL.drop(['populationM', 'populationW'], inplace=True, axis=1)
+ID0.drop(['populationM', 'populationW'], inplace=True, axis=1)
+LK.rename(columns={
+    'AnzahlFallM': 'casesMale',
+    'AnzahlFallW': 'casesFemale',
+    'AnzahlTodesfallM': 'deathsMale',
+    'AnzahlTodesfallW': 'deathsFemale',
+    'cases100kM': 'casesMalePer100k',
+    'cases100kW': 'casesFemalePer100k',
+    'deaths100kM': 'deathsMalePer100k',
+    'deaths100kW': 'deathsFemalePer100k'}, inplace=True)
+BL = pd.concat([ID0, BL])
+BL.reset_index(inplace=True, drop=True)
 BL.rename(columns={
     'AnzahlFallM': 'casesMale',
     'AnzahlFallW': 'casesFemale',
@@ -139,12 +234,22 @@ BL.rename(columns={
     'deaths100kW': 'deathsFemalePer100k'}, inplace=True)
 
 # store json
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'agegroup')
+path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'agegroup')
+LK_json_path = os.path.join(path, 'districts.json')
 BL_json_path = os.path.join(path, 'states.json')
+LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": complete.")
 
 # accumulated and new cases, deaths, recovered, casesPerWeek, deathsPerWeek
 # add country column
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": calculating new and accumulated data ...")
 data_Base.insert(loc=0, column='IdStaat', value='00')
 
 LK = data_Base.copy()
@@ -222,10 +327,14 @@ LK_json_path = os.path.join(path, 'districts.json')
 BL_json_path = os.path.join(path, 'states.json')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": complete.")
 
 # History
 # DistrictCasesHistory, DistrictDeathsHistory, DistrictRecoveredHistory
 # StateCasesHistory, StateDeathsHistory, StateRecoveredHistory
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": calculating history data ...")
 LK = data_Base.copy()
 
 # used keylists
@@ -267,8 +376,12 @@ LK_json_path = os.path.join(path, 'districts.json')
 BL_json_path = os.path.join(path, 'states.json')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": complete.")
 
 # fixed-incidence
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": calculating fixed-incidence data")
 LK = data_Base.copy()
 
 # used keylists
@@ -379,3 +492,5 @@ for datum in day_range:
 for file_path_full, report_date in all_files:
     if report_date not in day_range_str:
         os.remove(file_path_full)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": complete.")

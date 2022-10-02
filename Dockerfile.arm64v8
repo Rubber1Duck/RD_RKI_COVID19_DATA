@@ -28,7 +28,7 @@ RUN apt-get update \
   && apt-get clean \
   && apt-get autoclean
 
-VOLUME [ "/usr/src/app/dataStore" ]
+VOLUME [ "/usr/src/app/dataStore", "/usr/src/app/data" ]
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 CMD ["cron","-f", "-L", "15"]

@@ -56,9 +56,11 @@ try:
         (round(LK['AnzFallM'] / LK['männlich'] * 100000, 1) != LK['AnzFall100kM']) |
         (round(LK['AnzFallW'] / LK['weiblich'] * 100000, 1) != LK['AnzFall100kW']))
     if LK[mask].empty:
-        print('alle berechneten Einwohnerzahlen auf Altersgruppenebene sind in der Umkehrung identisch')
+        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+        print(aktuelleZeit,': alle berechneten Einwohnerzahlen auf Altersgruppenebene sind in der Umkehrung identisch')
     else:
-        print('Bei folgenden Altergruppen ist der crossCheck fehlgeschlagen:')
+        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+        print(aktuelleZeit,': Bei folgenden Altergruppen ist der crossCheck fehlgeschlagen:')
         print(LK[mask])
         sys.exit('CrossCheck failed')
     keyListLKA00plus = ['AGS']
@@ -75,7 +77,8 @@ try:
     LKA00plusCheck.reset_index(inplace=True, drop=True)
     LKA00plusMask = LKA00plus['Einwohner'] != LKA00plusCheck['EWZ']
     if not LKA00plus[LKA00plusMask].empty:
-        print('in einigen Zeile/n stimmt auf Landkreisebene die berechnete Einwohnerzahl nicht mit der vom RKI verwendeten überein:')
+        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+        print(aktuelleZeit,': in einigen Zeile/n stimmt auf Landkreisebene die berechnete Einwohnerzahl nicht mit der vom RKI verwendeten überein:')
         print(LKA00plus[LKA00plusMask])
         sys.exit('CrossCheck 2 failed')
     calcBV = pd.concat([LKA00plus, LK])
@@ -163,8 +166,10 @@ try:
                 encoding='utf-8',
                 date_format='%Y-%m-%d',
                 columns=BV_dtypes.keys())
-        print('Bevoelkerung.csv geändert')
+        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+        print(aktuelleZeit,': Bevoelkerung.csv geändert')
     else:
-        print('Keine Veränderungen an den Einwohnerzahlen!')
+        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+        print(aktuelleZeit,': Keine Veränderungen an den Einwohnerzahlen!')
 except Exception as e:
     print(e)

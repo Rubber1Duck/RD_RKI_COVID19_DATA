@@ -9,7 +9,7 @@ fi
 
 cd /usr/src/app/data
 
-if [ ! -f *.csv] then
+if [ ! -f *.csv ]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : no csv file to compress"
   exit 1
@@ -17,4 +17,4 @@ fi
 
 /usr/bin/xz -zT0  *.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : all csv files are compress"
+echo "$DATE2 : all csv files are compressed"

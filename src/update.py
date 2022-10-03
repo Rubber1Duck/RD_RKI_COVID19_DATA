@@ -4,7 +4,6 @@ import requests as r
 import datetime as dt
 import numpy as np
 import pandas as pd
-import lzma as lz
 
 url = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
 BV_csv_path = os.path.join(
@@ -69,19 +68,21 @@ aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": complete.")
 datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
 Datum = datenstand.date().strftime('%Y-%m-%d')
-
 data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-filename = 'RKI_COVID19_' + Datum + '.csv.xz'
+filename = 'RKI_COVID19_' + Datum + '.csv'
+filenameXz = 'RKI_COVID19_' + Datum + '.csv.xz'
 full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,filename)
+full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,filename)
 data_path = os.path.normpath(data_path)
 full_path = os.path.normpath(full_path)
 istDatei = os.path.isfile(full_path)
-if not os.path.isfile(full_path):
+istDateiXz = os.path.isfile(full_pathXz)
+if not (istDatei | istDateiXz):
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    print(aktuelleZeit, ": writing DataFrame to xz compressed csv file ...")
-    with lz.open(full_path, 'wb') as file:
+    print(aktuelleZeit, ": writing DataFrame to csv file ...")
+    with open(full_path, 'wb') as csvfile:
         data_Base.to_csv(
-            file,
+            csvfile,
             index=False,
             header=True,
             lineterminator='\n',
@@ -91,8 +92,12 @@ if not os.path.isfile(full_path):
         aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
         print(aktuelleZeit, ": complete.")
 else:
+    if istDatei:
+        fileExists = filename
+    else:
+        fileExists = filenameXz
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    print(aktuelleZeit, ":", filename, "already exists.")
+    print(aktuelleZeit, ":", fileExists, "already exists.")
 # limit RKI_COVID19 Data files to the last 30 days
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(data_path)

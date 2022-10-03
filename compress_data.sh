@@ -3,7 +3,7 @@
 # first check if the update script is running
 if [ -f /tmp/update.pid ]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Update is still in progress!"
+  echo "$DATE2 : Update is still in progress! Will wait with compressing data."
   exit 1
 fi
 

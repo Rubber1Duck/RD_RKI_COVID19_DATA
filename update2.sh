@@ -75,7 +75,7 @@ python update.py
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : Update finished"
 
-/usr/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
+/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
 
 # start compress RKI_COVID19_$DATE.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

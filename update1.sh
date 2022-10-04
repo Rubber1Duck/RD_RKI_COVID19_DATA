@@ -69,7 +69,7 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python update.py"
 python update.py
 
-/usr/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
+/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

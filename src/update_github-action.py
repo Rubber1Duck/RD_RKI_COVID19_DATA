@@ -68,7 +68,8 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
 fileName = metaObj['name']
-fileSize= metaObj['size']
+fileSize = metaObj['size']
+fileSizeMb = round(fileSize / 1024 / 1024, 1)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(
     aktuelleZeit,
@@ -76,7 +77,9 @@ print(
     fileName,
     "(size:",
     fileSize,
-    ") from RKI server to dataframe ...")
+    "bytes =",
+    fileSizeMb,
+    "MegaByte) from RKI server to dataframe ...")
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date

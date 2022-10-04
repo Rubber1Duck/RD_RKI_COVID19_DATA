@@ -5,7 +5,7 @@ import json
 # %% each day
 try:
     meta_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'meta')
-    filename_meta = "meta.json" 
+    filename_meta = "meta_new.json" 
     url_meta = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74?f=json"
 
     meta = DownloadFile(url=url_meta, filename=filename_meta, download_path=meta_path)

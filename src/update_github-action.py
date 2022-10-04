@@ -4,9 +4,16 @@ import requests as r
 import datetime as dt
 import numpy as np
 import pandas as pd
+import json
 
 # %%
 url = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
+meta_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'meta')
+filename_meta = "meta_new.json"
 BV_csv_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -58,8 +65,18 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 #testfile = os.path.join(path, 'RKI_COVID19_2022-10-02.csv.xz')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
+    metaObj = json.load(file)
+fileName = metaObj['name']
+fileSize= metaObj['size']
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": loading RKI Data to dataframe ...")
+print(
+    aktuelleZeit,
+    ": loading",
+    fileName,
+    "(size:",
+    fileSize,
+    ") from RKI server to dataframe ...")
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date

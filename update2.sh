@@ -61,19 +61,21 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python calc_population.py"
 python calc_population.py
 
-# Print message, crate new json files for date
-DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : executing python update.py"
-python update.py
-
 # Print message, download and modify meta data from RKI server
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python download_meta.py"
 python download_meta.py
 
+# Print message, crate new json files for date
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2 : executing python update.py"
+python update.py
+
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : Update finished"
+
+/usr/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
 
 # start compress RKI_COVID19_$DATE.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

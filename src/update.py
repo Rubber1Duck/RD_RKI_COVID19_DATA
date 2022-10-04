@@ -4,8 +4,15 @@ import requests as r
 import datetime as dt
 import numpy as np
 import pandas as pd
+import json
 
 url = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
+meta_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'meta')
+filename_meta = "meta_new.json"
 BV_csv_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -61,18 +68,25 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 #testfile = os.path.join(path, 'RKI_COVID19_2022-09-26.csv.gz')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
+    metaObj = json.load(file)
+fileName = metaObj['name']
+fileSize= metaObj['size']
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": loading RKI data to Dataframe ...")
+print(
+    aktuelleZeit,
+    ": loading",
+    fileName,
+    "(size:",
+    fileSize,
+    ") from RKI server to dataframe ...")
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": complete.")
-datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
-Datum = datenstand.date().strftime('%Y-%m-%d')
 data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-filename = 'RKI_COVID19_' + Datum + '.csv'
-filenameXz = 'RKI_COVID19_' + Datum + '.csv.xz'
-full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,filename)
-full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,filename)
+fileNameXz = fileName + '.xz'
+full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileName)
+full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileNameXz)
 data_path = os.path.normpath(data_path)
 full_path = os.path.normpath(full_path)
 istDatei = os.path.isfile(full_path)
@@ -93,9 +107,9 @@ if not (istDatei | istDateiXz):
         print(aktuelleZeit, ": complete.")
 else:
     if istDatei:
-        fileExists = filename
+        fileExists = fileName
     else:
-        fileExists = filenameXz
+        fileExists = fileNameXz
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
     print(aktuelleZeit, ":", fileExists, "already exists.")
 # limit RKI_COVID19 Data files to the last 30 days
@@ -124,6 +138,7 @@ for datum in day_range:
 for file_path_full, report_date in all_files:
     if report_date not in day_range_str:
         os.remove(file_path_full)
+
 # delete not needed stuff
 data_Base.drop([
     'FID',
@@ -133,6 +148,8 @@ data_Base.drop([
 
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date
+datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
+Datum = datenstand.date().strftime('%Y-%m-%d')
 data_Base['Datenstand'] = datenstand.date()
 
 # ageGroup Data

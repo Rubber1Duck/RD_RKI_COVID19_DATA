@@ -1,16 +1,14 @@
 #!/bin/bash
 
-# first check if this script is already running
+# first check if one update script is already running
 if [ -f /tmp/update.pid ]; then
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Update is still in progress!"
   exit 1
 fi
 
 #set pythons virtual env
 source $VIRTUAL_ENV/bin/activate
 
-# set worling directory to ./src
+# set working directory to ./src
 cd /usr/src/app/src
 
 #get todays date
@@ -51,9 +49,7 @@ fi
 
 # do the action
 
-# cron starts this script every 15 minutes,
-# if a update task is running more then 15 minutes, cron starts a new updatejob!
-# to prevent this touch the file /tmp/update.pid. This file is checked at the beginning of this script
+# touch /tmp/update.pid to signal other update scripts that the update is still running
 touch /tmp/update.pid
 
 # print starting message
@@ -78,6 +74,13 @@ python download_meta.py
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : Update finished"
+
+# start compress RKI_COVID19_$DATE.csv
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv"
+/usr/bin/xz -zT0  "/usr/src/app/data/RKI_COVID19_$DATE.csv"
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv"
 
 # update is done, delete /tmp/update.pid
 rm /tmp/update.pid

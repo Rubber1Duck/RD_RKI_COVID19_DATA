@@ -2,8 +2,6 @@
 
 # first check if this script is already running
 if [ -f /tmp/update.pid ]; then
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Update is still in progress!"
   exit 1
 fi
 
@@ -74,6 +72,14 @@ python download_meta.py
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : Update finished"
+
+# start compress RKI_COVID19_$DATE.csv
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv"
+cd /usr/src/app/data
+/usr/bin/xz -zT0  "/usr/src/app/data/RKI_COVID19_$DATE.csv"
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv"
 
 # update is done, delete /tmp/update.pid
 rm /tmp/update.pid

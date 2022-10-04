@@ -70,14 +70,17 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
-fileName = metaObj['name']
+fileNameOrig = metaObj['name']
 fileSize = metaObj['size']
+filedate = dt.datetime.fromtimestamp(metaObj['modified']/1000).date().strftime('%Y-%m-%d')
 fileSizeMb = round(fileSize / 1024 / 1024, 1)
+fileNameRoot, fileNameExt = os.path.splitext(fileNameOrig)
+fileName = fileNameRoot + '_' + filedate + fileNameExt
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(
     aktuelleZeit,
     ": loading",
-    fileName,
+    fileNameOrig,
     "(size:",
     fileSize,
     "bytes =",
@@ -96,7 +99,7 @@ istDatei = os.path.isfile(full_path)
 istDateiXz = os.path.isfile(full_pathXz)
 if not (istDatei | istDateiXz):
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    print(aktuelleZeit, ": writing DataFrame to csv file ...")
+    print(aktuelleZeit, ": writing DataFrame to",fileName, "...")
     with open(full_path, 'wb') as csvfile:
         data_Base.to_csv(
             csvfile,

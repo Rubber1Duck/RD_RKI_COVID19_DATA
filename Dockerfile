@@ -20,7 +20,7 @@ RUN apt-get update \
   && which cron \
   && rm -rf /etc/cron.*/* \
   && crontab crontab1.file \
-  && chmod 755 update1.sh update2.sh entrypoint.sh compress_data.sh \
+  && chmod 755 update1.sh update2.sh entrypoint.sh \
   && apt-get -y purge wget build-essential manpages-dev \
   && apt-get -y --purge autoremove \
   && apt-get clean \

@@ -13,7 +13,7 @@ COPY . .
 RUN apt-get update \
   && apt-get -y upgrade \
   && apt-get -y install apt-utils \
-  && apt-get -y install cron curl wget build-essential manpages-dev xz-utils \
+  && apt-get -y install cron curl wget build-essential manpages-dev xz-utils nano \
   && source $VIRTUAL_ENV/bin/activate \
   && pip install --upgrade pip \
   && pip install --no-cache-dir -r requirements.txt \

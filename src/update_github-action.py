@@ -62,9 +62,6 @@ BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
 BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
 # load covid latest from web
-#path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-#testfile = os.path.join(path, 'RKI_COVID19_2022-10-02.csv.xz')
-#data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
 fileName = metaObj['name']
@@ -80,6 +77,9 @@ print(
     "bytes =",
     fileSizeMb,
     "MegaByte) from RKI server to dataframe ...")
+#path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+#testfile = os.path.join(path, 'RKI_COVID19_2022-10-05.csv')
+#data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
 data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date

@@ -26,18 +26,10 @@ jobs:
       - name: Install requirements
         run: pip install -r ./requirements.txt
         working-directory: ./
-      - name: check and update Bevoelkerung.csv
-        run: python ./calc_population.py
-        continue-on-error: True
-        working-directory: ./src/
-      - name: Meta Download
-        run: python ./download_meta.py
-        continue-on-error: false
-        working-directory: ./src/ 
       - name: update
-        run: python ./update_github-action.py
+        run: ./update_ghAction.sh
         continue-on-error: false
-        working-directory: ./src/
+        working-directory: ./
         timeout-minutes: 60
       - name: Commit files
         run: |

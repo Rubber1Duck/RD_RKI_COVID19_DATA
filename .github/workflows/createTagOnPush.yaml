@@ -1,7 +1,7 @@
 name: Create tag and release
 on:
   workflow_dispatch:
-  
+
   workflow_run:
     workflows: ["Download and Update"]
     types:
@@ -11,11 +11,11 @@ jobs:
   create-tag:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 
+      - name: Checkout
         uses: actions/checkout@v3
       - name: set up env var
-        run:  echo "TAG=v1.5.$(date '+%Y%m%d')" >> $GITHUB_ENV
-      - name: Create Tag  
+        run: echo "TAG=v1.5.$(date '+%Y%m%d')" >> $GITHUB_ENV
+      - name: Create Tag
         uses: rickstaa/action-create-tag@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -30,4 +30,4 @@ jobs:
           tag_name: ${{ env.TAG }}
           release_name: Release ${{ env.TAG }}
           draft: false
-          prerelease: false    
+          prerelease: false

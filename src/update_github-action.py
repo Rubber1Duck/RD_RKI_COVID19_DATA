@@ -443,7 +443,7 @@ with open(BL_csv_path, 'wb') as csvfile:
         date_format='%Y-%m-%d',
         columns=BL_dtypes.keys())
 
-# limit frozen-incidence csv files to the last 30 days
+# limit frozen-incidence csv files to the last 60 days
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(path_csv)
 file_list.sort(reverse=False)
@@ -462,7 +462,7 @@ for file in file_list:
                 int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
 today = dt.date.today()
-day_range = pd.date_range(end=today, periods=30).tolist()
+day_range = pd.date_range(end=today, periods=60).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))

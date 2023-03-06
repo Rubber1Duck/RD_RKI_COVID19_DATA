@@ -7,7 +7,6 @@ import pandas as pd
 import json
 
 # %%
-url_old = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
 url = "https://media.githubusercontent.com/media/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -57,13 +56,6 @@ CV_dtypes = {
     'AnzahlTodesfall': 'Int32',
     'AnzahlGenesen': 'Int32',
     'Meldedatum': 'object'}
-ID_dtypes = {
-    'Id': 'str',
-    'Name': 'str'}
-
-# open Id.csv
-ID = pd.read_csv(ID_csv_path, usecols=ID_dtypes.keys(), dtype=ID_dtypes)
-ID['Id'] = ID['Id'].astype(str)
 
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
@@ -92,40 +84,40 @@ print(
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 #testfile = os.path.join(path, 'RKI_COVID19_2022-10-05.csv')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-data_Base['IdLandkreis'] = data_Base['IdLandkreis'].str.zfill(5)
-data_Base.insert(loc=0, column='IdBundesland', value=data_Base['IdLandkreis'].str[:-3].copy())
-data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date
-data_Base.insert(loc=0, column='Datenstand', value= Datenstand.date())
-# Einfügen Bundesland und Landkreis Namen .....
-#LK_pop_mask = (
-#    (BV['AGS'].isin(LK['IdLandkreis'])) &
-#    (BV['Altersgruppe'].isin(LK['Altersgruppe'])) &
-#    (BV['GueltigAb'] <= Datenstand) &
-#    (BV['GueltigBis'] >= Datenstand))
-#LK_pop = BV[LK_pop_mask]
-#LK_pop.reset_index(inplace=True, drop=True)
-
-ID_pop_mask = data_Base['IdBundesland'].isin(ID['Id'])
-ID_pop = ID[ID_pop_mask]
-ID_pop.reset_index(inplace=True, drop=True)
-data_Base['Bundesland'] = ID_pop['Name']
-
-ID_pop_mask = ID['Id'].isin(data_Base['IdLandkreis'])
-ID_pop = ID[ID_pop_mask]
-ID_pop.reset_index(inplace=True, drop=True)
-data_Base['Landkreis'] = ID_pop['Name']
-
+dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+dataBase['IdLandkreis'] = dataBase['IdLandkreis'].str.zfill(5)
+dataBase.insert(loc=0, column='IdBundesland', value=dataBase['IdLandkreis'].str[:-3].copy())
+dataBase['Meldedatum'] = pd.to_datetime(dataBase['Meldedatum']).dt.date
+dataBase.insert(loc=0, column='Datenstand', value= Datenstand.date())
+# add Bundesland und Landkreis
+dataBase.insert(loc=2, column="Bundesland", value="")
+dataBase.insert(loc=4, column="Landkreis", value="")
+BV_mask = (
+    (BV['AGS'].isin(dataBase['IdBundesland'])) &
+    (BV['Altersgruppe'] == "A00+") &
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
+BV_masked = BV[BV_mask]
+ID = pd.merge(dataBase, BV_masked, left_on='IdBundesland', right_on='AGS', how='left')
+dataBase["Bundesland"] = ID["Name"].copy()
+BV_mask = (
+    (BV['AGS'].isin(dataBase['IdLandkreis'])) &
+    (BV['Altersgruppe'] == "A00+") &
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
+BV_masked = BV[BV_mask]
+ID = pd.merge(dataBase, BV_masked, left_on='IdLandkreis', right_on='AGS', how='left')
+dataBase["Landkreis"] = ID["Name"].copy()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": complete.")
 
 # ageGroup Data
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating age-group data ...")
-LK = data_Base.copy()
+LK = dataBase.copy()
 
 # Altergruppe und Geschlecht wird jetzt nicht mehr gebraucht
-data_Base.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
+dataBase.drop(['Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
 
 # delete datasets with Altergruppe = unbekannt 
 LK.drop(LK[LK['Altersgruppe'] == 'unbekannt'].index, axis= 0, inplace= True)
@@ -239,9 +231,8 @@ print(aktuelleZeit, ": complete.")
 # add country column
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating new and acumulated data ...")
-data_Base.insert(loc=0, column='IdStaat', value='00')
-
-LK = data_Base.copy()
+dataBase.insert(loc=0, column='IdStaat', value='00')
+LK = dataBase.copy()
 
 # used keylists
 key_list_LK_cases = ['IdStaat', 'IdBundesland', 'IdLandkreis']
@@ -324,7 +315,7 @@ print(aktuelleZeit, ": complete.")
 # StateCasesHistory, StateDeathsHistory, StateRecoveredHistory
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating history data ...")
-LK = data_Base.copy()
+LK = dataBase.copy()
 
 # used keylists
 key_list_LK_hist = ['IdStaat', 'IdBundesland', 'IdLandkreis', 'Meldedatum']
@@ -375,7 +366,7 @@ print(aktuelleZeit, ": complete.")
 # fixed-incidence
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating fixed-incidence data ...")
-LK = data_Base.copy()
+LK = dataBase.copy()
 
 # used keylists
 key_list_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]

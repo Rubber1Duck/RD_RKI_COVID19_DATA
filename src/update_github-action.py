@@ -7,7 +7,8 @@ import pandas as pd
 import json
 
 # %%
-url = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
+url_old = "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
+url = "https://media.githubusercontent.com/media/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -19,6 +20,11 @@ BV_csv_path = os.path.join(
     '..',
     'Bevoelkerung',
     'Bevoelkerung.csv')
+ID_csv_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'Id',
+    'Id.csv')
 LK_dtypes = {
     'Datenstand': 'object',
     'IdLandkreis': 'str',
@@ -41,11 +47,7 @@ BV_dtypes = {
     'männlich': 'Int32',
     'weiblich': 'Int32'}
 CV_dtypes = {
-    'Datenstand': 'object',
-    'IdBundesland': 'str',
-    'Bundesland': 'str',
     'IdLandkreis': 'str',
-    'Landkreis': 'str',
     'Altersgruppe': 'str',
     'Geschlecht': 'str',
     'NeuerFall': 'Int32',
@@ -55,6 +57,13 @@ CV_dtypes = {
     'AnzahlTodesfall': 'Int32',
     'AnzahlGenesen': 'Int32',
     'Meldedatum': 'object'}
+ID_dtypes = {
+    'Id': 'str',
+    'Name': 'str'}
+
+# open Id.csv
+ID = pd.read_csv(ID_csv_path, usecols=ID_dtypes.keys(), dtype=ID_dtypes)
+ID['Id'] = ID['Id'].astype(str)
 
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
@@ -66,6 +75,9 @@ with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
 fileName = metaObj['name']
 fileSize = metaObj['size']
+timeStamp = metaObj['modified']
+Datenstand = dt.datetime.fromtimestamp(timeStamp/1000)
+Datenstand = Datenstand.replace(hour=0, minute=0, second=0, microsecond=0)
 fileSizeMb = round(fileSize / 1024 / 1024, 1)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(
@@ -81,10 +93,29 @@ print(
 #testfile = os.path.join(path, 'RKI_COVID19_2022-10-05.csv')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 data_Base = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-data_Base['IdBundesland'] = data_Base['IdBundesland'].str.zfill(2)
+data_Base['IdLandkreis'] = data_Base['IdLandkreis'].str.zfill(5)
+data_Base.insert(loc=0, column='IdBundesland', value=data_Base['IdLandkreis'].str[:-3].copy())
 data_Base['Meldedatum'] = pd.to_datetime(data_Base['Meldedatum']).dt.date
-datenstand = pd.to_datetime(data_Base['Datenstand'].iloc[0], format='%d.%m.%Y, %H:%M Uhr')
-data_Base['Datenstand'] = datenstand.date()
+data_Base.insert(loc=0, column='Datenstand', value= Datenstand.date())
+# Einfügen Bundesland und Landkreis Namen .....
+#LK_pop_mask = (
+#    (BV['AGS'].isin(LK['IdLandkreis'])) &
+#    (BV['Altersgruppe'].isin(LK['Altersgruppe'])) &
+#    (BV['GueltigAb'] <= Datenstand) &
+#    (BV['GueltigBis'] >= Datenstand))
+#LK_pop = BV[LK_pop_mask]
+#LK_pop.reset_index(inplace=True, drop=True)
+
+ID_pop_mask = data_Base['IdBundesland'].isin(ID['Id'])
+ID_pop = ID[ID_pop_mask]
+ID_pop.reset_index(inplace=True, drop=True)
+data_Base['Bundesland'] = ID_pop['Name']
+
+ID_pop_mask = ID['Id'].isin(data_Base['IdLandkreis'])
+ID_pop = ID[ID_pop_mask]
+ID_pop.reset_index(inplace=True, drop=True)
+data_Base['Landkreis'] = ID_pop['Name']
+
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": complete.")
 
@@ -133,8 +164,8 @@ LK.reset_index(inplace=True, drop=True)
 LK_pop_mask = (
     (BV['AGS'].isin(LK['IdLandkreis'])) &
     (BV['Altersgruppe'].isin(LK['Altersgruppe'])) &
-    (BV['GueltigAb'] <= datenstand) &
-    (BV['GueltigBis'] >= datenstand))
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['populationM'] = LK_pop['männlich']
@@ -220,12 +251,12 @@ key_list_ID0_cases = ['IdStaat']
 # calculate the values
 LK['AnzahlFallAccu'] = np.where(LK['NeuerFall'].isin([1, 0]), LK['AnzahlFall'], 0)
 LK['AnzahlFallNeu'] = np.where(LK['NeuerFall'].isin([1, -1]), LK['AnzahlFall'], 0)
-LK['AnzahlFall7dAccu'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFallAccu'], 0)
-LK['AnzahlFall7dNeu'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFallNeu'], 0)
+LK['AnzahlFall7dAccu'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFallAccu'], 0)
+LK['AnzahlFall7dNeu'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFallNeu'], 0)
 LK['AnzahlTodesfallAccu'] = np.where(LK['NeuerTodesfall'].isin([1, 0, -9]), LK['AnzahlTodesfall'], 0)
 LK['AnzahlTodesfallNeu'] = np.where(LK['NeuerTodesfall'].isin([1, -1]), LK['AnzahlTodesfall'], 0)
-LK['AnzahlTodesfall7dAccu'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlTodesfallAccu'], 0)
-LK['AnzahlTodesfall7dNeu'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlTodesfallNeu'], 0)
+LK['AnzahlTodesfall7dAccu'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlTodesfallAccu'], 0)
+LK['AnzahlTodesfall7dNeu'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlTodesfallNeu'], 0)
 LK['AnzahlGenesenAccu'] = np.where(LK['NeuGenesen'].isin([1, 0]), LK['AnzahlGenesen'], 0)
 LK['AnzahlGenesenNeu'] = np.where(LK['NeuGenesen'].isin([1, -1]), LK['AnzahlGenesen'], 0)
 LK.drop(['NeuGenesen', 'NeuerFall', 'NeuerTodesfall', 'AnzahlFall', 'AnzahlTodesfall', 'AnzahlGenesen'], inplace=True, axis=1)
@@ -259,8 +290,8 @@ LK.drop(['IdStaat', 'IdBundesland'], inplace=True, axis=1)
 LK_pop_mask = (
     (BV['AGS'].isin(LK['IdLandkreis'])) &
     (BV['Altersgruppe'] == "A00+") &
-    (BV['GueltigAb'] <= datenstand) &
-    (BV['GueltigBis'] >= datenstand))
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['population'] = LK_pop['Einwohner']
@@ -273,8 +304,8 @@ BL.reset_index(inplace=True, drop=True)
 BL_pop_mask = (
     (BV['AGS'].isin(BL['IdBundesland'])) &
     (BV['Altersgruppe'] == "A00+") &
-    (BV['GueltigAb'] <= datenstand) &
-    (BV['GueltigBis'] >= datenstand))
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
@@ -352,8 +383,8 @@ key_list_BL_fix = ['IdStaat', 'IdBundesland']
 key_list_ID0_fix = ['IdStaat']
 
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0)
-LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0)
-LK['Datenstand'] = datenstand.date()
+LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0)
+LK['Datenstand'] = Datenstand.date()
 LK.drop([
     'Meldedatum',
     'NeuerFall',
@@ -388,8 +419,8 @@ BL.reset_index(inplace=True, drop=True)
 LK_pop_mask = (
     (BV['AGS'].isin(LK['IdLandkreis'])) &
     (BV['Altersgruppe'] == "A00+") &
-    (BV['GueltigAb'] <= datenstand) &
-    (BV['GueltigBis'] >= datenstand))
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
 LK_pop = BV[LK_pop_mask]
 LK_pop.reset_index(inplace=True, drop=True)
 LK['population'] = LK_pop['Einwohner']
@@ -400,8 +431,8 @@ LK.drop(['population'], inplace=True, axis=1)
 BL_pop_mask = (
     (BV['AGS'].isin(BL['IdBundesland'])) &
     (BV['Altersgruppe'] == "A00+") &
-    (BV['GueltigAb'] <= datenstand) &
-    (BV['GueltigBis'] >= datenstand))
+    (BV['GueltigAb'] <= Datenstand) &
+    (BV['GueltigBis'] >= Datenstand))
 BL_pop = BV[BL_pop_mask]
 BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
@@ -422,8 +453,8 @@ path_csv = os.path.join(
     'dataStore',
     'frozen-incidence',
     'csv')
-LK_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
-BL_csv_path = os.path.join(path_csv, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.csv')
+LK_csv_path = os.path.join(path_csv, 'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
+BL_csv_path = os.path.join(path_csv, 'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_BL.csv')
 with open(LK_csv_path, 'wb') as csvfile:
     LK.to_csv(
         csvfile,
@@ -473,8 +504,8 @@ for file_path_full, report_date in all_files:
 # store compressed json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
-LK_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_LK.json.gz')
-BL_json_path = os.path.join(path, 'frozen-incidence_' + datenstand.date().strftime('%Y-%m-%d') + '_BL.json.gz')
+LK_json_path = os.path.join(path, 'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_LK.json.gz')
+BL_json_path = os.path.join(path, 'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_BL.json.gz')
 LK.to_json(LK_json_path, orient="index", date_format="iso", force_ascii=False, compression='gzip')
 BL.to_json(BL_json_path, orient="index", date_format="iso", force_ascii=False, compression='gzip')
 

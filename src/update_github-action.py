@@ -7,7 +7,7 @@ import pandas as pd
 import json
 
 # %%
-url = "https://media.githubusercontent.com/media/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
+url = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -65,8 +65,8 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 # load covid latest from web
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
-fileName = metaObj['name']
-fileSize = metaObj['size']
+fileName = metaObj['filename']
+fileSize = int(metaObj['size'])
 timeStamp = metaObj['modified']
 Datenstand = dt.datetime.fromtimestamp(timeStamp/1000)
 Datenstand = Datenstand.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -80,7 +80,7 @@ print(
     fileSize,
     "bytes =",
     fileSizeMb,
-    "MegaByte) from RKI server to dataframe ...")
+    "MegaByte) from RKI github to dataframe ...")
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 #testfile = os.path.join(path, 'RKI_COVID19_2022-10-05.csv')
 #data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)

@@ -2,7 +2,7 @@ name: Download and Update
 
 on:
   schedule:
-    - cron: "58 1 * * *"
+    - cron: "15 2 * * *"
 
   workflow_dispatch:
 

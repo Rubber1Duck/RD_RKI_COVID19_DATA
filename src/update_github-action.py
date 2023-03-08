@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import json
 
-# %%
 url = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -19,11 +18,6 @@ BV_csv_path = os.path.join(
     '..',
     'Bevoelkerung',
     'Bevoelkerung.csv')
-ID_csv_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'Id',
-    'Id.csv')
 LK_dtypes = {
     'Datenstand': 'object',
     'IdLandkreis': 'str',
@@ -81,9 +75,6 @@ print(
     "bytes =",
     fileSizeMb,
     "MegaByte) from RKI github to dataframe ...")
-#path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-#testfile = os.path.join(path, 'RKI_COVID19_2022-10-05.csv')
-#data_Base = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase['IdLandkreis'] = dataBase['IdLandkreis'].str.zfill(5)
 dataBase.insert(loc=0, column='IdBundesland', value=dataBase['IdLandkreis'].str[:-3].copy())
@@ -98,7 +89,19 @@ BV_mask = (
     (BV['GueltigAb'] <= Datenstand) &
     (BV['GueltigBis'] >= Datenstand))
 BV_masked = BV[BV_mask]
-ID = pd.merge(dataBase, BV_masked, left_on='IdBundesland', right_on='AGS', how='left')
+BV_masked.drop([
+    'GueltigAb',
+    'GueltigBis',
+    'Altergruppe',
+    'Einwohner',
+    'männlich',
+    'weiblich'], inplace=True, axis=1)
+ID = pd.merge(
+    dataBase,
+    BV_masked,
+    left_on='IdBundesland',
+    right_on='AGS',
+    how='left')
 dataBase["Bundesland"] = ID["Name"].copy()
 BV_mask = (
     (BV['AGS'].isin(dataBase['IdLandkreis'])) &
@@ -106,7 +109,19 @@ BV_mask = (
     (BV['GueltigAb'] <= Datenstand) &
     (BV['GueltigBis'] >= Datenstand))
 BV_masked = BV[BV_mask]
-ID = pd.merge(dataBase, BV_masked, left_on='IdLandkreis', right_on='AGS', how='left')
+BV_masked.drop([
+    'GueltigAb',
+    'GueltigBis',
+    'Altergruppe',
+    'Einwohner',
+    'männlich',
+    'weiblich'], inplace=True, axis=1)
+ID = pd.merge(
+    dataBase,
+    BV_masked,
+    left_on='IdLandkreis',
+    right_on='AGS',
+    how='left')
 dataBase["Landkreis"] = ID["Name"].copy()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": complete.")

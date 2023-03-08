@@ -15,11 +15,10 @@ cd /usr/src/app/src
 DATE=$(date '+%Y-%m-%d')
 
 # URL for meta data on RKI server
-URL_METADATA="https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74?f=json"
+URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
 
-#get last modified date from RKI server
-lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | sed -E 's/.*"modified":([0-9]+)000.*/\1/')
-lastModified=$(date -d "@$lastModified" '+%Y-%m-%d')
+#get last modified date from RKI Git Hub
+lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
 
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModified" ]]; then

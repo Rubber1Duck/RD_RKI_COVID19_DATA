@@ -18,18 +18,6 @@ BV_csv_path = os.path.join(
     '..',
     'Bevoelkerung',
     'Bevoelkerung.csv')
-LK_dtypes = {
-    'Datenstand': 'object',
-    'IdLandkreis': 'str',
-    'Landkreis': 'str',
-    'AnzahlFall_7d': 'Int32',
-    'incidence_7d': 'float64'}
-BL_dtypes = {
-    'Datenstand': 'object',
-    'IdBundesland': 'str',
-    'Bundesland': 'str',
-    'AnzahlFall_7d': 'Int32',
-    'incidence_7d': 'float64'}
 BV_dtypes = {
     'AGS': 'str',
     'Altersgruppe': 'str',

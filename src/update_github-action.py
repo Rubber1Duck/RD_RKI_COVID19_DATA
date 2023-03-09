@@ -88,7 +88,7 @@ BV_mask = (
     (BV['Altersgruppe'] == "A00+") &
     (BV['GueltigAb'] <= Datenstand) &
     (BV['GueltigBis'] >= Datenstand))
-BV_masked = BV[BV_mask]
+BV_masked = BV[BV_mask].copy()
 BV_masked.drop([
     'GueltigAb',
     'GueltigBis',
@@ -108,7 +108,7 @@ BV_mask = (
     (BV['Altersgruppe'] == "A00+") &
     (BV['GueltigAb'] <= Datenstand) &
     (BV['GueltigBis'] >= Datenstand))
-BV_masked = BV[BV_mask]
+BV_masked = BV[BV_mask].copy()
 BV_masked.drop([
     'GueltigAb',
     'GueltigBis',

@@ -67,7 +67,7 @@ Datenstand = Datenstand.replace(hour=0, minute=0, second=0, microsecond=0)
 filedate = dt.datetime.fromtimestamp(metaObj['modified']/1000).date().strftime('%Y-%m-%d')
 fileSizeMb = round(fileSize / 1024 / 1024, 1)
 fileNameRoot = "RKI_COVID19"
-fileName = fileNameRoot + '_' + filedate + 'csv'
+fileName = fileNameRoot + '_' + filedate + '.csv'
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(
     aktuelleZeit,
@@ -91,7 +91,7 @@ BV_mask = (
     (BV['Altersgruppe'] == "A00+") &
     (BV['GueltigAb'] <= Datenstand) &
     (BV['GueltigBis'] >= Datenstand))
-BV_masked = BV[BV_mask]
+BV_masked = BV[BV_mask].copy()
 BV_masked.drop([
     'GueltigAb',
     'GueltigBis',
@@ -111,7 +111,7 @@ BV_mask = (
     (BV['Altersgruppe'] == "A00+") &
     (BV['GueltigAb'] <= Datenstand) &
     (BV['GueltigBis'] >= Datenstand))
-BV_masked = BV[BV_mask]
+BV_masked = BV[BV_mask].copy()
 BV_masked.drop([
     'GueltigAb',
     'GueltigBis',
@@ -149,8 +149,8 @@ if not (istDatei | istDateiXz):
             encoding='utf-8',
             date_format='%Y-%m-%d',
             columns=CV_dtypes.keys())
-        aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-        print(aktuelleZeit, ": complete.")
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ": complete.")
 else:
     if istDatei:
         fileExists = fileName

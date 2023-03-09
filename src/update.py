@@ -95,7 +95,7 @@ BV_masked = BV[BV_mask]
 BV_masked.drop([
     'GueltigAb',
     'GueltigBis',
-    'Altergruppe',
+    'Altersgruppe',
     'Einwohner',
     'männlich',
     'weiblich'], inplace=True, axis=1)
@@ -115,7 +115,7 @@ BV_masked = BV[BV_mask]
 BV_masked.drop([
     'GueltigAb',
     'GueltigBis',
-    'Altergruppe',
+    'Altersgruppe',
     'Einwohner',
     'männlich',
     'weiblich'], inplace=True, axis=1)

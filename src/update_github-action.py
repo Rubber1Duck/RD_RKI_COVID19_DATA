@@ -75,6 +75,13 @@ print(
     "bytes =",
     fileSizeMb,
     "MegaByte) from RKI github to dataframe ...")
+
+# for testing or fixing uncommend the following lines and set the values
+#path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+#testfile = os.path.join(path, 'RKI_COVID19_2023-03-13.csv')
+#dataBase = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+#Datenstand = dt.datetime(year=2023, month=3, day=13, hour=0, minute=0, second=0, microsecond=0)
+
 dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase['IdLandkreis'] = dataBase['IdLandkreis'].str.zfill(5)
 dataBase.insert(loc=0, column='IdBundesland', value=dataBase['IdLandkreis'].str[:-3].copy())
@@ -96,8 +103,9 @@ BV_masked.drop([
     'Einwohner',
     'männlich',
     'weiblich'], inplace=True, axis=1)
+ID = dataBase['IdBundesland'].copy()
 ID = pd.merge(
-    dataBase,
+    ID,
     BV_masked,
     left_on='IdBundesland',
     right_on='AGS',
@@ -116,8 +124,9 @@ BV_masked.drop([
     'Einwohner',
     'männlich',
     'weiblich'], inplace=True, axis=1)
+ID = dataBase['IdLandkreis'].copy()
 ID = pd.merge(
-    dataBase,
+    ID,
     BV_masked,
     left_on='IdLandkreis',
     right_on='AGS',

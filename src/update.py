@@ -87,8 +87,9 @@ BV_masked.drop([
     'Einwohner',
     'männlich',
     'weiblich'], inplace=True, axis=1)
+ID = dataBase['IdBundesland']
 ID = pd.merge(
-    dataBase,
+    ID,
     BV_masked,
     left_on='IdBundesland',
     right_on='AGS',
@@ -107,8 +108,9 @@ BV_masked.drop([
     'Einwohner',
     'männlich',
     'weiblich'], inplace=True, axis=1)
+ID = dataBase['IdLandkreis']
 ID = pd.merge(
-    dataBase,
+    ID,
     BV_masked,
     left_on='IdLandkreis',
     right_on='AGS',

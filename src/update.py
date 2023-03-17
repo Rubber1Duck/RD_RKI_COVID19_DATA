@@ -116,6 +116,7 @@ ID = pd.merge(
     right_on='AGS',
     how='left')
 dataBase["Landkreis"] = ID["Name"].copy()
+dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": complete.")
 

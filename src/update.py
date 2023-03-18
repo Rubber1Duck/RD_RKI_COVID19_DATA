@@ -38,6 +38,17 @@ CV_dtypes = {
     'AnzahlTodesfall':'Int32',
     'AnzahlGenesen': 'Int32',
     'Meldedatum':'object'}
+CV_dtypes_store_dataBase= {
+    'IdLandkreis': 'Int32',
+    'Altersgruppe': 'str',
+    'Geschlecht': 'str',
+    'NeuerFall': 'Int32',
+    'NeuerTodesfall': 'Int32',
+    'NeuGenesen': 'Int32',
+    'AnzahlFall': 'Int32',
+    'AnzahlTodesfall':'Int32',
+    'AnzahlGenesen': 'Int32',
+    'Meldedatum':'object'}
 
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
@@ -139,7 +150,7 @@ if not (istDatei | istDateiXz):
             lineterminator='\n',
             encoding='utf-8',
             date_format='%Y-%m-%d',
-            columns=CV_dtypes.keys())
+            columns=CV_dtypes_store_dataBase.keys())
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
     print(aktuelleZeit, ": complete.")
 else:

@@ -77,7 +77,75 @@ print(
     "bytes =",
     fileSizeMb,
     "MegaByte) from RKI github to dataframe ...")
-dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+dataBase = pd.read_csv(url, usecols=CV_dtypes_store_dataBase.keys(), dtype=CV_dtypes)
+dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": done.")
+
+data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+fileNameXz = fileName + '.xz'
+full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileName)
+full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileNameXz)
+data_path = os.path.normpath(data_path)
+full_path = os.path.normpath(full_path)
+istDatei = os.path.isfile(full_path)
+istDateiXz = os.path.isfile(full_pathXz)
+if not (istDatei | istDateiXz):
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ": writing DataFrame to", fileName, "...")
+    with open(full_path, 'wb') as csvfile:
+        dataBase.to_csv(
+            csvfile,
+            index=False,
+            header=True,
+            lineterminator='\n',
+            encoding='utf-8',
+            date_format='%Y-%m-%d',
+            columns=CV_dtypes_store_dataBase.keys())
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ": done.")
+else:
+    if istDatei:
+        fileExists = fileName
+    else:
+        fileExists = fileNameXz
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ":", fileExists, "already exists.")
+
+# limit RKI_COVID19 Data files to the last 30 days
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": cleanup data files ...")
+iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
+file_list = os.listdir(data_path)
+file_list.sort(reverse=False)
+pattern = 'RKI_COVID19'
+all_files = []
+for file in file_list:
+    file_path_full = os.path.join(data_path, file)
+    if not os.path.isdir(file_path_full):
+        filename = os.path.basename(file)
+        re_filename = re.search(pattern, filename)
+        re_search = re.search(iso_date_re, filename)
+        if re_search and re_filename:
+            report_date = dt.date(
+                int(re_search.group(1)),
+                int(re_search.group(3)),
+                int(re_search.group(4))).strftime('%Y-%m-%d')
+            all_files.append((file_path_full, report_date))
+today = dt.date.today()
+day_range = pd.date_range(end=today, periods=30).tolist()
+day_range_str = []
+for datum in day_range:
+    day_range_str.append(datum.strftime('%Y-%m-%d'))
+for file_path_full, report_date in all_files:
+    if report_date not in day_range_str:
+        os.remove(file_path_full)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": done.")
+
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": add missing columns ...")
+dataBase['IdLandkreis'] = dataBase['IdLandkreis'].astype(str)
 dataBase['IdLandkreis'] = dataBase['IdLandkreis'].str.zfill(5)
 dataBase.insert(loc=0, column='IdBundesland', value=dataBase['IdLandkreis'].str[:-3].copy())
 dataBase['Meldedatum'] = pd.to_datetime(dataBase['Meldedatum']).dt.date
@@ -127,67 +195,8 @@ ID = pd.merge(
     right_on='AGS',
     how='left')
 dataBase["Landkreis"] = ID["Name"].copy()
-dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": complete.")
-
-data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-fileNameXz = fileName + '.xz'
-full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileName)
-full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileNameXz)
-data_path = os.path.normpath(data_path)
-full_path = os.path.normpath(full_path)
-istDatei = os.path.isfile(full_path)
-istDateiXz = os.path.isfile(full_pathXz)
-if not (istDatei | istDateiXz):
-    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    print(aktuelleZeit, ": writing DataFrame to",fileName, "...")
-    with open(full_path, 'wb') as csvfile:
-        dataBase.to_csv(
-            csvfile,
-            index=False,
-            header=True,
-            lineterminator='\n',
-            encoding='utf-8',
-            date_format='%Y-%m-%d',
-            columns=CV_dtypes_store_dataBase.keys())
-    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    print(aktuelleZeit, ": complete.")
-else:
-    if istDatei:
-        fileExists = fileName
-    else:
-        fileExists = fileNameXz
-    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    print(aktuelleZeit, ":", fileExists, "already exists.")
-# limit RKI_COVID19 Data files to the last 30 days
-iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
-file_list = os.listdir(data_path)
-file_list.sort(reverse=False)
-pattern = 'RKI_COVID19'
-all_files = []
-for file in file_list:
-    file_path_full = os.path.join(data_path, file)
-    if not os.path.isdir(file_path_full):
-        filename = os.path.basename(file)
-        re_filename = re.search(pattern, filename)
-        re_search = re.search(iso_date_re, filename)
-        if re_search and re_filename:
-            report_date = dt.date(
-                int(re_search.group(1)),
-                int(re_search.group(3)),
-                int(re_search.group(4))).strftime('%Y-%m-%d')
-            all_files.append((file_path_full, report_date))
-today = dt.date.today()
-day_range = pd.date_range(end=today, periods=30).tolist()
-day_range_str = []
-for datum in day_range:
-    day_range_str.append(datum.strftime('%Y-%m-%d'))
-for file_path_full, report_date in all_files:
-    if report_date not in day_range_str:
-        os.remove(file_path_full)
-
-#Datum = Datenstand.date().strftime('%Y-%m-%d')
+print(aktuelleZeit, ": done.")
 
 # ageGroup Data
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')

@@ -159,13 +159,13 @@ dataBase.insert(loc=4, column="Landkreis", value="")
 BV_mask = ((BV['AGS'].isin(dataBase['IdBundesland'])) & (BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= Datenstand) & (BV['GueltigBis'] >= Datenstand))
 BV_masked = BV[BV_mask].copy()
 BV_masked.drop(['GueltigAb', 'GueltigBis', 'Altersgruppe', 'Einwohner', 'männlich', 'weiblich'], inplace=True, axis=1)
-ID = dataBase['IdBundesland']
+ID = dataBase['IdBundesland'].copy()
 ID = pd.merge(ID, BV_masked, left_on='IdBundesland', right_on='AGS', how='left')
 dataBase["Bundesland"] = ID["Name"].copy()
 BV_mask = ((BV['AGS'].isin(dataBase['IdLandkreis'])) & (BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= Datenstand) & (BV['GueltigBis'] >= Datenstand))
 BV_masked = BV[BV_mask].copy()
 BV_masked.drop(['GueltigAb', 'GueltigBis', 'Altersgruppe', 'Einwohner', 'männlich', 'weiblich'], inplace=True, axis=1)
-ID = dataBase['IdLandkreis']
+ID = dataBase['IdLandkreis'].copy()
 ID = pd.merge(ID, BV_masked, left_on='IdLandkreis', right_on='AGS', how='left')
 dataBase["Landkreis"] = ID["Name"].copy()
 ID = pd.DataFrame()
@@ -184,16 +184,20 @@ ut.write_file(df=dataBase, fn=feather_path, compression='lz4')
 dataBase = pd.DataFrame()
 del dataBase
 gc.collect()
+
 # ageGroup Data
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating age-group data ...")
 LK = ut.read_file(fn=feather_path)
-#kopiere dataBase ohne unbekannte Altergruppen oder unbekannte Geschlechter
+
+#kopiere dataBase ohne unbekannte Altersgruppen oder unbekannte Geschlechter
 LK = LK[LK['Altersgruppe'] != 'unbekannt'].copy()
 LK = LK[LK['Geschlecht'] != 'unbekannt'].copy()
-#korrigiere Kategorien Altergruppe und Geschlecht
+
+#korrigiere Kategorien Altersgruppe und Geschlecht
 LK['Geschlecht'] = LK['Geschlecht'].cat.remove_unused_categories()
 LK['Altersgruppe'] = LK['Altersgruppe'].cat.remove_unused_categories()
+LK.reset_index(inplace=True, drop=True)
 
 # lösche alle nicht benötigten Spalten
 LK.drop(['Bundesland', 'Landkreis', 'Meldedatum', 'Datenstand', 'IdStaat'], inplace=True, axis=1)
@@ -289,7 +293,7 @@ BL_json_path = os.path.join(path, 'states.json')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": complete.")
+print(aktuelleZeit, ": done.")
 
 # accumulated and new cases, deaths, recovered, casesPerWeek, deathsPerWeek
 # add country column
@@ -371,7 +375,7 @@ BL_json_path = os.path.join(path, 'states.json')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": complete.")
+print(aktuelleZeit, ": done.")
 
 # History
 # DistrictCasesHistory, DistrictDeathsHistory, DistrictRecoveredHistory
@@ -406,9 +410,9 @@ agg_key = {
     for c in BL.columns
     if c not in key_list_ID0_hist}
 ID0 = BL.groupby(key_list_ID0_hist, as_index=False, observed=True).agg(agg_key)
-LK.drop(['IdBundesland', 'Bundesland'], inplace=True, axis=1)
-BL.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
-ID0.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
+LK.drop(['IdStaat', 'IdBundesland', 'Bundesland'], inplace=True, axis=1)
+BL.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
+ID0.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
@@ -425,13 +429,14 @@ BL_json_path = os.path.join(path, 'states.json')
 LK.to_json(LK_json_path, orient="records", date_format="iso", force_ascii=False)
 BL.to_json(BL_json_path, orient="records", date_format="iso", force_ascii=False)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": complete.")
+print(aktuelleZeit, ": done.")
 
 # fixed-incidence
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating fixed-incidence data")
 LK = ut.read_file(fn=feather_path)
 os.remove(path=feather_path)
+
 # used keylists
 key_list_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis']
 key_list_BL_fix = ['IdStaat', 'IdBundesland']

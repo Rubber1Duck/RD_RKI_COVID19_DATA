@@ -146,14 +146,13 @@ dataBase.insert(loc=0, column='IdStaat', value= '00')
 #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 dataBase = ut.squeeze_dataframe(dataBase)
 
-aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": done.")
-
 # store dataBase to feather file to save memory
 ut.write_file(df=dataBase, fn=feather_path, compression='lz4')
 dataBase = pd.DataFrame()
 del dataBase
 gc.collect()
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": done.")
 
 # ageGroup Data
 print(aktuelleZeit, ": calculating age-group data ...")
@@ -634,4 +633,5 @@ for file_path_full, report_date in all_files:
         os.remove(file_path_full)
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": complete.\n", aktuelleZeit, "total time:", endTime - startTime)
+print(aktuelleZeit, ": done.")
+print(aktuelleZeit, ": total time:", endTime - startTime)

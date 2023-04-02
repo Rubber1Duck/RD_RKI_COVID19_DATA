@@ -96,7 +96,6 @@ full_path = os.path.normpath(full_path)
 istDatei = os.path.isfile(full_path)
 istDateiXz = os.path.isfile(full_pathXz)
 if not (istDatei | istDateiXz):
-    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
     print(aktuelleZeit, ": writing DataFrame to", fileName, "...")
     with open(full_path, 'wb') as csvfile:
         dataBase.to_csv(
@@ -118,7 +117,6 @@ else:
     print(aktuelleZeit, ":", fileExists, "already exists.")
 
 # limit RKI_COVID19 Data files to the last 30 days
-aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": cleanup data files ...")
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(data_path)
@@ -205,17 +203,15 @@ dataBase.insert(loc=0, column='IdStaat', value= '00')
 #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 dataBase = ut.squeeze_dataframe(dataBase)
 
-aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": done.")
-
 # store dataBase to feather file to save memory
 ut.write_file(df=dataBase, fn=feather_path, compression='lz4')
 dataBase = pd.DataFrame()
 del dataBase
 gc.collect()
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": done.")
 
 # ageGroup Data
-aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": calculating age-group data ...")
 LK = ut.read_file(fn=feather_path)
 
@@ -606,4 +602,5 @@ for file_path_full, report_date in all_files:
         os.remove(file_path_full)
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": done.\n", aktuelleZeit, "Total time:", endTime - startTime)
+print(aktuelleZeit, ": done.")
+print(aktuelleZeit, ":Total time:", endTime - startTime)

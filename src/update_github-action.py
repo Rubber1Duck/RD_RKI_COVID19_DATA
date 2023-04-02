@@ -348,20 +348,20 @@ agg_key = {
     c: 'max' if c in ['IdBundesland', 'Datenstand', 'Landkreis', 'Bundesland'] else 'sum'
     for c in LK.columns
     if c not in key_list_LK_hist}
-LK = LK.groupby(key_list_LK_hist, as_index=False).agg(agg_key)
+LK = LK.groupby(key_list_LK_hist, as_index=False, observed=True).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdLandkreis', 'Datenstand', 'Landkreis', 'Bundesland', ] else 'sum'
     for c in LK.columns
     if c not in key_list_BL_hist}
-BL = LK.groupby(key_list_BL_hist, as_index=False).agg(agg_key)
+BL = LK.groupby(key_list_BL_hist, as_index=False, observed=True).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdBundesland', 'IdLandkreis', 'Datenstand', 'Bundesland', 'Landkreis'] else 'sum'
     for c in BL.columns
     if c not in key_list_ID0_hist}
-ID0 = BL.groupby(key_list_ID0_hist, as_index=False).agg(agg_key)
-LK.drop(['IdStaat', 'IdBundesland', 'Bundesland'], inplace=True, axis=1)
-BL.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
-ID0.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
+ID0 = BL.groupby(key_list_ID0_hist, as_index=False, observed=True).agg(agg_key)
+LK.drop(['IdBundesland', 'Bundesland'], inplace=True, axis=1)
+BL.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
+ID0.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
@@ -403,7 +403,7 @@ LK.drop([
     'Bundesland',
     'NeuGenesen',
     'AnzahlGenesen',
-    'Altergruppe',
+    'Altersgruppe',
     'Geschlecht'], inplace=True, axis=1)
 agg_key = {
     c: 'max' if c in ['Datenstand'] else 'sum'

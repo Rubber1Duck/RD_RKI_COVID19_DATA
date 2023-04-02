@@ -410,9 +410,9 @@ agg_key = {
     for c in BL.columns
     if c not in key_list_ID0_hist}
 ID0 = BL.groupby(key_list_ID0_hist, as_index=False, observed=True).agg(agg_key)
-LK.drop(['IdStaat', 'IdBundesland', 'Bundesland'], inplace=True, axis=1)
-BL.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
-ID0.drop(['IdStaat', 'IdLandkreis', 'Landkreis'], inplace=True, axis=1)
+LK.drop(['IdBundesland', 'Bundesland'], inplace=True, axis=1)
+BL.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
+ID0.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])

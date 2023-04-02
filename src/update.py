@@ -603,4 +603,4 @@ for file_path_full, report_date in all_files:
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
-print(aktuelleZeit, ":Total time:", endTime - startTime)
+print(aktuelleZeit, ": total time:", endTime - startTime)

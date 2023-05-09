@@ -9,7 +9,35 @@ import utils as ut
 import gc
 
 startTime = dt.datetime.now()
-url = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
+kum_file_fullpath_LK_json = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'LK.json'
+)
+kum_file_fullpath_LK_csv = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'LK.csv'
+)
+kum_file_fullpath_BL_json = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'BL.json'
+)
+kum_file_fullpath_BL_csv = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'BL.csv'
+)
+url = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Archiv/2023-05-09_Deutschland_SarsCov2_Infektionen.csv.xz"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -575,6 +603,55 @@ for datum in day_range:
 for file_path_full, report_date in all_files:
     if report_date not in day_range_str:
         os.remove(file_path_full)
+
+# open existing kum files
+LK_kum = pd.read_csv(kum_file_fullpath_LK_csv, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
+LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand'])
+BL_kum = pd.read_csv(kum_file_fullpath_BL_csv, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
+BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand'])
+key_list_LK = ['Datenstand', 'IdLandkreis']
+key_list_BL = ['Datenstand', 'IdBundesland']
+LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand]
+BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand]
+
+LK_kum_new = pd.concat([LK_kum, LK])
+LK_kum_new.drop_duplicates(subset=key_list_LK, keep='last', inplace=True)
+LK_kum_new.sort_values(by=key_list_LK, inplace=True)
+BL_kum_new = pd.concat([BL_kum, BL])
+BL_kum_new.drop_duplicates(subset=key_list_BL, keep='last', inplace=True)
+BL_kum_new.sort_values(by=key_list_BL, inplace=True)
+with open(kum_file_fullpath_LK_csv, 'wb') as csvfile:
+    LK_kum_new.to_csv(
+        csvfile,
+        index=False,
+        header=True,
+        lineterminator='\n',
+        encoding='utf-8',
+        date_format='%Y-%m-%d',
+        columns=LK_dtypes.keys())
+with open(kum_file_fullpath_BL_csv, 'wb') as csvfile:
+    BL_kum_new.to_csv(
+        csvfile,
+        index=False,
+        header=True,
+        lineterminator='\n',
+        encoding='utf-8',
+        date_format='%Y-%m-%d',
+        columns=BL_dtypes.keys())
+#LK_kum_new.set_index(['IdLandkreis'], inplace=True, drop=True)
+#BL_kum_new.set_index(['IdBundesland'], inplace=True, drop=True)
+#LK_kum_new.to_json(
+#    path_or_buf=kum_file_fullpath_LK_json,
+#    orient="index",
+#    date_format="iso",
+#    force_ascii=False,
+#    compression='gzip')
+#BL_kum_new.to_json(
+#    path_or_buf=kum_file_fullpath_BL_json,
+#    orient="index",
+#    date_format="iso",
+#    force_ascii=False,
+#    compression='gzip')
 
 # store compressed json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)

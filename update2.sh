@@ -38,12 +38,22 @@ lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModified" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Updated data for $DATE does not yet exist (modified date: $lastModified)"
-  # set new crontab to run update1.sh every 15 minutes
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : set crontab to crontab1.file"
-  crontab /usr/src/app/crontab1.file
-  exit 1
+  echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
+  #try RKI Git Hub Archiv
+  URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
+  lastModifiedArchiv=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+  if [[ "$DATE" != "$lastModifiedArchiv" ]]; then
+    # set new crontab to run update1.sh every 15 minutes
+    DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+    echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArvhive)"
+    echo "$DATE2 : set crontab to crontab1.file"
+    crontab /usr/src/app/crontab1.file
+    exit 1
+  else
+    SOURCEDATA="archive"  
+  fi
+else
+  SOURCEDATA="actual"
 fi
 
 # do the action
@@ -62,19 +72,24 @@ python calc_population.py
 
 # Print message, download and modify meta data from RKI server
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : executing python download_meta.py"
-python download_meta.py
+if [[ "$SOURCEDATA" == "actual" ]]; then
+  echo "$DATE2 : executing python download_meta.py"
+  python download_meta.py
+elif [[ "$SOURCEDATA" == "archive"]]; then
+  echo "$DATE2 : executing python download_meta_archive.py"
+  python download_meta_arcive.py
+fi
 
 # Print message, crate new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python update.py"
 python update.py
 
+/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
+
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : Update finished"
-
-/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
 
 # start compress RKI_COVID19_$DATE.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

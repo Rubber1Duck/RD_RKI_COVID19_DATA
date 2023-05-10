@@ -23,7 +23,6 @@ kum_file_fullpath_BL_csv = os.path.join(
     'frozen-incidence',
     'BL.csv'
 )
-url = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -92,13 +91,14 @@ with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
 fileNameOrig = metaObj['filename']
 fileSize = int(metaObj['size'])
+url = metaObj['url']
 timeStamp = metaObj['modified']
 Datenstand = dt.datetime.fromtimestamp(timeStamp/1000)
 Datenstand = Datenstand.replace(hour=0, minute=0, second=0, microsecond=0)
 filedate = dt.datetime.fromtimestamp(metaObj['modified']/1000).date().strftime('%Y-%m-%d')
 fileSizeMb = round(fileSize / 1024 / 1024, 1)
-fileNameRoot = "RKI_COVID19"
-fileName = fileNameRoot + '_' + filedate + '.csv'
+fileNameRoot = "RKI_COVID19_"
+fileName = fileNameRoot + filedate + '.csv'
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(
     aktuelleZeit,
@@ -110,9 +110,6 @@ print(
     fileSizeMb,
     "MegaByte) from RKI github to dataframe ..."
 )
-
-
-
 
 dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)

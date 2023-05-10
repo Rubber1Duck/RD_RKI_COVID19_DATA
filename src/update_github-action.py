@@ -23,7 +23,6 @@ kum_file_fullpath_BL_csv = os.path.join(
     'frozen-incidence',
     'BL.csv'
 )
-url = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -91,6 +90,7 @@ BV = ut.squeeze_dataframe(BV)
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
 fileName = metaObj['filename']
+url = metaObj['url']
 fileSize = int(metaObj['size'])
 timeStamp = metaObj['modified']
 Datenstand = dt.datetime.fromtimestamp(timeStamp/1000)

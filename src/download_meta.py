@@ -5,7 +5,8 @@ import datetime as dt
 # %% each day
 try:
     meta_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'meta')
-    filename_meta = "meta_new.json" 
+    filename_meta = "meta_new.json"
+    today = dt.date.today().strftime('%Y-%m-%d')
     url_meta = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Metadaten/zenodo.json"
     url_data = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/raw/main/Aktuell_Deutschland_SarsCov2_Infektionen.csv"
     filename = "Aktuell_Deutschland_SarsCov2_Infektionen.csv"
@@ -25,6 +26,7 @@ try:
             del metaObj[property]
     metaObj["size"] = size
     metaObj["filename"] = filename
+    metaObj["url"] = url_data
     pubDate = metaObj["publication_date"]
     pubDateTz = dt.datetime.fromisoformat(pubDate)
     pubDateTs = dt.datetime.timestamp(pubDateTz)

@@ -38,15 +38,24 @@ lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModified" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Updated data for $DATE does not yet exist (modified date: $lastModified)"
-  exit 1
+  echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
+  #try RKI Git Hub Archiv
+  URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
+  lastModifiedArchiv=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+  if [[ "$DATE" != "$lastModifiedArchiv" ]]; then
+    DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+    echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
+    exit 1
+  else
+    SOURCEDATA="archive"
+  fi
+else
+  SOURCEDATA="actual"
 fi
 
 # do the action
 
-# cron starts this script every 15 minutes,
-# if a update task is running more then 15 minutes, cron starts a new updatejob!
-# to prevent this touch the file /tmp/update.pid. This file is checked at the beginning of this script
+# touch /tmp/update.pid to signal other update scripts that the update is still running
 touch /tmp/update.pid
 
 # print starting message
@@ -60,10 +69,15 @@ python calc_population.py
 
 # Print message, download and modify meta data from RKI server
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : executing python download_meta.py"
-python download_meta.py
+if [[ "$SOURCEDATA" == "actual" ]]; then
+  echo "$DATE2 : executing python download_meta.py"
+  python download_meta.py
+elif [[ "$SOURCEDATA" == "archive"]]; then
+  echo "$DATE2 : executing python download_meta_archive.py"
+  python download_meta_arcive.py
+fi
 
-# Print message, crate new json files for date
+# Print message, create new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python update.py"
 python update.py

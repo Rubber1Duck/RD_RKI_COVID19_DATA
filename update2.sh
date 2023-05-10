@@ -14,6 +14,21 @@ cd /usr/src/app/src
 #get todays date
 DATE=$(date '+%Y-%m-%d')
 
+#get last modified date from local meta file
+lastModifiedLocal=$(cat ../dataStore/meta/meta.json 2>&1 | sed -E 's/.*"modified": ([0-9]+)000.*/\1/')
+lastModifiedLocal=$(date -d "@$lastModifiedLocal" '+%Y-%m-%d')
+
+# if todays date equal to local last modified date, then the update is allready done, print message and exit
+if [[ "$DATE" == "$lastModifiedLocal" ]]; then
+  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+  echo "$DATE2 : data is already updated for $DATE (local modified date: $lastModifiedLocal)"
+  # set new crontab to run update1.sh every 15 minutes
+  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+  echo "$DATE2 : set crontab to crontab1.file"
+  crontab /usr/src/app/crontab1.file
+  exit 1
+fi
+
 # URL for meta data on RKI server
 URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
 
@@ -24,21 +39,6 @@ lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1
 if [[ "$DATE" != "$lastModified" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : Updated data for $DATE does not yet exist (modified date: $lastModified)"
-  # set new crontab to run update1.sh every 15 minutes
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : set crontab to crontab1.file"
-  crontab /usr/src/app/crontab1.file
-  exit 1
-fi
-
-#get last modified date from local meta file
-lastModifiedLocal=$(cat ../dataStore/meta/meta.json 2>&1 | sed -E 's/.*"modified": ([0-9]+)000.*/\1/')
-lastModifiedLocal=$(date -d "@$lastModifiedLocal" '+%Y-%m-%d')
-
-# if todays date equal to local last modified date, then the update is allready done, print message and exit
-if [[ "$DATE" == "$lastModifiedLocal" ]]; then
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : data is already updated for $DATE (local modified date: $lastModifiedLocal)"
   # set new crontab to run update1.sh every 15 minutes
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : set crontab to crontab1.file"

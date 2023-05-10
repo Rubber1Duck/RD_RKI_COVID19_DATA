@@ -14,19 +14,6 @@ cd /usr/src/app/src
 #get todays date
 DATE=$(date '+%Y-%m-%d')
 
-# URL for meta data on RKI server
-URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
-
-#get last modified date from RKI Git Hub
-lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
-
-# if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
-if [[ "$DATE" != "$lastModified" ]]; then
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Updated data for $DATE does not yet exist (modified date: $lastModified)"
-  exit 1
-fi
-
 #get last modified date from local meta file
 lastModifiedLocal=$(cat ../dataStore/meta/meta.json 2>&1 | sed -E 's/.*"modified": ([0-9]+)000.*/\1/')
 lastModifiedLocal=$(date -d "@$lastModifiedLocal" '+%Y-%m-%d')
@@ -39,6 +26,19 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   crontab /usr/src/app/crontab2.file
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : crontab set to crontab2.file"
+  exit 1
+fi
+
+# URL for meta data on RKI server
+URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
+
+#get last modified date from RKI Git Hub
+lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+
+# if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
+if [[ "$DATE" != "$lastModified" ]]; then
+  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+  echo "$DATE2 : Updated data for $DATE does not yet exist (modified date: $lastModified)"
   exit 1
 fi
 

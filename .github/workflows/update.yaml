@@ -15,7 +15,7 @@ jobs:
         working-directory: ./.github/workflows
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@master
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-activate-base: false

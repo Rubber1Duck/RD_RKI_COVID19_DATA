@@ -14,7 +14,7 @@ lastModifiedLocal=$(date -d "@$lastModifiedLocal" '+%Y-%m-%d')
 if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : data is already updated for $DATE (local modified date: $lastModifiedLocal)"
-  exit 1
+  exit 0
 fi
 
 # URL for meta data on RKI server
@@ -33,7 +33,7 @@ if [[ "$DATE" != "$lastModified" ]]; then
   if [[ "$DATE" != "$lastModifiedArchive" ]]; then
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
-    exit 1
+    exit 0
   else
     SOURCEDATA="archive"
   fi

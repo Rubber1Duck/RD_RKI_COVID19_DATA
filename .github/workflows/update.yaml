@@ -39,6 +39,27 @@ jobs:
           git add ':/*.gz'
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
+      - name: set up env var
+        if: steps.update.outcome == 'success'
+        run: echo "TAG=v1.5.$(date '+%Y%m%d')" >> $GITHUB_ENV
+      - name: Create Tag
+        if: steps.update.outcome == 'success'
+        uses: rickstaa/action-create-tag@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.TAG }}
+          message: "${{ env.TAG }} release"
+      - name: Create Release
+        if: steps.update.outcome == 'success'
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: Release ${{ env.TAG }}
+          draft: false
+          prerelease: false
       - name: Push changes
         if: steps.update.outcome == 'success'
         uses: ad-m/github-push-action@master

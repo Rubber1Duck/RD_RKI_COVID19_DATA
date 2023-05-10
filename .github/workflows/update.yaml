@@ -1,8 +1,9 @@
 name: Update and create release
 
 on:
+  schedule:
+    - cron: "5,35 * * * *"
   workflow_dispatch:
-
 jobs:
   updateData:
     runs-on: ubuntu-latest

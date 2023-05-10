@@ -1,15 +1,7 @@
 #!/bin/bash
 
-# first check if this script is already running
-if [ -f /tmp/update.pid ]; then
-  exit 1
-fi
-
-#set pythons virtual env
-source $VIRTUAL_ENV/bin/activate
-
 # set working directory to ./src
-cd /usr/src/app/src
+cd ./src
 
 #get todays date
 DATE=$(date '+%Y-%m-%d')
@@ -22,10 +14,6 @@ lastModifiedLocal=$(date -d "@$lastModifiedLocal" '+%Y-%m-%d')
 if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : data is already updated for $DATE (local modified date: $lastModifiedLocal)"
-  # set new crontab to run update2.sh at 1 o'clock (GMT)
-  crontab /usr/src/app/crontab2.file
-  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : crontab set to crontab2.file"
   exit 1
 fi
 
@@ -41,8 +29,8 @@ if [[ "$DATE" != "$lastModified" ]]; then
   echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
   #try RKI Git Hub Archiv
   URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
-  lastModifiedArchiv=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
-  if [[ "$DATE" != "$lastModifiedArchiv" ]]; then
+  lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+  if [[ "$DATE" != "$lastModifiedArchive" ]]; then
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
     exit 1
@@ -52,11 +40,6 @@ if [[ "$DATE" != "$lastModified" ]]; then
 else
   SOURCEDATA="actual"
 fi
-
-# do the action
-
-# touch /tmp/update.pid to signal other update scripts that the update is still running
-touch /tmp/update.pid
 
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
@@ -79,27 +62,14 @@ fi
 
 # Print message, create new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : executing python update.py"
-python update.py
+echo "$DATE2 : executing python update_github-action.py"
+python update_github-action.py
 
-/bin/mv -f /usr/src/app/dataStore/meta/meta_new.json /usr/src/app/dataStore/meta/meta.json
+# Print message, overwriting meta.json
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+echo "$DATE2 : overwriting meta.json with meta_new.json"
+/bin/mv -f ./dataStore/meta/meta_new.json ./dataStore/meta/meta.json
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : Update finished"
-
-# start compress RKI_COVID19_$DATE.csv
-DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv"
-cd /usr/src/app/data
-/usr/bin/xz -zT0  "/usr/src/app/data/RKI_COVID19_$DATE.csv"
-DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv"
-
-# update is done, delete /tmp/update.pid
-rm /tmp/update.pid
-
-# set new crontab to run update2.sh at 1 o'clock (GMT)
-crontab /usr/src/app/crontab2.file
-DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : crontab set to crontab2.file"

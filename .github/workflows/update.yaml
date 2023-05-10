@@ -1,8 +1,8 @@
-name: Download and Update
+name: Update and create release
 
 on:
   schedule:
-    - cron: "15 2 * * *"
+    - cron: "*/30 * * * *"
 
   workflow_dispatch:
 
@@ -15,7 +15,7 @@ jobs:
         working-directory: ./.github/workflows
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-activate-base: false
@@ -27,11 +27,11 @@ jobs:
         run: pip install -r ./requirements.txt
         working-directory: ./
       - name: update
-        run: ./update_ghAction.sh
-        continue-on-error: false
+        run: ./update_ghAction2.sh
         working-directory: ./
         timeout-minutes: 70
       - name: Commit files
+        if: ${{ success() }}
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -41,7 +41,29 @@ jobs:
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
       - name: Push changes
+        if: ${{ success() }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
+      - name: set up env var
+        if: ${{ success() }}
+        run: echo "TAG=v1.5.$(date '+%Y%m%d')" >> $GITHUB_ENV
+      - name: Create Tag
+        if: ${{ success() }}
+        uses: rickstaa/action-create-tag@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.TAG }}
+          message: "${{ env.TAG }} release"
+      - name: Create Release
+        if: ${{ success() }}
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: Release ${{ env.TAG }}
+          draft: false
+          prerelease: false

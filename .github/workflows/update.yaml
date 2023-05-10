@@ -6,7 +6,6 @@ on:
 jobs:
   updateData:
     runs-on: ubuntu-latest
-    continue-on-error: true
     defaults:
       run:
         shell: bash -l {0}
@@ -28,6 +27,7 @@ jobs:
         run: ./update_ghAction2.sh
         working-directory: ./
         timeout-minutes: 70
+        continue-on-error: true
       - name: Commit files
         if: ${{ success() }}
         run: |

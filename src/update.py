@@ -16,12 +16,26 @@ kum_file_fullpath_LK_csv = os.path.join(
     'frozen-incidence',
     'LK.csv'
 )
+kum_file_fullpath_LK_csv_gzip = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'LK.csv.gz'
+)
 kum_file_fullpath_BL_csv = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
     'dataStore',
     'frozen-incidence',
     'BL.csv'
+)
+kum_file_fullpath_BL_csv_gzip = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'BL.csv.gz'
 )
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -624,6 +638,48 @@ BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
 BL.drop(['population'], inplace=True, axis=1)
 
+# open existing kum files
+try:
+    LK_kum = pd.read_csv(kum_file_fullpath_LK_csv, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
+except:
+    LK_kum = pd.read_csv(kum_file_fullpath_LK_csv_gzip, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
+LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand'])
+try:
+    BL_kum = pd.read_csv(kum_file_fullpath_BL_csv, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
+except:
+    BL_kum = pd.read_csv(kum_file_fullpath_BL_csv_gzip, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
+BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand'])
+key_list_LK = ['Datenstand', 'IdLandkreis']
+key_list_BL = ['Datenstand', 'IdBundesland']
+LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand]
+BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand]
+LK['Datenstand'] = pd.to_datetime(LK['Datenstand'])
+BL['Datenstand'] = pd.to_datetime(BL['Datenstand'])
+LK_kum_new = pd.concat([LK_kum, LK])
+LK_kum_new.sort_values(by=key_list_LK, inplace=True)
+BL_kum_new = pd.concat([BL_kum, BL])
+BL_kum_new.sort_values(by=key_list_BL, inplace=True)
+with open(kum_file_fullpath_LK_csv, 'wb') as csvfile:
+    LK_kum_new.to_csv(
+        csvfile,
+        index=False,
+        header=True,
+        lineterminator='\n',
+        encoding='utf-8',
+        date_format='%Y-%m-%d',
+        columns=LK_dtypes.keys()
+    )
+with open(kum_file_fullpath_BL_csv, 'wb') as csvfile:
+    BL_kum_new.to_csv(
+        csvfile,
+        index=False,
+        header=True,
+        lineterminator='\n',
+        encoding='utf-8',
+        date_format='%Y-%m-%d',
+        columns=BL_dtypes.keys()
+    )
+
 # store json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
@@ -676,44 +732,6 @@ for datum in day_range:
 for file_path_full, report_date in all_files:
     if report_date not in day_range_str:
         os.remove(file_path_full)
-
-# open existing kum files
-LK_kum = pd.read_csv(kum_file_fullpath_LK_csv, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
-LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand'])
-BL_kum = pd.read_csv(kum_file_fullpath_BL_csv, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
-BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand'])
-key_list_LK = ['Datenstand', 'IdLandkreis']
-key_list_BL = ['Datenstand', 'IdBundesland']
-LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand]
-BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand]
-LK['Datenstand'] = pd.to_datetime(LK['Datenstand'])
-BL['Datenstand'] = pd.to_datetime(BL['Datenstand'])
-LK_kum_new = pd.concat([LK_kum, LK])
-LK_kum_new.drop_duplicates(subset=key_list_LK, keep='last', inplace=True)
-LK_kum_new.sort_values(by=key_list_LK, inplace=True)
-BL_kum_new = pd.concat([BL_kum, BL])
-BL_kum_new.drop_duplicates(subset=key_list_BL, keep='last', inplace=True)
-BL_kum_new.sort_values(by=key_list_BL, inplace=True)
-with open(kum_file_fullpath_LK_csv, 'wb') as csvfile:
-    LK_kum_new.to_csv(
-        csvfile,
-        index=False,
-        header=True,
-        lineterminator='\n',
-        encoding='utf-8',
-        date_format='%Y-%m-%d',
-        columns=LK_dtypes.keys()
-    )
-with open(kum_file_fullpath_BL_csv, 'wb') as csvfile:
-    BL_kum_new.to_csv(
-        csvfile,
-        index=False,
-        header=True,
-        lineterminator='\n',
-        encoding='utf-8',
-        date_format='%Y-%m-%d',
-        columns=BL_dtypes.keys()
-    )
 
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')

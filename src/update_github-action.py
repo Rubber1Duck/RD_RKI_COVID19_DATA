@@ -9,19 +9,19 @@ import utils as ut
 import gc
 
 startTime = dt.datetime.now()
-kum_file_fullpath_LK_csv = os.path.join(
+kum_file_fullpath_LK_csv_gzip = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
     'dataStore',
     'frozen-incidence',
-    'LK.csv'
+    'LK.csv.gz'
 )
-kum_file_fullpath_BL_csv = os.path.join(
+kum_file_fullpath_BL_csv_gzip = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
     'dataStore',
     'frozen-incidence',
-    'BL.csv'
+    'BL.csv.gz'
 )
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -638,9 +638,9 @@ for file_path_full, report_date in all_files:
         os.remove(file_path_full)
 
 # open existing kum files
-LK_kum = pd.read_csv(kum_file_fullpath_LK_csv, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
+LK_kum = pd.read_csv(kum_file_fullpath_LK_csv_gzip, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
 LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand'])
-BL_kum = pd.read_csv(kum_file_fullpath_BL_csv, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
+BL_kum = pd.read_csv(kum_file_fullpath_BL_csv_gzip, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
 BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand'])
 key_list_LK = ['Datenstand', 'IdLandkreis']
 key_list_BL = ['Datenstand', 'IdBundesland']
@@ -649,12 +649,10 @@ BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand]
 LK['Datenstand'] = pd.to_datetime(LK['Datenstand'])
 BL['Datenstand'] = pd.to_datetime(BL['Datenstand'])
 LK_kum_new = pd.concat([LK_kum, LK])
-LK_kum_new.drop_duplicates(subset=key_list_LK, keep='last', inplace=True)
 LK_kum_new.sort_values(by=key_list_LK, inplace=True)
 BL_kum_new = pd.concat([BL_kum, BL])
-BL_kum_new.drop_duplicates(subset=key_list_BL, keep='last', inplace=True)
 BL_kum_new.sort_values(by=key_list_BL, inplace=True)
-with open(kum_file_fullpath_LK_csv, 'wb') as csvfile:
+with open(kum_file_fullpath_LK_csv_gzip, 'wb') as csvfile:
     LK_kum_new.to_csv(
         csvfile,
         index=False,
@@ -662,9 +660,10 @@ with open(kum_file_fullpath_LK_csv, 'wb') as csvfile:
         lineterminator='\n',
         encoding='utf-8',
         date_format='%Y-%m-%d',
-        columns=LK_dtypes.keys()
+        columns=LK_dtypes.keys(),
+        compression='gzip'
     )
-with open(kum_file_fullpath_BL_csv, 'wb') as csvfile:
+with open(kum_file_fullpath_BL_csv_gzip, 'wb') as csvfile:
     BL_kum_new.to_csv(
         csvfile,
         index=False,
@@ -672,7 +671,8 @@ with open(kum_file_fullpath_BL_csv, 'wb') as csvfile:
         lineterminator='\n',
         encoding='utf-8',
         date_format='%Y-%m-%d',
-        columns=BL_dtypes.keys()
+        columns=BL_dtypes.keys(),
+        compression='gzip'
     )
 
 # store compressed json files

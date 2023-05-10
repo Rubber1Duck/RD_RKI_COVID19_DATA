@@ -6,11 +6,11 @@ on:
 jobs:
   updateData:
     runs-on: ubuntu-latest
+    continue-on-error: true
     defaults:
       run:
         shell: bash -l {0}
         working-directory: ./.github/workflows
-
     steps:
       - uses: actions/checkout@master
       - uses: conda-incubator/setup-miniconda@v2
@@ -24,12 +24,12 @@ jobs:
         run: pip install -r ./requirements.txt
         working-directory: ./
       - name: update
+        id: update
         run: ./update_ghAction2.sh
         working-directory: ./
         timeout-minutes: 70
-        continue-on-error: true
       - name: Commit files
-        if: ${{ success() }}
+        if: steps.update.outcome == 'success'
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -39,7 +39,7 @@ jobs:
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
       - name: Push changes
-        if: ${{ success() }}
+        if: steps.update.outcome == 'success'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

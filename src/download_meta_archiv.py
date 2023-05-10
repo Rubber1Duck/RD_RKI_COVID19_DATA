@@ -7,8 +7,8 @@ try:
     meta_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'meta')
     filename_meta = "meta_new.json" 
     url_meta = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
-    url_data = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Archiv/2023-05-09_Deutschland_SarsCov2_Infektionen.csv.xz"
-    filename = "2023-05-09_Deutschland_SarsCov2_Infektionen.csv.xz"
+    url_data = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Archiv/2023-05-10_Deutschland_SarsCov2_Infektionen.csv.xz"
+    filename = "2023-05-10_Deutschland_SarsCov2_Infektionen.csv.xz"
     resp = requests.head(url_data, allow_redirects=True)
     size = resp.headers['content-length']
     

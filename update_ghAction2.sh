@@ -43,7 +43,11 @@ fi
 
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : Start update"
+if [[ "$SOURCEDATA" == "actual" ]]; then
+  echo "$DATE2 : Start update with actual data"
+elif [[ "$SOURCEDATA" == "archive" ]]; then
+  echo "$DATE2 : Start update with archive data"
+fi
 
 #Print message, check/update Bevoelkerung.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
@@ -55,7 +59,7 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 if [[ "$SOURCEDATA" == "actual" ]]; then
   echo "$DATE2 : executing python download_meta.py"
   python download_meta.py
-elif [[ "$SOURCEDATA" == "archive"]]; then
+elif [[ "$SOURCEDATA" == "archive" ]]; then
   echo "$DATE2 : executing python download_meta_archive.py"
   python download_meta_archive.py
 fi

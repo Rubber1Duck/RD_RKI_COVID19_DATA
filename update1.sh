@@ -41,8 +41,8 @@ if [[ "$DATE" != "$lastModified" ]]; then
   echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
   #try RKI Git Hub Archiv
   URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
-  lastModifiedArchiv=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
-  if [[ "$DATE" != "$lastModifiedArchiv" ]]; then
+  lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+  if [[ "$DATE" != "$lastModifiedArchive" ]]; then
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
     exit 1
@@ -60,7 +60,11 @@ touch /tmp/update.pid
 
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : Start update"
+if [[ "$SOURCEDATA" == "actual" ]]; then
+  echo "$DATE2 : Start update with actual data"
+elif [[ "$SOURCEDATA" == "archive" ]]; then
+  echo "$DATE2 : Start update with archive data"
+fi
 
 #Print message, check/update Bevoelkerung.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
@@ -72,7 +76,7 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 if [[ "$SOURCEDATA" == "actual" ]]; then
   echo "$DATE2 : executing python download_meta.py"
   python download_meta.py
-elif [[ "$SOURCEDATA" == "archive"]]; then
+elif [[ "$SOURCEDATA" == "archive" ]]; then
   echo "$DATE2 : executing python download_meta_archive.py"
   python download_meta_archive.py
 fi

@@ -70,7 +70,7 @@ python update_github-action.py
 # Print message, overwriting meta.json
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : overwriting meta.json with meta_new.json"
-/bin/mv -f ./dataStore/meta/meta_new.json ./dataStore/meta/meta.json
+/bin/mv -f ../dataStore/meta/meta_new.json ./dataStore/meta/meta.json
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

@@ -17,28 +17,26 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
   exit 1
 fi
 
-# URL for meta data on RKI server
-URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
-
-#get last modified date from RKI Git Hub
-lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+#try RKI Git Hub Archiv
+URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
+lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
 
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
-if [[ "$DATE" != "$lastModified" ]]; then
+if [[ "$DATE" != "$lastModifiedArchive" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
-  #try RKI Git Hub Archiv
-  URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
-  lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
-  if [[ "$DATE" != "$lastModifiedArchive" ]]; then
+  echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
+  # URL for meta data on RKI server
+  URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
+  lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+  if [[ "$DATE" != "$lastModified" ]]; then
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-    echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
+    echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
     exit 1
   else
-    SOURCEDATA="archive"
+    SOURCEDATA="actual"
   fi
 else
-  SOURCEDATA="actual"
+  SOURCEDATA="archive"
 fi
 
 # print starting message

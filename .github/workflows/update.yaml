@@ -25,7 +25,7 @@ jobs:
         working-directory: ./
       - name: update
         id: update
-        run: ./update_ghAction2.sh
+        run: ./update_ghAction.sh
         continue-on-error: true
         working-directory: ./
         timeout-minutes: 70
@@ -37,6 +37,7 @@ jobs:
           git add ':/*.csv'
           git add ':/*.json'
           git add ':/*.gz'
+          git add ':/*.feather'
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
       - name: set up env var

@@ -1,6 +1,5 @@
-import pandas as pd
 import os
-
+import pandas as pd
 from pandas.api.types import CategoricalDtype
 
 def squeeze_dataframe(df):
@@ -18,7 +17,6 @@ def squeeze_dataframe(df):
             df[col] = df[col].astype(CategoricalDtype(ordered=True))
 
     return df
-
 
 def panda_mem_usage(df, detail='full'):
 
@@ -50,14 +48,22 @@ def panda_mem_usage(df, detail='full'):
     elif detail == 'return_short':
         return len(df), total
 
-
-def write_file(df, fn, compression=''):
+def write_file(df, fn, compression='', sheet_name='data'):
 
     fn_ext = os.path.splitext(fn)[1]
 
-    if fn_ext == '.feather':
+    if fn_ext == '.csv':
+        df.to_csv(fn, index=False)
+
+    elif fn_ext == '.feather':
         compression = 'zstd' if compression == '' else compression
         df.to_feather(fn, compression=compression)
+
+    elif fn_ext == '.xlsx':
+        writer = pd.ExcelWriter(fn, engine='xlsxwriter',)
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+        #add more sheets by repeating df.to_excel() and change sheet_name
+        writer.save()
 
     else:
         print('oopsy in write_file()! File extension unknown:', fn_ext)
@@ -66,12 +72,18 @@ def write_file(df, fn, compression=''):
     return
 
 
-def read_file(fn):
+def read_file(fn, sheet_name='data'):
 
     fn_ext = os.path.splitext(fn)[1]
 
-    if fn_ext == '.feather':
+    if fn_ext == '.csv':
+        df = pd.read_csv(fn, keep_default_na=False)
+
+    elif fn_ext == '.feather':
         df = pd.read_feather(fn)
+
+    elif fn_ext == '.xlsx':
+        df = pd.read_excel(fn, sheet_name=sheet_name, keep_default_na=False)
 
     else:
         print('oopsy in read_file()! File extension unknown:', fn_ext)

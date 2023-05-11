@@ -565,7 +565,6 @@ print(aktuelleZeit, ": done.")
 # fixed-incidence
 print(aktuelleZeit, ": calculating fixed-incidence data")
 LK = ut.read_file(fn=feather_path)
-os.remove(path=feather_path)
 
 # used keylists
 key_list_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis']

@@ -3,4 +3,10 @@
 data
 dataStore/frozen-incidence/csv
 src/update_github-action.py
+src/fallzahlen_update.py
+src/__pycache__
+update_ghAction.sh
+Fallzahlen
+.vscode
+.gitignore
 update_ghAction.sh

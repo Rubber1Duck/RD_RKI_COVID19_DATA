@@ -19,7 +19,7 @@ fi
 
 #try RKI Git Hub Archiv
 URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
-lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METAARCHIV" 2>&1 | jq -r '.version')
 
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModifiedArchive" ]]; then
@@ -42,9 +42,9 @@ fi
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 if [[ "$SOURCEDATA" == "actual" ]]; then
-  echo "$DATE2 : Start update with actual data"
+  echo "$DATE2 : Start update with actual data (last modified: $lastModified)"
 elif [[ "$SOURCEDATA" == "archive" ]]; then
-  echo "$DATE2 : Start update with archive data"
+  echo "$DATE2 : Start update with archive data (last modifies: $lastModifiedArchive)"
 fi
 
 #Print message, check/update Bevoelkerung.csv
@@ -75,7 +75,7 @@ python fallzahlen_update.py
 # Print message, overwriting meta.json
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : overwriting meta.json with meta_new.json"
-/bin/mv -f ../dataStore/meta/meta_new.json ./dataStore/meta/meta.json
+/bin/mv -f ../dataStore/meta/meta_new.json ../dataStore/meta/meta.json
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

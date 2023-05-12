@@ -31,7 +31,7 @@ fi
 
 #try RKI Git Hub Archiv
 URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
-lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METAARCHIV" 2>&1 | jq -r '.version')
 
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModifiedArchive" ]]; then
@@ -62,9 +62,9 @@ touch /tmp/update.pid
 # print starting message
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 if [[ "$SOURCEDATA" == "actual" ]]; then
-  echo "$DATE2 : Start update with actual data"
+  echo "$DATE2 : Start update with actual data (last modified: $lastModified)"
 elif [[ "$SOURCEDATA" == "archive" ]]; then
-  echo "$DATE2 : Start update with archive data"
+  echo "$DATE2 : Start update with archive data (last modified: $lastModifiedArchive)"
 fi
 
 #Print message, check/update Bevoelkerung.csv

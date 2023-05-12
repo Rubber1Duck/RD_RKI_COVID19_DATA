@@ -30,7 +30,7 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
 fi
 
 #try RKI Git Hub Archiv
-URL_METAARCHIV="https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Metadaten/zenodo.json"
+URL_METAARCHIV="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/main/Metadaten/zenodo.json"
 lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METAARCHIVE" 2>&1 | jq -r '.version')
 
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit

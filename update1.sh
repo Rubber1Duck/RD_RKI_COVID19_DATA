@@ -32,7 +32,11 @@ fi
 #try RKI Git Hub Archiv
 URL_METAARCHIV="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/main/Metadaten/zenodo.json"
 lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METAARCHIVE" 2>&1 | jq -r '.version')
-
+if [[ "$lastModifiedArchive" == "" ]]; then
+  DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+  echo "$DATE2 : lastModifiedArchive is empty! exit now"
+  exit 1
+fi
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "$DATE" != "$lastModifiedArchive" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
@@ -40,6 +44,11 @@ if [[ "$DATE" != "$lastModifiedArchive" ]]; then
   # URL for meta data on RKI server
   URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
   lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')
+  if [[ "$lastModified" == "" ]]; then
+    DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+    echo "$DATE2 : lastModified is empty! exit now"
+    exit 1
+  fi
   if [[ "$DATE" != "$lastModified" ]]; then
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     echo "$DATE2 : Updated data for $DATE in aactual data does not yet exist (modified date: $lastModified)"

@@ -69,10 +69,11 @@ fallzahlen_df = fallzahlen_df[fallzahlen_df['Datenstand'] != date_latest]
 
 fallzahlen_new = pd.concat([fallzahlen_df, covid_df])
 fallzahlen_new.sort_values(by=key_list, inplace=True)
+fallzahlen_new.reset_index(drop=True, inplace=True)
 
 # %% write csv
 with open(path_fallzahlen, 'wb') as csvfile:
     fallzahlen_new.to_csv(csvfile, index=False, header=True, lineterminator='\n', encoding='utf-8',
                           date_format='%Y-%m-%d', columns=dtypes_fallzahlen.keys())
-ut.write_file(df=fallzahlen_df, fn=path_fallzahlen_feather, compression='lz4')
+ut.write_file(df=fallzahlen_new, fn=path_fallzahlen_feather, compression='lz4')
 os.remove(path=feather_path)

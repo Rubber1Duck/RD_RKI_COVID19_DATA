@@ -50,6 +50,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.TAG }}
           message: "${{ env.TAG }} release"
+      - name: Release
+        if: steps.update.outcome == 'success'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG }}
       - name: Push changes
         if: steps.update.outcome == 'success'
         uses: ad-m/github-push-action@master

@@ -63,7 +63,7 @@ def write_file(df, fn, compression='', sheet_name='data'):
         writer = pd.ExcelWriter(fn, engine='xlsxwriter',)
         df.to_excel(writer, sheet_name=sheet_name, index=False)
         #add more sheets by repeating df.to_excel() and change sheet_name
-        writer.save()
+        writer.close()
 
     else:
         print('oopsy in write_file()! File extension unknown:', fn_ext)

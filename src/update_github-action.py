@@ -16,12 +16,26 @@ kum_file_fullpath_LK_csv_gzip = os.path.join(
     'frozen-incidence',
     'LK.csv.gz'
 )
+kum_file_fullpath_LK_excel = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'LK.xlsx'
+)
 kum_file_fullpath_BL_csv_gzip = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
     'dataStore',
     'frozen-incidence',
     'BL.csv.gz'
+)
+kum_file_fullpath_BL_excel = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..',
+    'dataStore',
+    'frozen-incidence',
+    'BL.xlsx'
 )
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -638,9 +652,9 @@ for file_path_full, report_date in all_files:
 
 # open existing kum files
 LK_kum = pd.read_csv(kum_file_fullpath_LK_csv_gzip, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
-LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand'])
+LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand']).dt.date
 BL_kum = pd.read_csv(kum_file_fullpath_BL_csv_gzip, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
-BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand'])
+BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand']).dt.date
 key_list_LK = ['Datenstand', 'IdLandkreis']
 key_list_BL = ['Datenstand', 'IdBundesland']
 LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand]
@@ -662,6 +676,7 @@ with open(kum_file_fullpath_LK_csv_gzip, 'wb') as csvfile:
         columns=LK_dtypes.keys(),
         compression='gzip'
     )
+ut.write_file(df=LK_kum_new, fn=kum_file_fullpath_LK_excel, sheet_name="LK")
 with open(kum_file_fullpath_BL_csv_gzip, 'wb') as csvfile:
     BL_kum_new.to_csv(
         csvfile,
@@ -673,7 +688,7 @@ with open(kum_file_fullpath_BL_csv_gzip, 'wb') as csvfile:
         columns=BL_dtypes.keys(),
         compression='gzip'
     )
-
+ut.write_file(df=BL_kum_new, fn=kum_file_fullpath_BL_excel, sheet_name="BL")
 # store compressed json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)

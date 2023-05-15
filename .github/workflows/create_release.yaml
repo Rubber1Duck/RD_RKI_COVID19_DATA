@@ -1,10 +1,10 @@
+---
 name: "tagged-release"
 
 on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 jobs:
   tagged-release:
@@ -12,10 +12,12 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
+      # ...
       - name: "Build & test"
-        run: echo "done!"
-      - name: "Create Release"
-      - uses: marvinpinto/action-automatic-releases@latest
+        run: |
+          echo "done!"
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false

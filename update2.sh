@@ -30,8 +30,8 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
 fi
 
 #try RKI Git Hub Archiv
-URL_METAARCHIV="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/main/Metadaten/zenodo.json"
-lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METAARCHIV" 2>&1 | jq -r '.version')
+URL_METAARCHIVE="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/main/Metadaten/zenodo.json"
+lastModifiedArchive=$(curl -s -X GET -H "Accept: application/json" "$URL_METAARCHIVE" 2>&1 | jq -r '.version')
 if [[ "$lastModifiedArchive" == "" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   echo "$DATE2 : lastModifiedArchive is empty! exit now"

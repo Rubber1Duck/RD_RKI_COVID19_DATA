@@ -99,7 +99,7 @@ BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
 #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 BV = ut.squeeze_dataframe(BV)
-"""
+
 # load covid latest from web
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
@@ -121,14 +121,14 @@ print(
     fileSizeMb,
     "MegaByte) from RKI github to dataframe ..."
 )
-"""
-# for testing or fixing uncommend the following lines and set the values
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-testfile = os.path.join(path, '2023-05-16_Deutschland_SarsCov2_Infektionen.csv.xz')
-dataBase = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-Datenstand = dt.datetime(year=2023, month=5, day=16, hour=0, minute=0, second=0, microsecond=0)
 
-#dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+# for testing or fixing uncommend the following lines and set the values
+#path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+#testfile = os.path.join(path, '2023-05-16_Deutschland_SarsCov2_Infektionen.csv.xz')
+#dataBase = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+#Datenstand = dt.datetime(year=2023, month=5, day=16, hour=0, minute=0, second=0, microsecond=0)
+
+dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
 dataBase.reset_index(drop=True, inplace=True)
 

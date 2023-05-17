@@ -652,13 +652,14 @@ for file_path_full, report_date in all_files:
 
 # open existing kum files
 LK_kum = pd.read_csv(kum_file_fullpath_LK_csv_gzip, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
-LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand']).dt.date
 BL_kum = pd.read_csv(kum_file_fullpath_BL_csv_gzip, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
+LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand']).dt.date
 BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand']).dt.date
 key_list_LK = ['Datenstand', 'IdLandkreis']
 key_list_BL = ['Datenstand', 'IdBundesland']
-LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand]
-BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand]
+Datenstand2 = Datenstand.date()
+LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand2]
+BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand2]
 LK['Datenstand'] = pd.to_datetime(LK['Datenstand']).dt.date
 BL['Datenstand'] = pd.to_datetime(BL['Datenstand']).dt.date
 LK_kum_new = pd.concat([LK_kum, LK])

@@ -77,9 +77,9 @@ elif [[ "$SOURCEDATA" == "archive" ]]; then
 fi
 
 #Print message, check/update Bevoelkerung.csv
-DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : executing python calc_population.py"
-python calc_population.py
+#DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+#echo "$DATE2 : executing python calc_population.py"
+#python calc_population.py
 
 # Print message, download and modify meta data from RKI server
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

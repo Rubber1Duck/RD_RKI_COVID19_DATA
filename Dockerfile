@@ -10,10 +10,13 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .
 
+ARG SEVENZIP_VERSION="2301"
+
 RUN apt-get update \
   && apt-get -y upgrade \
   && apt-get -y install --no-install-recommends apt-utils \
-  && apt-get -y install --no-install-recommends cron curl wget build-essential manpages-dev xz-utils nano jq\
+  && apt-get -y install --no-install-recommends cron curl wget build-essential manpages-dev xz-utils nano jq \
+  && ./get7Zip.sh ${SEVENZIP_VERSION} \
   && source $VIRTUAL_ENV/bin/activate \
   && pip install --no-cache-dir -r requirements.txt \
   && which cron \

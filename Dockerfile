@@ -23,7 +23,7 @@ RUN apt-get update \
   && rm -rf /etc/cron.*/* \
   && crontab crontab1.file \
   && chmod 755 update1.sh update2.sh entrypoint.sh \
-  && apt-get -y purge wget build-essential manpages-dev \
+  && apt-get -y purge curl wget build-essential manpages-dev xz-utils \
   && apt-get -y --purge autoremove \
   && apt-get clean \
   && apt-get autoclean

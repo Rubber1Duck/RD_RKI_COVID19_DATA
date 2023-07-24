@@ -105,7 +105,7 @@ echo "$DATE2 : Update finished"
 # start compress RKI_COVID19_$DATE.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv"
-../7zzs a -txz -mmt4 -mx=9 -sdel -stl "/usr/src/app/data/RKI_COVID19_$DATE.csv.xz" "/usr/src/app/data/RKI_COVID19_$DATE.csv"
+../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "/usr/src/app/data/RKI_COVID19_$DATE.csv.xz" "/usr/src/app/data/RKI_COVID19_$DATE.csv"
 #/usr/bin/xz -zT0  "/usr/src/app/data/RKI_COVID19_$DATE.csv"
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv"

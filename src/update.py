@@ -9,34 +9,6 @@ import utils as ut
 import gc
 
 startTime = dt.datetime.now()
-kum_file_fullpath_LK_csv = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'LK.csv'
-)
-kum_file_fullpath_LK_csv_gzip = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'LK.csv.gz'
-)
-kum_file_fullpath_BL_csv = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'BL.csv'
-)
-kum_file_fullpath_BL_csv_gzip = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'BL.csv.gz'
-)
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -639,48 +611,6 @@ BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
 BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
 BL.drop(['population'], inplace=True, axis=1)
 
-# open existing kum files
-try:
-    LK_kum = pd.read_csv(kum_file_fullpath_LK_csv, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
-except:
-    LK_kum = pd.read_csv(kum_file_fullpath_LK_csv_gzip, usecols=LK_dtypes.keys(), dtype=LK_dtypes)
-LK_kum['Datenstand'] = pd.to_datetime(LK_kum['Datenstand'])
-try:
-    BL_kum = pd.read_csv(kum_file_fullpath_BL_csv, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
-except:
-    BL_kum = pd.read_csv(kum_file_fullpath_BL_csv_gzip, usecols=BL_dtypes.keys(), dtype=BL_dtypes)
-BL_kum['Datenstand'] = pd.to_datetime(BL_kum['Datenstand'])
-key_list_LK = ['Datenstand', 'IdLandkreis']
-key_list_BL = ['Datenstand', 'IdBundesland']
-LK_kum = LK_kum[LK_kum['Datenstand'] != Datenstand]
-BL_kum = BL_kum[BL_kum['Datenstand'] != Datenstand]
-LK['Datenstand'] = pd.to_datetime(LK['Datenstand'])
-BL['Datenstand'] = pd.to_datetime(BL['Datenstand'])
-LK_kum_new = pd.concat([LK_kum, LK])
-LK_kum_new.sort_values(by=key_list_LK, inplace=True)
-BL_kum_new = pd.concat([BL_kum, BL])
-BL_kum_new.sort_values(by=key_list_BL, inplace=True)
-with open(kum_file_fullpath_LK_csv, 'wb') as csvfile:
-    LK_kum_new.to_csv(
-        csvfile,
-        index=False,
-        header=True,
-        lineterminator='\n',
-        encoding='utf-8',
-        date_format='%Y-%m-%d',
-        columns=LK_dtypes.keys()
-    )
-with open(kum_file_fullpath_BL_csv, 'wb') as csvfile:
-    BL_kum_new.to_csv(
-        csvfile,
-        index=False,
-        header=True,
-        lineterminator='\n',
-        encoding='utf-8',
-        date_format='%Y-%m-%d',
-        columns=BL_dtypes.keys()
-    )
-
 # store json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
@@ -697,42 +627,6 @@ BL_json_path = os.path.join(
     'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_BL.json')
 LK.to_json(path_or_buf=LK_json_path, orient="index", date_format="iso", force_ascii=False)
 BL.to_json(path_or_buf=BL_json_path, orient="index", date_format="iso", force_ascii=False)
-
-# limit frozen-incidence json files to from last modified ExcelDate to today
-#iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
-#file_list = os.listdir(path)
-#file_list.sort(reverse=False)
-#pattern = 'frozen-incidence'
-#all_files = []
-#for file in file_list:
-#    file_path_full = os.path.join(path, file)
-#    if not os.path.isdir(file_path_full):
-#        filename = os.path.basename(file)
-#        re_filename = re.search(pattern, filename)
-#        re_search = re.search(iso_date_re, filename)
-#        if re_search and re_filename:
-#            report_date = dt.date(
-#                int(re_search.group(1)),
-#                int(re_search.group(3)),
-#                int(re_search.group(4))).strftime('%Y-%m-%d')
-#            all_files.append((file_path_full, report_date))
-#today = dt.date.today()
-#url = "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab_aktuell.xlsx?__blob=publicationFile"
-#headers = {
-#    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0",
-#    "Accept-Encoding": "*",
-#    "Connection": "keep-alive"
-#}
-#excelResonse = r.get(url, headers=headers)
-#lastModifiedStr = excelResonse.headers["last-modified"]
-#lastModified = pd.to_datetime(lastModifiedStr, format='%a, %d %b %Y %H:%M:%S %Z').date()
-#day_range = pd.date_range(start=lastModified, end=today).tolist()
-#day_range_str = []
-#for datum in day_range:
-#    day_range_str.append(datum.strftime('%Y-%m-%d'))
-#for file_path_full, report_date in all_files:
-#    if report_date not in day_range_str:
-#        os.remove(file_path_full)
 
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')

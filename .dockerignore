@@ -2,10 +2,8 @@
 .github
 data
 dataStore/frozen-incidence/csv
-dataStore/frozen-incidence/BL.csv.gz
-dataStore/frozen-incidence/BL.xlsx
-dataStore/frozen-incidence/LK.csv.gz
-dataStore/frozen-incidence/LK.xlsx
+dataStore/frozen-incidence/*.gz
+dataStore/frozen-incidence/*.xlsx
 src/update_github-action.py
 src/fallzahlen_update.py
 src/__pycache__

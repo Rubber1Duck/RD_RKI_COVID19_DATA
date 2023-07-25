@@ -468,6 +468,7 @@ print(aktuelleZeit, ": done.")
 # StateCasesHistory, StateDeathsHistory, StateRecoveredHistory
 print(aktuelleZeit, ": calculating history data ...")
 LK = ut.read_file(fn=feather_path)
+os.remove(path=feather_path)
 LK.drop('IdStaat', inplace=True, axis=1)
 
 # used keylists
@@ -533,102 +534,7 @@ BL.to_json(
 )
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
-# *******************
-# * fixed-incidence *
-# *******************
-print(aktuelleZeit, ": calculating fixed-incidence data")
-LK = ut.read_file(fn=feather_path)
-os.remove(path=feather_path)
-
-# used keylists
-key_list_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis']
-key_list_BL_fix = ['IdStaat', 'IdBundesland']
-key_list_ID0_fix = ['IdStaat']
-
-LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0).astype(int)
-LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0).astype(int)
-LK.drop([
-    'Meldedatum',
-    'NeuerFall',
-    'NeuerTodesfall',
-    'AnzahlFall',
-    'AnzahlTodesfall',
-    'Landkreis',
-    'Bundesland',
-    'NeuGenesen',
-    'AnzahlGenesen',
-    'Altersgruppe',
-    'Geschlecht'], inplace=True, axis=1
-)
-agg_key = {
-    c: 'max' if c in ['Datenstand'] else 'sum'
-    for c in LK.columns
-    if c not in key_list_LK_fix
-}
-LK = LK.groupby(by=key_list_LK_fix, as_index=False, observed=True).agg(agg_key)
-agg_key = {
-    c: 'max' if c in ['IdLandkreis', 'Datenstand'] else 'sum'
-    for c in LK.columns
-    if c not in key_list_BL_fix
-}
-BL = LK.groupby(by=key_list_BL_fix, as_index=False, observed=True).agg(agg_key)
-agg_key = {
-    c: 'max' if c in ['IdBundesland', 'IdLandkreis', 'Datenstand'] else 'sum'
-    for c in BL.columns
-    if c not in key_list_ID0_fix
-}
-ID0 = BL.groupby(by=key_list_ID0_fix, as_index=False, observed=True).agg(agg_key)
-LK.drop(['IdStaat', 'IdBundesland'], inplace=True, axis=1)
-BL.drop(['IdStaat', 'IdLandkreis'], inplace=True, axis=1)
-ID0.drop(['IdStaat', 'IdLandkreis'], inplace=True, axis=1)
-ID0['IdBundesland'] = '00'
-BL = pd.concat([ID0, BL])
-BL.reset_index(inplace=True, drop=True)
-LK_pop_mask = (
-    (BV['AGS'].isin(LK['IdLandkreis'])) &
-    (BV['Altersgruppe'] == "A00+") &
-    (BV['GueltigAb'] <= Datenstand) &
-    (BV['GueltigBis'] >= Datenstand)
-)
-LK_pop = BV[LK_pop_mask]
-LK_pop.reset_index(inplace=True, drop=True)
-LK['population'] = LK_pop['Einwohner']
-LK.insert(loc=0, column='Landkreis', value=LK_pop['Name'])
-LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
-LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['population'] * 100000
-LK.drop(['population'], inplace=True, axis=1)
-BL_pop_mask = (
-    (BV['AGS'].isin(BL['IdBundesland'])) &
-    (BV['Altersgruppe'] == "A00+") &
-    (BV['GueltigAb'] <= Datenstand) &
-    (BV['GueltigBis'] >= Datenstand)
-)
-BL_pop = BV[BL_pop_mask]
-BL_pop.reset_index(inplace=True, drop=True)
-BL['population'] = BL_pop['Einwohner']
-BL.insert(loc=0, column='Bundesland', value=BL_pop['Name'])
-BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
-BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
-BL.drop(['population'], inplace=True, axis=1)
-
-# store json files
-LK.set_index(['IdLandkreis'], inplace=True, drop=True)
-BL.set_index(['IdBundesland'], inplace=True, drop=True)
-path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence')
-LK_json_path = os.path.join(
-    path,
-    'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_LK.json')
-BL_json_path = os.path.join(
-    path,
-    'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_BL.json')
-LK.to_json(path_or_buf=LK_json_path, orient="index", date_format="iso", force_ascii=False)
-BL.to_json(path_or_buf=BL_json_path, orient="index", date_format="iso", force_ascii=False)
 
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": done.")
 print(aktuelleZeit, ": total time:", endTime - startTime)

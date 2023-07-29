@@ -18,7 +18,7 @@ RUN apt-get update \
   && apt-get -y install --no-install-recommends cron curl wget build-essential manpages-dev xz-utils nano jq gawk\
   && ./get7Zip.sh ${SEVENZIP_VERSION} \
   && source $VIRTUAL_ENV/bin/activate \
-  && pip install --no-cache-dir -r requirements.txt \
+  && pip install --no-cache-dir -r requirements_submodule.txt \
   && which cron \
   && rm -rf /etc/cron.*/* \
   && crontab crontab1.file \

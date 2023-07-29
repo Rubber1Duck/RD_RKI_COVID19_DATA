@@ -1,6 +1,5 @@
 import os
 import re
-#import requests as r
 import datetime as dt
 import numpy as np
 import pandas as pd

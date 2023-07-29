@@ -104,11 +104,14 @@ echo "$DATE2 : Update finished"
 
 # start compress RKI_COVID19_$DATE.csv
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv"
-../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "/usr/src/app/data/RKI_COVID19_$DATE.csv.xz" "/usr/src/app/data/RKI_COVID19_$DATE.csv"
-#/usr/bin/xz -zT0  "/usr/src/app/data/RKI_COVID19_$DATE.csv"
+SIZE1=$(stat -c%s /usr/src/app/data/RKI_COVID19_$DATE.csv)
+echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv ($SIZE1 bytes)"
+./7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "/usr/src/app/data/RKI_COVID19_$DATE.csv.xz" "/usr/src/app/data/RKI_COVID19_$DATE.csv"
+SIZE2=$(stat -c%s /usr/src/app/data/RKI_COVID19_$DATE.csv.xz)
+QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv"
+echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv. New Size: $SIZE2 = $QUOTE %"
+
 
 # update is done, delete /tmp/update.pid
 rm /tmp/update.pid

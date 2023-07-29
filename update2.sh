@@ -88,7 +88,7 @@ if [[ "$SOURCEDATA" == "actual" ]]; then
   python download_meta.py
 elif [[ "$SOURCEDATA" == "archive" ]]; then
   echo "$DATE2 : executing python download_meta_archive.py"
-  python download_meta_arcive.py
+  python download_meta_archive.py
 fi
 
 # Print message, crate new json files for date

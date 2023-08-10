@@ -38,7 +38,7 @@ jobs:
           git add ':/*.json'
           git add ':/*.gz'
           git add ':/*.feather'
-          git add ':/*.xlsx'
+          git add ':/*.xz'
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
       - name: set up env var

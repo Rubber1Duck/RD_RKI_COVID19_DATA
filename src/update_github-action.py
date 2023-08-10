@@ -88,18 +88,21 @@ BV = ut.squeeze_dataframe(BV)
 # load covid latest from web
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
     metaObj = json.load(file)
-fileName = metaObj['filename']
-url = metaObj['url']
+fileNameOrig = metaObj['filename']
 fileSize = int(metaObj['size'])
+url = metaObj['url']
 timeStamp = metaObj['modified']
 Datenstand = dt.datetime.fromtimestamp(timeStamp/1000)
 Datenstand = Datenstand.replace(hour=0, minute=0, second=0, microsecond=0)
+filedate = dt.datetime.fromtimestamp(metaObj['modified']/1000).date().strftime('%Y-%m-%d')
 fileSizeMb = round(fileSize / 1024 / 1024, 1)
+fileNameRoot = "RKI_COVID19_"
+fileName = fileNameRoot + filedate + '.csv'
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(
     aktuelleZeit,
     ": loading",
-    fileName,
+    fileNameOrig,
     "(size:",
     fileSize,
     "bytes =",
@@ -119,6 +122,68 @@ dataBase.reset_index(drop=True, inplace=True)
 
 #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 dataBase = ut.squeeze_dataframe(dataBase)
+
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": done.")
+
+data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+fileNameXz = fileName + '.xz'
+full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileName)
+full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileNameXz)
+data_path = os.path.normpath(data_path)
+full_path = os.path.normpath(full_path)
+istDatei = os.path.isfile(full_path)
+istDateiXz = os.path.isfile(full_pathXz)
+if not (istDatei | istDateiXz):
+    print(aktuelleZeit, ": writing DataFrame to", fileName, "...")
+    with open(full_path, 'wb') as csvfile:
+        dataBase.to_csv(
+            csvfile,
+            index=False,
+            header=True,
+            lineterminator='\n',
+            encoding='utf-8',
+            date_format='%Y-%m-%d',
+            columns=CV_dtypes.keys())
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ": done.")
+else:
+    if istDatei:
+        fileExists = fileName
+    else:
+        fileExists = fileNameXz
+    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ":", fileExists, "already exists.")
+
+# limit RKI_COVID19 Data files to the last 30 days
+print(aktuelleZeit, ": cleanup data files ...")
+iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
+file_list = os.listdir(data_path)
+file_list.sort(reverse=False)
+pattern = 'RKI_COVID19'
+all_files = []
+for file in file_list:
+    file_path_full = os.path.join(data_path, file)
+    if not os.path.isdir(file_path_full):
+        filename = os.path.basename(file)
+        re_filename = re.search(pattern, filename)
+        re_search = re.search(iso_date_re, filename)
+        if re_search and re_filename:
+            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
+            all_files.append((file_path_full, report_date))
+today = dt.date.today()
+day_range = pd.date_range(end=today, periods=30).tolist()
+day_range_str = []
+for datum in day_range:
+    day_range_str.append(datum.strftime('%Y-%m-%d'))
+for file_path_full, report_date in all_files:
+    if report_date not in day_range_str:
+        os.remove(file_path_full)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ": done.")
+
+print(aktuelleZeit, ": add missing columns ...")
+
 dataBase['IdLandkreis'] = dataBase['IdLandkreis'].astype(str).str.zfill(5)
 dataBase.insert(loc=0, column='IdBundesland', value=dataBase['IdLandkreis'].str[:-3].copy())
 dataBase['Meldedatum'] = pd.to_datetime(dataBase['Meldedatum']).dt.date
@@ -696,31 +761,7 @@ BL_kum_new.to_json(
     force_ascii=False,
     compression='gzip'
 )
-# store compressed json files
-LK.set_index(['IdLandkreis'], inplace=True, drop=True)
-BL.set_index(['IdBundesland'], inplace=True, drop=True)
-LK_json_path = os.path.join(
-    path,
-    'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_LK.json.gz'
-)
-BL_json_path = os.path.join(
-    path,
-    'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_BL.json.gz'
-)
-LK.to_json(
-    path_or_buf=LK_json_path,
-    orient="index",
-    date_format="iso",
-    force_ascii=False,
-    compression='gzip'
-)
-BL.to_json(
-    path_or_buf=BL_json_path,
-    orient="index",
-    date_format="iso",
-    force_ascii=False,
-    compression='gzip'
-)
+
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")

@@ -374,7 +374,7 @@ print(aktuelleZeit, ": done.")
 
 # accumulated and new cases, deaths, recovered, casesPerWeek, deathsPerWeek
 # add country column
-print(aktuelleZeit, ": calculating new and acumulated data ...")
+print(aktuelleZeit, ": calculating new and accumulated data ...")
 LK = ut.read_file(fn=feather_path)
 
 # used keylists

@@ -15,26 +15,12 @@ kum_file_fullpath_LK_csv_gzip = os.path.join(
     'frozen-incidence',
     'LK.csv.gz'
 )
-kum_file_fullpath_LK_excel = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'LK.xlsx'
-)
 kum_file_fullpath_BL_csv_gzip = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
     'dataStore',
     'frozen-incidence',
     'BL.csv.gz'
-)
-kum_file_fullpath_BL_excel = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'BL.xlsx'
 )
 meta_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -677,7 +663,6 @@ with open(kum_file_fullpath_LK_csv_gzip, 'wb') as csvfile:
         columns=LK_dtypes.keys(),
         compression='gzip'
     )
-ut.write_file(df=LK_kum_new, fn=kum_file_fullpath_LK_excel, sheet_name="LK")
 LK_json_path = os.path.join(
     path,
     'LK.json.gz'
@@ -700,7 +685,6 @@ with open(kum_file_fullpath_BL_csv_gzip, 'wb') as csvfile:
         columns=BL_dtypes.keys(),
         compression='gzip'
     )
-ut.write_file(df=BL_kum_new, fn=kum_file_fullpath_BL_excel, sheet_name="BL")
 BL_json_path = os.path.join(
     path,
     'BL.json.gz'

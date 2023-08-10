@@ -29,12 +29,6 @@ def write_file(df, fn, compression='', sheet_name='data'):
         compression = 'zstd' if compression == '' else compression
         df.to_feather(fn, compression=compression)
 
-    elif fn_ext == '.xlsx':
-        writer = pd.ExcelWriter(fn, engine='xlsxwriter',)
-        df.to_excel(writer, sheet_name=sheet_name, index=False)
-        #add more sheets by repeating df.to_excel() and change sheet_name
-        writer.close()
-
     else:
         print('oopsy in write_file()! File extension unknown:', fn_ext)
         quit(0)
@@ -51,9 +45,6 @@ def read_file(fn, sheet_name='data'):
 
     elif fn_ext == '.feather':
         df = pd.read_feather(fn)
-
-    elif fn_ext == '.xlsx':
-        df = pd.read_excel(fn, sheet_name=sheet_name, keep_default_na=False)
 
     else:
         print('oopsy in read_file()! File extension unknown:', fn_ext)

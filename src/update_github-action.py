@@ -123,9 +123,9 @@ print(
 
 # for testing or fixing uncommend the following lines and set the values
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-#testfile = os.path.join(path, '2023-05-16_Deutschland_SarsCov2_Infektionen.csv.xz')
+#testfile = os.path.join(path, 'RKI_COVID19_2023-08-09.csv.xz')
 #dataBase = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-#Datenstand = dt.datetime(year=2023, month=5, day=16, hour=0, minute=0, second=0, microsecond=0)
+#Datenstand = dt.datetime(year=2023, month=8, day=9, hour=0, minute=0, second=0, microsecond=0)
 
 dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
@@ -678,6 +678,17 @@ with open(kum_file_fullpath_LK_csv_gzip, 'wb') as csvfile:
         compression='gzip'
     )
 ut.write_file(df=LK_kum_new, fn=kum_file_fullpath_LK_excel, sheet_name="LK")
+LK_json_path = os.path.join(
+    path,
+    'LK.json.gz'
+)
+LK_kum_new.to_json(
+    path_or_buf=LK_json_path,
+    orient='records',
+    date_format='iso',
+    force_ascii=False,
+    compression='gzip'
+)
 with open(kum_file_fullpath_BL_csv_gzip, 'wb') as csvfile:
     BL_kum_new.to_csv(
         csvfile,
@@ -690,6 +701,17 @@ with open(kum_file_fullpath_BL_csv_gzip, 'wb') as csvfile:
         compression='gzip'
     )
 ut.write_file(df=BL_kum_new, fn=kum_file_fullpath_BL_excel, sheet_name="BL")
+BL_json_path = os.path.join(
+    path,
+    'BL.json.gz'
+)
+BL_kum_new.to_json(
+    path_or_buf=BL_json_path,
+    orient='records',
+    date_format='iso',
+    force_ascii=False,
+    compression='gzip'
+)
 # store compressed json files
 LK.set_index(['IdLandkreis'], inplace=True, drop=True)
 BL.set_index(['IdBundesland'], inplace=True, drop=True)
@@ -715,38 +737,6 @@ BL.to_json(
     force_ascii=False,
     compression='gzip'
 )
-
-# limit frozen-incidence json files to from last modified Excel Date to today
-#iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
-#file_list = os.listdir(path)
-#file_list.sort(reverse=False)
-#pattern = 'frozen-incidence'
-#all_files = []
-#for file in file_list:
-#    file_path_full = os.path.join(path, file)
-#    if not os.path.isdir(file_path_full):
-#        filename = os.path.basename(file)
-#        re_filename = re.search(pattern, filename)
-#        re_search = re.search(iso_date_re, filename)
-#        if re_search and re_filename:
-#            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
-#            all_files.append((file_path_full, report_date))
-#url = "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab_aktuell.xlsx?__blob=publicationFile"
-#headers = {
-#    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0",
-#    "Accept-Encoding": "*",
-#    "Connection": "keep-alive"
-#}
-#excelResonse = r.get(url, headers=headers)
-#lastModifiedStr = excelResonse.headers["last-modified"]
-#lastModified = pd.to_datetime(lastModifiedStr, format='%a, %d %b %Y %H:%M:%S %Z').date()
-#day_range = pd.date_range(start=lastModified, end=today).tolist()
-#day_range_str = []
-#for datum in day_range:
-#    day_range_str.append(datum.strftime('%Y-%m-%d'))
-#for file_path_full, report_date in all_files:
-#    if report_date not in day_range_str:
-#        os.remove(file_path_full)
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")

@@ -2,7 +2,7 @@ name: Update and create release
 
 on:
   schedule:
-    - cron: "5,35 * * * *"
+    - cron: "10,40 * * * *"
   workflow_dispatch:
 jobs:
   updateData:

@@ -56,11 +56,6 @@ elif [[ "$SOURCEDATA" == "archive" ]]; then
   echo "$DATE2 : Start update with archive data (last modified: $lastModifiedArchive)"
 fi
 
-#Print message, check/update Bevoelkerung.csv
-#DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-#echo "$DATE2 : executing python calc_population.py"
-#python calc_population.py
-
 # Print message, download and modify meta data from RKI server
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 if [[ "$SOURCEDATA" == "actual" ]]; then
@@ -86,12 +81,20 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : overwriting meta.json with meta_new.json"
 /bin/mv -f ../dataStore/meta/meta_new.json ../dataStore/meta/meta.json
 
-# start compress RKI_COVID19_$DATE.csv
+# download static 7zip
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-SIZE1=$(stat -c%s /usr/src/app/data/RKI_COVID19_$DATE.csv)
+echo "$DATE2 : download static 7zip"
+cd ../
+VERSION7ZIP="2301"
+./get7Zip.sh ${SEVENZIP_VERSION}
+
+# start compress RKI_COVID19_$DATE.csv
+cd ./data
+DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+SIZE1=$(stat -c%s RKI_COVID19_$DATE.csv)
 echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv ($SIZE1 bytes)"
-../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "/usr/src/app/data/RKI_COVID19_$DATE.csv.xz" "/usr/src/app/data/RKI_COVID19_$DATE.csv"
-SIZE2=$(stat -c%s /usr/src/app/data/RKI_COVID19_$DATE.csv.xz)
+../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "RKI_COVID19_$DATE.csv.xz" "RKI_COVID19_$DATE.csv"
+SIZE2=$(stat -c%s RKI_COVID19_$DATE.csv.xz)
 QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv. New Size: $SIZE2 = $QUOTE %"

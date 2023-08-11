@@ -51,7 +51,7 @@ if [[ "$DATE" != "$lastModifiedArchive" ]]; then
   fi
   if [[ "$DATE" != "$lastModified" ]]; then
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-    echo "$DATE2 : Updated data for $DATE in aactual data does not yet exist (modified date: $lastModified)"
+    echo "$DATE2 : Updated data for $DATE in actual data does not yet exist (modified date: $lastModified)"
     exit 1
   else
     SOURCEDATA="actual"

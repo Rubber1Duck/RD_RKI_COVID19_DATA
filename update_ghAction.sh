@@ -98,6 +98,7 @@ SIZE2=$(stat -c%s RKI_COVID19_$DATE.csv.xz)
 QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv. New Size: $SIZE2 = $QUOTE %"
+rm -rf ../7zzs
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

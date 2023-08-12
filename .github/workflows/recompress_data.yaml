@@ -22,7 +22,7 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add ':/*.xz'
+          git add ${{ steps.recompress.outputs.filelist }}
           git status -s
           git commit -m "recompress files on $(date '+%Y-%m-%dT%H:%M:%SZ')"
       - name: Push changes

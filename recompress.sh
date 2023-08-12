@@ -25,7 +25,6 @@ do
     file=$(basename $file)
     PUSHLIST="./data/$file $PUSHLIST"
     echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Added to pushlist!"
-    echo "$DATE2 : pushlist now: $PUSHLIST"
   else
     echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Not added to pushlist!"
   fi

@@ -31,7 +31,7 @@ do
   fi
 done
 rm -rf ../7zzs
-if [[ $PUSHLIST -eq "" ]]; then
+if [[ $PUSHLIST == "" ]]; then
   exit 1
 fi
 echo "pushlist=$PUSHLIST" >> $GITHUB_OUTPUT

@@ -19,6 +19,7 @@ jobs:
         timeout-minutes: 90
       - name: Commit files
         if: steps.recompress.outcome == 'success'
+        working-directory: ./
         run: |
           echo ${{ steps.recompress.outputs.pushlist }}
           git config user.name github-actions

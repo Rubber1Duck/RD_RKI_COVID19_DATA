@@ -5,8 +5,7 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : download static 7zip"
 VERSION7ZIP="2301"
 ./get7Zip.sh ${VERSION7ZIP}
-FILELIST=""
-PUSH="false"
+PUSHLIST=""
 
 # start recompress all RKI_COVID19_*.csv.zx
 cd ./data
@@ -23,15 +22,15 @@ do
   QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   if [[ $SIZE2 -lt $SIZE1 ]]; then
-    FILELIST="./data/$file $FILELIST"
-    PUSH="true"
-    echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Added to filelist!"
+    PUSHLIST="./data/$file $PUSHLIST"
+    echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Added to pushlist!"
+    echo "$DATE2 : pushlist now: $PUSHLIST"
   else
-    echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Not added to filelist!"
+    echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Not added to pushlist!"
   fi
 done
 rm -rf ../7zzs
-if [[ $PUSH == "false" ]]:
+if [[ $PUSHLIST -eq "" ]]; then
   exit 1
 fi
-echo "filelist=$filelist" >> $GITHUB_OUTPUT
+echo "pushlist=$PUSHLIST" >> $GITHUB_OUTPUT

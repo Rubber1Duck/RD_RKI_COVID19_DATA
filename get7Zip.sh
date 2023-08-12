@@ -7,4 +7,4 @@ case "$MACHINE" in
   armv6l|armv7l ) SEVENZIP_ARCH="arm" ;;
   aarch64       ) SEVENZIP_ARCH="arm64" ;;
 esac
-curl -SL "https://7-zip.org/a/7z$SEVENZIP_VERSION-linux-$SEVENZIP_ARCH.tar.xz" | tar -xvJ 7zzs
+curl -SLs "https://7-zip.org/a/7z$SEVENZIP_VERSION-linux-$SEVENZIP_ARCH.tar.xz" | tar -xJ 7zzs

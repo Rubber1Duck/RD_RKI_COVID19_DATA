@@ -22,6 +22,7 @@ do
   QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
   if [[ $SIZE2 -lt $SIZE1 ]]; then
+    file=$(basename $file)
     PUSHLIST="./data/$file $PUSHLIST"
     echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Added to pushlist!"
     echo "$DATE2 : pushlist now: $PUSHLIST"

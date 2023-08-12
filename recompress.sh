@@ -22,7 +22,7 @@ do
   SIZE2=$(stat -c%s $file)
   QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  if [[ $SIZE2 < $SIZE1 ]]:
+  if [[ $SIZE2 -lt $SIZE1 ]]; then
     FILELIST="./data/$file $FILELIST"
     PUSH=true
     echo "$DATE2 : finished recompressing $file. New Size: $SIZE2 = $QUOTE %. Added to filelist!"

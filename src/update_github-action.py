@@ -112,9 +112,10 @@ print(
 
 # for testing or fixing uncommend the following lines and set the values
 #path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-#testfile = os.path.join(path, 'RKI_COVID19_2023-08-09.csv.xz')
+#testfile = os.path.join(path, '2023-09-05_Deutschland_SarsCov2_Infektionen.csv.xz')
 #dataBase = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-#Datenstand = dt.datetime(year=2023, month=8, day=9, hour=0, minute=0, second=0, microsecond=0)
+#Datenstand = dt.datetime(year=2023, month=9, day=5, hour=0, minute=0, second=0, microsecond=0)
+#fileName = "RKI_COVID19_2023_09_05.csv"
 
 dataBase = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 dataBase.sort_values(by=['IdLandkreis', 'Altersgruppe' ,'Geschlecht', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
@@ -278,7 +279,7 @@ agg_key = {
     for c in LK.columns
     if c not in key_list_LK_age
 }
-LK = LK.groupby(by=key_list_LK_age, as_index=False).agg(agg_key)
+LK = LK.groupby(by=key_list_LK_age, as_index=False, observed=False).agg(agg_key)
 LK.reset_index(inplace=True, drop=True)
 LK_pop_mask = (
     (BV['AGS'].isin(LK['IdLandkreis'])) &
@@ -303,7 +304,7 @@ agg_key = {
     for c in LK.columns
     if c not in key_list_BL_age
 }
-BL = LK.groupby(by=key_list_BL_age, as_index=False).agg(agg_key).copy()
+BL = LK.groupby(by=key_list_BL_age, as_index=False, observed=False).agg(agg_key).copy()
 BL['cases100kM'] = round(BL['AnzahlFallM'] / BL['populationM'] * 100000, 1)
 BL['cases100kW'] = round(BL['AnzahlFallW'] / BL['populationW'] * 100000, 1)
 BL['deaths100kM'] = round(BL['AnzahlTodesfallM'] / BL['populationM'] * 100000, 1)
@@ -314,7 +315,7 @@ agg_key = {
     for c in BL.columns
     if c not in key_list_ID0_age
 }
-ID0 = BL.groupby(by=key_list_ID0_age, as_index=False).agg(agg_key).copy()
+ID0 = BL.groupby(by=key_list_ID0_age, as_index=False, observed=False).agg(agg_key).copy()
 ID0['IdBundesland'] ='00'
 ID0['cases100kM'] = round(ID0['AnzahlFallM'] / ID0['populationM'] * 100000, 1)
 ID0['cases100kW'] = round(ID0['AnzahlFallW'] / ID0['populationW'] * 100000, 1)
@@ -420,19 +421,19 @@ agg_key = {
     for c in LK.columns
     if c not in key_list_LK_cases
 }
-LK = LK.groupby(by=key_list_LK_cases, as_index=False).agg(agg_key)
+LK = LK.groupby(by=key_list_LK_cases, as_index=False, observed=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['IdStaat', 'Meldedatum', 'Datenstand', 'Bundesland', 'IdLandkreis', 'Landkreis'] else 'sum'
     for c in LK.columns
     if c not in key_list_BL_cases
 }
-BL = LK.groupby(by=key_list_BL_cases, as_index=False).agg(agg_key)
+BL = LK.groupby(by=key_list_BL_cases, as_index=False, observed=False).agg(agg_key)
 agg_key = {
     c: 'max' if c in ['Meldedatum', 'Datenstand', 'Bundesland', 'IdLandkreis', 'Landkreis', 'IdBundesland'] else 'sum'
     for c in BL.columns
     if c not in key_list_ID0_cases
 }
-ID0 = BL.groupby(by=key_list_ID0_cases, as_index=False).agg(agg_key)
+ID0 = BL.groupby(by=key_list_ID0_cases, as_index=False, observed=False).agg(agg_key)
 LK.drop(['IdStaat', 'IdBundesland'], inplace=True, axis=1)
 LK_pop_mask = (
     (BV['AGS'].isin(LK['IdLandkreis'])) &

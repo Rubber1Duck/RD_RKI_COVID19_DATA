@@ -17,7 +17,7 @@ jobs:
         with:
           auto-activate-base: false
           activate-environment: covid
-          python-version: 3.9
+          python-version: 3.11
           miniconda-version: "latest"
           channels: conda-forge,defaults
       - name: Install requirements

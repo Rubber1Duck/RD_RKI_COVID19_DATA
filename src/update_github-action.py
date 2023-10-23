@@ -653,10 +653,6 @@ LK_csv_path = os.path.join(
     path_csv,
     'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_LK.csv'
 )
-BL_csv_path = os.path.join(
-    path_csv,
-    'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_BL.csv'
-)
 with open(LK_csv_path, 'wb') as csvfile:
     LK.to_csv(
         csvfile,
@@ -666,16 +662,6 @@ with open(LK_csv_path, 'wb') as csvfile:
         encoding='utf-8',
         date_format='%Y-%m-%d',
         columns=LK_dtypes.keys()
-    )
-with open(BL_csv_path, 'wb') as csvfile:
-    BL.to_csv(
-        csvfile,
-        index=False,
-        header=True,
-        lineterminator='\n',
-        encoding='utf-8',
-        date_format='%Y-%m-%d',
-        columns=BL_dtypes.keys()
     )
 
 # limit frozen-incidence csv files to the last 60 days

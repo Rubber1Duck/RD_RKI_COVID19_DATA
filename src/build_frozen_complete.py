@@ -95,8 +95,9 @@ for file in file_list:
         re_search = re.search(iso_date_re, filename)
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
-            all_data_files.append((file, file_path_full, report_date))
-            bytes_total += os.path.getsize(file_path_full)
+            file_size = os.path.getsize(file_path_full)
+            all_data_files.append((file, file_size, file_path_full, report_date))
+            bytes_total += file_size
 
 # open existing kum files
 LK_kum = pd.read_csv(kum_file_LK, usecols=kum_dtypes.keys(), dtype=kum_dtypes)
@@ -107,7 +108,7 @@ keys_LK_kum = ['D', 'I']
 keys_BL_kum = ['D', 'I']
 bytes_prozessed = 0
 
-for file, file_path_full, report_date in all_data_files:
+for file, file_size, file_path_full, report_date in all_data_files:
     start_file_time = dt.datetime.now()
     LK = pd.read_csv(file_path_full, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
@@ -221,7 +222,7 @@ for file, file_path_full, report_date in all_data_files:
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
     endtimeforfile = dt.datetime.now()
     time_used_for_file = endtimeforfile - start_file_time
-    bytes_prozessed += os.path.getsize(file_path_full)
+    bytes_prozessed += file_size
     print(
         aktuelleZeit,
         ":",
@@ -233,7 +234,7 @@ for file, file_path_full, report_date in all_data_files:
         "/",
         bytes_total,
         "=",
-        bytes_prozessed/bytes_total * 100,
+        round(bytes_prozessed/bytes_total * 100, 4),
         "%"
     )
 

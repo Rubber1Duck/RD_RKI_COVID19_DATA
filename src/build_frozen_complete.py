@@ -85,6 +85,7 @@ iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(data_path)
 file_list.sort(reverse=False)
 pattern = 'RKI_COVID19'
+bytes_total = 0
 all_data_files = []
 for file in file_list:
     file_path_full = os.path.join(data_path, file)
@@ -94,7 +95,8 @@ for file in file_list:
         re_search = re.search(iso_date_re, filename)
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
-            all_data_files.append((file_path_full, report_date))
+            all_data_files.append((file, file_path_full, report_date))
+            bytes_total += os.path.getsize(file_path_full)
 
 # open existing kum files
 LK_kum = pd.read_csv(kum_file_LK, usecols=kum_dtypes.keys(), dtype=kum_dtypes)
@@ -103,8 +105,9 @@ LK_kum['D'] = pd.to_datetime(LK_kum['D']).dt.date
 BL_kum['D'] = pd.to_datetime(BL_kum['D']).dt.date
 keys_LK_kum = ['D', 'I']
 keys_BL_kum = ['D', 'I']
+bytes_prozessed = 0
 
-for file_path_full, report_date in all_data_files:
+for file, file_path_full, report_date in all_data_files:
     start_file_time = dt.datetime.now()
     LK = pd.read_csv(file_path_full, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
@@ -218,7 +221,21 @@ for file_path_full, report_date in all_data_files:
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
     endtimeforfile = dt.datetime.now()
     time_used_for_file = endtimeforfile - start_file_time
-    print(aktuelleZeit, ":", file_path_full, "done. calculation time for file: ", time_used_for_file)
+    bytes_prozessed += os.path.getsize(file_path_full)
+    print(
+        aktuelleZeit,
+        ":",
+        file,
+        "done. prozessing time file:",
+        time_used_for_file,
+        "prozessed bytes:",
+        bytes_prozessed,
+        "/",
+        bytes_total,
+        "=",
+        bytes_prozessed/bytes_total * 100,
+        "%"
+    )
 
 LK_kum.to_csv(
     path_or_buf=kum_file_LK,

@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import utils as ut
 
-startTime = dt.datetime.now()
 kum_file_LK = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..',
@@ -107,7 +106,8 @@ BL_kum['D'] = pd.to_datetime(BL_kum['D']).dt.date
 keys_LK_kum = ['D', 'I']
 keys_BL_kum = ['D', 'I']
 bytes_prozessed = 0
-
+tlines = 0
+startTime = dt.datetime.now()
 for file, file_size, file_path_full, report_date in all_data_files:
     start_file_time = dt.datetime.now()
     LK = pd.read_csv(file_path_full, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
@@ -223,7 +223,8 @@ for file, file_size, file_path_full, report_date in all_data_files:
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
     endtime_for_file = dt.datetime.now()
     time_used_for_file = (endtime_for_file - start_file_time).total_seconds()
-    
+    avgtime = (endtime_for_file - startTime).total_seconds()
+    tlines += lines
     bytes_prozessed += file_size
     print(
         aktuelleZeit,
@@ -241,7 +242,8 @@ for file, file_size, file_path_full, report_date in all_data_files:
         lines,
         "=",
         round(lines / time_used_for_file, 0),
-        "lines per second"
+        "lines per second. avg=",
+        round(tlines / avgtime, 3)
     )
 
 LK_kum.to_csv(

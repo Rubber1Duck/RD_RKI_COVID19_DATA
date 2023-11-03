@@ -112,9 +112,7 @@ for file, file_size, file_path_full, report_date in all_data_files:
     start_file_time = dt.datetime.now()
     LK = pd.read_csv(file_path_full, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
-    LK.sort_values(by=['IdLandkreis', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
-    LK.reset_index(drop=True, inplace=True)
-
+    
     #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
     LK = ut.squeeze_dataframe(LK)
 
@@ -123,6 +121,8 @@ for file, file_size, file_path_full, report_date in all_data_files:
     LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
     LK.insert(loc=0, column='Datenstand', value= Datenstand.date())
     LK.insert(loc=0, column='IdStaat', value= '00')
+    LK.sort_values(by=['IdLandkreis', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
+    LK.reset_index(drop=True, inplace=True)
 
     #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
     LK = ut.squeeze_dataframe(LK)
@@ -175,11 +175,10 @@ for file, file_size, file_path_full, report_date in all_data_files:
     )
     LK_pop = BV[LK_pop_mask]
     LK_pop.reset_index(inplace=True, drop=True)
-    LK['population'] = LK_pop['Einwohner']
-    LK.insert(loc=0, column='Landkreis', value=LK_pop['Name'])
+    LK = LK.merge(LK_pop, how='inner', left_on='IdLandkreis', right_on='AGS', copy=True)
     LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
-    LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['population'] * 100000
-    LK.drop(['population'], inplace=True, axis=1)
+    LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['Einwohner'] * 100000
+    LK.drop(['Einwohner', 'AGS', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
     BL_pop_mask = (
         (BV['AGS'].isin(BL['IdBundesland'])) &
         (BV['Altersgruppe'] == "A00+") &
@@ -188,24 +187,23 @@ for file, file_size, file_path_full, report_date in all_data_files:
     )
     BL_pop = BV[BL_pop_mask]
     BL_pop.reset_index(inplace=True, drop=True)
-    BL['population'] = BL_pop['Einwohner']
-    BL.insert(loc=0, column='Bundesland', value=BL_pop['Name'])
+    BL = BL.merge(BL_pop, how='inner', left_on='IdBundesland', right_on='AGS',copy=True)
     BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
-    BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['population'] * 100000
-    BL.drop(['population'], inplace=True, axis=1)
+    BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['Einwohner'] * 100000
+    BL.drop(['Einwohner', 'AGS', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
 
     # rename columns for shorter json files
     LK.rename(columns={
         'Datenstand': 'D',
         'IdLandkreis': 'I',
-        'Landkreis': 'T',
+        'Name': 'T',
         'AnzahlFall_7d': 'A',
         'incidence_7d': 'i'
         }, inplace=True)
     BL.rename(columns={
         'Datenstand': 'D',
         'IdBundesland': 'I',
-        'Bundesland': 'T',
+        'Name': 'T',
         'AnzahlFall_7d': 'A',
         'incidence_7d': 'i'
         }, inplace=True)

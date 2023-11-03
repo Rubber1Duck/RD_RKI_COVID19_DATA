@@ -168,41 +168,43 @@ for file, file_size, file_path_full, report_date in all_data_files:
     BL = pd.concat([ID0, BL])
     BL.reset_index(inplace=True, drop=True)
     LK_pop_mask = (
-        (BV['AGS'].isin(LK['IdLandkreis'])) &
         (BV['Altersgruppe'] == "A00+") &
         (BV['GueltigAb'] <= Datenstand) &
-        (BV['GueltigBis'] >= Datenstand)
+        (BV['GueltigBis'] >= Datenstand) &
+        (BV['AGS'].str.len() == 5)
     )
     LK_pop = BV[LK_pop_mask]
     LK_pop.reset_index(inplace=True, drop=True)
-    LK = LK.merge(LK_pop, how='inner', left_on='IdLandkreis', right_on='AGS', copy=True)
-    LK['AnzahlFall_7d'] = LK['AnzahlFall_7d'].astype(int)
+    LK = LK_pop.merge(LK, how='left', left_on='AGS', right_on='IdLandkreis')
+    LK['AnzahlFall_7d'] = np.where(LK['AnzahlFall_7d'] > 0, LK['AnzahlFall_7d'], 0).astype(int)
     LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['Einwohner'] * 100000
-    LK.drop(['Einwohner', 'AGS', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
+    LK['Datenstand'] = Datenstand.date()
+    LK.drop(['Einwohner', 'IdLandkreis', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
     BL_pop_mask = (
-        (BV['AGS'].isin(BL['IdBundesland'])) &
         (BV['Altersgruppe'] == "A00+") &
         (BV['GueltigAb'] <= Datenstand) &
-        (BV['GueltigBis'] >= Datenstand)
+        (BV['GueltigBis'] >= Datenstand) &
+        (BV['AGS'].str.len() == 2)
     )
     BL_pop = BV[BL_pop_mask]
     BL_pop.reset_index(inplace=True, drop=True)
-    BL = BL.merge(BL_pop, how='inner', left_on='IdBundesland', right_on='AGS',copy=True)
-    BL['AnzahlFall_7d'] = BL['AnzahlFall_7d'].astype(int)
+    BL = BL_pop.merge(BL, how='left', left_on='AGS', right_on='IdBundesland')
+    BL['AnzahlFall_7d'] = np.where(BL['AnzahlFall_7d'] > 0, BL['AnzahlFall_7d'], 0).astype(int)
+    BL['Datenstand'] = Datenstand.date()
     BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['Einwohner'] * 100000
-    BL.drop(['Einwohner', 'AGS', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
+    BL.drop(['Einwohner', 'IdBundesland', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
 
     # rename columns for shorter json files
     LK.rename(columns={
         'Datenstand': 'D',
-        'IdLandkreis': 'I',
+        'AGS': 'I',
         'Name': 'T',
         'AnzahlFall_7d': 'A',
         'incidence_7d': 'i'
         }, inplace=True)
     BL.rename(columns={
         'Datenstand': 'D',
-        'IdBundesland': 'I',
+        'AGS': 'I',
         'Name': 'T',
         'AnzahlFall_7d': 'A',
         'incidence_7d': 'i'

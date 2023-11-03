@@ -112,6 +112,7 @@ for file, file_size, file_path_full, report_date in all_data_files:
     start_file_time = dt.datetime.now()
     LK = pd.read_csv(file_path_full, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
+    lines = LK.shape[0]
     
     #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
     LK = ut.squeeze_dataframe(LK)
@@ -220,8 +221,9 @@ for file, file_size, file_path_full, report_date in all_data_files:
     BL_kum = pd.concat([BL_kum, BL])
     BL_kum.sort_values(by=keys_BL_kum, inplace=True)
     aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    endtimeforfile = dt.datetime.now()
-    time_used_for_file = endtimeforfile - start_file_time
+    endtime_for_file = dt.datetime.now()
+    time_used_for_file = (endtime_for_file - start_file_time).total_seconds()
+    
     bytes_prozessed += file_size
     print(
         aktuelleZeit,
@@ -229,13 +231,17 @@ for file, file_size, file_path_full, report_date in all_data_files:
         file,
         "done. prozessing time file:",
         time_used_for_file,
-        "prozessed bytes:",
+        "Seconds. prozessed bytes:",
         bytes_prozessed,
         "/",
         bytes_total,
         "=",
         round(bytes_prozessed/bytes_total * 100, 4),
-        "%"
+        "% Lines:",
+        lines,
+        "=",
+        round(lines / time_used_for_file, 0),
+        "lines per second"
     )
 
 LK_kum.to_csv(

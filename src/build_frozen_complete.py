@@ -22,6 +22,11 @@ BV_dtypes = {
 
 CV_dtypes = {'IdLandkreis': 'str', 'NeuerFall': 'Int32', 'AnzahlFall': 'Int32', 'Meldedatum': 'object'}
 
+# used keylists
+keys_LK = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
+keys_BL = ['IdStaat', 'IdBundesland']
+keys_ID0 = ['IdStaat']
+
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
 BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
@@ -66,9 +71,6 @@ for file, file_path_full, report_date in all_data_files:
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
     lines = LK.shape[0]
     
-    #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
-    LK = ut.squeeze_dataframe(LK)
-
     LK['IdLandkreis'] = LK['IdLandkreis'].astype(str).str.zfill(5)
     LK.insert(loc=0, column='IdBundesland', value=LK['IdLandkreis'].str[:-3].copy())
     LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
@@ -77,25 +79,12 @@ for file, file_path_full, report_date in all_data_files:
     LK.sort_values(by=['IdLandkreis', 'Meldedatum'], axis=0, inplace=True, ignore_index=True)
     LK.reset_index(drop=True, inplace=True)
 
-    #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+    #----- Squeeze the dataframe to ideal memory size
     LK = ut.squeeze_dataframe(LK)
-
-    # *******************
-    # * fixed-incidence *
-    # *******************
-        
-    # used keylists
-    keys_LK = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
-    keys_BL = ['IdStaat', 'IdBundesland']
-    keys_ID0 = ['IdStaat']
 
     LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0).astype(int)
     LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0).astype(int)
-    LK.drop([
-        'Meldedatum',
-        'NeuerFall',
-        'AnzahlFall'], inplace=True, axis=1
-    )
+    LK.drop(['Meldedatum', 'NeuerFall', 'AnzahlFall'], inplace=True, axis=1)
     agg_LK = {
         c: 'max' if c in ['Datenstand'] else 'sum'
         for c in LK.columns
@@ -128,23 +117,23 @@ for file, file_path_full, report_date in all_data_files:
     LK_BV_valid.reset_index(inplace=True, drop=True)
     LK_BV_valid.drop(['Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
     LK = LK.merge(LK_BV_valid, how='right', left_on='IdLandkreis', right_on='AGS')
-    LK['AnzahlFall_7d'] = np.where(LK['AnzahlFall_7d'].empty, 0, LK['AnzahlFall_7d']).astype(int)
-    LK['Datenstand'] = np.where(LK['Datenstand'].empty, Datenstand.date(), LK['Datenstand'])
+    LK['AnzahlFall_7d'] = np.where(LK['AnzahlFall_7d'].isnull(), 0, LK['AnzahlFall_7d']).astype(int)
+    LK['Datenstand'] = np.where(LK['Datenstand'].isnull(), Datenstand.date(), LK['Datenstand'])
     LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['Einwohner'] * 100000
-    LK.drop(['Einwohner', 'AGS'], inplace=True, axis=1)
+    LK.drop(['Einwohner', 'IdLandkreis'], inplace=True, axis=1)
     
     BL_BV_valid = BV[((BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= Datenstand) & (BV['GueltigBis'] >= Datenstand) & (BV['AGS'].str.len() == 2))].copy()
     BL_BV_valid.drop(['Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
     BL_BV_valid.reset_index(inplace=True, drop=True)
     BL = BL.merge(BL_BV_valid, how='right', left_on='IdBundesland', right_on='AGS')
-    BL['AnzahlFall_7d'] = np.where(BL['AnzahlFall_7d'].empty, 0, BL['AnzahlFall_7d']).astype(int)
-    BL['Datenstand'] = np.where(BL['Datenstand'].empty, Datenstand.date(), BL['Datenstand'])
+    BL['AnzahlFall_7d'] = np.where(BL['AnzahlFall_7d'].isnull(), 0, BL['AnzahlFall_7d']).astype(int)
+    BL['Datenstand'] = np.where(BL['Datenstand'].isnull(), Datenstand.date(), BL['Datenstand'])
     BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['Einwohner'] * 100000
-    BL.drop(['Einwohner', 'AGS'], inplace=True, axis=1)
+    BL.drop(['Einwohner', 'IdBundesland'], inplace=True, axis=1)
 
     # rename columns for shorter json files
-    LK.rename(columns={'Datenstand': 'D', 'IdLandkreis': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
-    BL.rename(columns={'Datenstand': 'D', 'IdBundesland': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
+    LK.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
+    BL.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
     LK['D'] = pd.to_datetime(LK['D']).dt.date
     BL['D'] = pd.to_datetime(BL['D']).dt.date
     Datenstand2 = Datenstand.date()
@@ -166,8 +155,10 @@ for file, file_path_full, report_date in all_data_files:
     aktuelleZeit = fileEndTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
     print(aktuelleZeit, ":", file, "done.", "fileTime:", fileTimeDelta, " Lines:", lines)
 
+# save LK_init.json.xz
 LK_kum.to_json(path_or_buf=kum_file_LK, orient='records', date_format='iso', force_ascii=False, compression='infer')
-    
+
+# save BL_init.json.xz    
 BL_kum.to_json(path_or_buf=kum_file_BL, orient='records', date_format='iso', force_ascii=False, compression='infer')
 
 endTime = dt.datetime.now()

@@ -5,86 +5,49 @@ import numpy as np
 import pandas as pd
 import utils as ut
 
-kum_file_LK = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'LK_init.csv.xz'
-)
-kum_file_BL = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence',
-    'BL_init.csv.xz'
-)
-BV_csv_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'Bevoelkerung',
-    'Bevoelkerung.csv'
-)
-LK_dtypes = {
-    'Datenstand': 'object',
-    'IdLandkreis': 'str',
-    'Landkreis': 'str',
-    'AnzahlFall_7d': 'Int32',
-    'incidence_7d': 'float64'
-}
-BL_dtypes = {
-    'Datenstand': 'object',
-    'IdBundesland': 'str',
-    'Bundesland': 'str',
-    'AnzahlFall_7d': 'Int32',
-    'incidence_7d': 'float64'
-}
-kum_dtypes = {
-    'D': 'object',
-    'I': 'str',
-    'T': 'str',
-    'A': 'Int32',
-    'i': 'float64'
-}
+startTime = dt.datetime.now()
+
+kum_file_LK = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence', 'LK_init.json.xz')
+
+kum_file_BL = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dataStore', 'frozen-incidence', 'BL_init.json.xz')
+
+BV_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Bevoelkerung', 'Bevoelkerung.csv')
+
+kum_dtypes = {'D': 'object', 'I': 'str', 'T': 'str', 'A': 'Int32', 'i': 'float64'}
+
 BV_dtypes = {
-    'AGS': 'str',
-    'Altersgruppe': 'str',
-    'Name': 'str',
-    'GueltigAb': 'object',
-    'GueltigBis': 'object',
-    'Einwohner': 'Int32',
-    'männlich': 'Int32',
-    'weiblich': 'Int32'
+    'AGS': 'str', 'Altersgruppe': 'str', 'Name': 'str', 'GueltigAb': 'object',
+    'GueltigBis': 'object', 'Einwohner': 'Int32', 'männlich': 'Int32', 'weiblich': 'Int32'
 }
-CV_dtypes = {
-    'IdLandkreis': 'str',
-    'NeuerFall': 'Int32',
-    'AnzahlFall': 'Int32',
-    'Meldedatum': 'object'
-}
-path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'frozen-incidence'
-)
+
+CV_dtypes = {'IdLandkreis': 'str', 'NeuerFall': 'Int32', 'AnzahlFall': 'Int32', 'Meldedatum': 'object'}
 
 # open bevoelkerung.csv
 BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
 BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
 BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
-#----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+#----- Squeeze the dataframe to ideal memory size
 BV = ut.squeeze_dataframe(BV)
 
-# step througt all data file
+# open existing kum files
+try:
+    LK_kum = pd.read_json(path_or_buf=kum_file_LK, dtype=kum_dtypes)
+    BL_kum = pd.read_json(path_or_buf=kum_file_BL, dtype=kum_dtypes)
+    LK_kum['D'] = pd.to_datetime(LK_kum['D']).dt.date
+    BL_kum['D'] = pd.to_datetime(BL_kum['D']).dt.date
+    kum_exists = True
+except:
+    kum_exists = False
+keys_kum = ['D', 'I']
+
+# find all data file
 data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 data_path = os.path.normpath(data_path)
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'
 file_list = os.listdir(data_path)
 file_list.sort(reverse=False)
 pattern = 'RKI_COVID19'
-bytes_total = 0
 all_data_files = []
 for file in file_list:
     file_path_full = os.path.join(data_path, file)
@@ -94,22 +57,11 @@ for file in file_list:
         re_search = re.search(iso_date_re, filename)
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
-            file_size = os.path.getsize(file_path_full)
-            all_data_files.append((file, file_size, file_path_full, report_date))
-            bytes_total += file_size
+            all_data_files.append((file, file_path_full, report_date))
 
-# open existing kum files
-LK_kum = pd.read_csv(kum_file_LK, usecols=kum_dtypes.keys(), dtype=kum_dtypes)
-BL_kum = pd.read_csv(kum_file_BL, usecols=kum_dtypes.keys(), dtype=kum_dtypes)
-LK_kum['D'] = pd.to_datetime(LK_kum['D']).dt.date
-BL_kum['D'] = pd.to_datetime(BL_kum['D']).dt.date
-keys_LK_kum = ['D', 'I']
-keys_BL_kum = ['D', 'I']
-bytes_prozessed = 0
-tlines = 0
-startTime = dt.datetime.now()
-for file, file_size, file_path_full, report_date in all_data_files:
-    start_file_time = dt.datetime.now()
+# step through all data files
+for file, file_path_full, report_date in all_data_files:
+    fileStartTime = dt.datetime.now()
     LK = pd.read_csv(file_path_full, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
     lines = LK.shape[0]
@@ -133,9 +85,9 @@ for file, file_size, file_path_full, report_date in all_data_files:
     # *******************
         
     # used keylists
-    keys_LK_fix = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
-    keys_BL_fix = ['IdStaat', 'IdBundesland']
-    keys_ID0_fix = ['IdStaat']
+    keys_LK = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
+    keys_BL = ['IdStaat', 'IdBundesland']
+    keys_ID0 = ['IdStaat']
 
     LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([0, 1]), LK['AnzahlFall'], 0).astype(int)
     LK['AnzahlFall_7d'] = np.where(LK['Meldedatum'] > (Datenstand.date() - dt.timedelta(days=8)), LK['AnzahlFall'], 0).astype(int)
@@ -144,155 +96,79 @@ for file, file_size, file_path_full, report_date in all_data_files:
         'NeuerFall',
         'AnzahlFall'], inplace=True, axis=1
     )
-    agg_key = {
+    agg_LK = {
         c: 'max' if c in ['Datenstand'] else 'sum'
         for c in LK.columns
-        if c not in keys_LK_fix
+        if c not in keys_LK
     }
-    LK = LK.groupby(by=keys_LK_fix, as_index=False, observed=True).agg(agg_key)
-    agg_key = {
+    LK = LK.groupby(by=keys_LK, as_index=False, observed=True).agg(agg_LK)
+    
+    agg_BL = {
         c: 'max' if c in ['IdLandkreis', 'Datenstand'] else 'sum'
         for c in LK.columns
-        if c not in keys_BL_fix
+        if c not in keys_BL
     }
-    BL = LK.groupby(by=keys_BL_fix, as_index=False, observed=True).agg(agg_key)
-    agg_key = {
+    BL = LK.groupby(by=keys_BL, as_index=False, observed=True).agg(agg_BL)
+    
+    agg_ID0 = {
         c: 'max' if c in ['IdBundesland', 'IdLandkreis', 'Datenstand'] else 'sum'
         for c in BL.columns
-        if c not in keys_ID0_fix
+        if c not in keys_ID0
     }
-    ID0 = BL.groupby(by=keys_ID0_fix, as_index=False, observed=True).agg(agg_key)
+    ID0 = BL.groupby(by=keys_ID0, as_index=False, observed=True).agg(agg_ID0)
+    
     LK.drop(['IdStaat', 'IdBundesland'], inplace=True, axis=1)
     BL.drop(['IdStaat', 'IdLandkreis'], inplace=True, axis=1)
     ID0.drop(['IdStaat', 'IdLandkreis'], inplace=True, axis=1)
     ID0['IdBundesland'] = '00'
     BL = pd.concat([ID0, BL])
     BL.reset_index(inplace=True, drop=True)
-    LK_pop_mask = (
-        (BV['Altersgruppe'] == "A00+") &
-        (BV['GueltigAb'] <= Datenstand) &
-        (BV['GueltigBis'] >= Datenstand) &
-        (BV['AGS'].str.len() == 5)
-    )
-    LK_pop = BV[LK_pop_mask]
-    LK_pop.reset_index(inplace=True, drop=True)
-    LK = LK_pop.merge(LK, how='left', left_on='AGS', right_on='IdLandkreis')
-    LK['AnzahlFall_7d'] = np.where(LK['AnzahlFall_7d'] > 0, LK['AnzahlFall_7d'], 0).astype(int)
+    
+    LK_BV_valid = BV[((BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= Datenstand) & (BV['GueltigBis'] >= Datenstand) & (BV['AGS'].str.len() == 5))].copy()
+    LK_BV_valid.reset_index(inplace=True, drop=True)
+    LK_BV_valid.drop(['Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
+    LK = LK.merge(LK_BV_valid, how='right', left_on='IdLandkreis', right_on='AGS')
+    LK['AnzahlFall_7d'] = np.where(LK['AnzahlFall_7d'].empty, 0, LK['AnzahlFall_7d']).astype(int)
+    LK['Datenstand'] = np.where(LK['Datenstand'].empty, Datenstand.date(), LK['Datenstand'])
     LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['Einwohner'] * 100000
-    LK['Datenstand'] = Datenstand.date()
-    LK.drop(['Einwohner', 'IdLandkreis', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
-    BL_pop_mask = (
-        (BV['Altersgruppe'] == "A00+") &
-        (BV['GueltigAb'] <= Datenstand) &
-        (BV['GueltigBis'] >= Datenstand) &
-        (BV['AGS'].str.len() == 2)
-    )
-    BL_pop = BV[BL_pop_mask]
-    BL_pop.reset_index(inplace=True, drop=True)
-    BL = BL_pop.merge(BL, how='left', left_on='AGS', right_on='IdBundesland')
-    BL['AnzahlFall_7d'] = np.where(BL['AnzahlFall_7d'] > 0, BL['AnzahlFall_7d'], 0).astype(int)
-    BL['Datenstand'] = Datenstand.date()
+    LK.drop(['Einwohner', 'AGS'], inplace=True, axis=1)
+    
+    BL_BV_valid = BV[((BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= Datenstand) & (BV['GueltigBis'] >= Datenstand) & (BV['AGS'].str.len() == 2))].copy()
+    BL_BV_valid.drop(['Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
+    BL_BV_valid.reset_index(inplace=True, drop=True)
+    BL = BL.merge(BL_BV_valid, how='right', left_on='IdBundesland', right_on='AGS')
+    BL['AnzahlFall_7d'] = np.where(BL['AnzahlFall_7d'].empty, 0, BL['AnzahlFall_7d']).astype(int)
+    BL['Datenstand'] = np.where(BL['Datenstand'].empty, Datenstand.date(), BL['Datenstand'])
     BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['Einwohner'] * 100000
-    BL.drop(['Einwohner', 'IdBundesland', 'Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
+    BL.drop(['Einwohner', 'AGS'], inplace=True, axis=1)
 
     # rename columns for shorter json files
-    LK.rename(columns={
-        'Datenstand': 'D',
-        'AGS': 'I',
-        'Name': 'T',
-        'AnzahlFall_7d': 'A',
-        'incidence_7d': 'i'
-        }, inplace=True)
-    BL.rename(columns={
-        'Datenstand': 'D',
-        'AGS': 'I',
-        'Name': 'T',
-        'AnzahlFall_7d': 'A',
-        'incidence_7d': 'i'
-        }, inplace=True)
-    
-    Datenstand2 = Datenstand.date()
-    LK_kum = LK_kum[LK_kum['D'] != Datenstand2]
-    BL_kum = BL_kum[BL_kum['D'] != Datenstand2]
+    LK.rename(columns={'Datenstand': 'D', 'IdLandkreis': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
+    BL.rename(columns={'Datenstand': 'D', 'IdBundesland': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
     LK['D'] = pd.to_datetime(LK['D']).dt.date
     BL['D'] = pd.to_datetime(BL['D']).dt.date
-    LK_kum = pd.concat([LK_kum, LK])
-    LK_kum.sort_values(by=keys_LK_kum, inplace=True)
-    BL_kum = pd.concat([BL_kum, BL])
-    BL_kum.sort_values(by=keys_BL_kum, inplace=True)
-    aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-    endtime_for_file = dt.datetime.now()
-    time_used_for_file = (endtime_for_file - start_file_time).total_seconds()
-    avgtime = (endtime_for_file - startTime).total_seconds()
-    tlines += lines
-    bytes_prozessed += file_size
-    print(
-        aktuelleZeit,
-        ":",
-        file,
-        "done. prozessing time file:",
-        time_used_for_file,
-        "Seconds. prozessed bytes:",
-        bytes_prozessed,
-        "/",
-        bytes_total,
-        "=",
-        round(bytes_prozessed/bytes_total * 100, 4),
-        "% Lines:",
-        lines,
-        "=",
-        round(lines / time_used_for_file, 0),
-        "lines per second. avg=",
-        round(tlines / avgtime, 3)
-    )
+    Datenstand2 = Datenstand.date()
+    
+    if kum_exists:
+        LK_kum = LK_kum[LK_kum['D'] != Datenstand2]
+        BL_kum = BL_kum[BL_kum['D'] != Datenstand2]
+        LK_kum = pd.concat([LK_kum, LK])
+        LK_kum.sort_values(by=keys_kum, inplace=True)
+        BL_kum = pd.concat([BL_kum, BL])
+    else:
+        LK_kum = LK.copy()
+        BL_kum = BL.copy()
+        kum_exists = True
+    BL_kum.sort_values(by=keys_kum, inplace=True)
+    LK_kum.sort_values(by=keys_kum, inplace=True)
+    fileEndTime = dt.datetime.now()
+    fileTimeDelta = (fileEndTime - fileStartTime).total_seconds()
+    aktuelleZeit = fileEndTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
+    print(aktuelleZeit, ":", file, "done.", "fileTime:", fileTimeDelta, " Lines:", lines)
 
-LK_kum.to_csv(
-    path_or_buf=kum_file_LK,
-    index=False,
-    header=True,
-    lineterminator='\n',
-    encoding='utf-8',
-    date_format='%Y-%m-%d',
-    columns=kum_dtypes.keys(),
-    compression='infer'
-)
+LK_kum.to_json(path_or_buf=kum_file_LK, orient='records', date_format='iso', force_ascii=False, compression='infer')
     
-LK_json_path = os.path.join(
-    path,
-    'LK_init.json.xz'
-)
-    
-LK_kum.to_json(
-    path_or_buf=LK_json_path,
-    orient='records',
-    date_format='iso',
-    force_ascii=False,
-    compression='infer'
-)
-    
-BL_kum.to_csv(
-    path_or_buf=kum_file_BL,
-    index=False,
-    header=True,
-    lineterminator='\n',
-    encoding='utf-8',
-    date_format='%Y-%m-%d',
-    columns=kum_dtypes.keys(),
-    compression='infer'
-)
-    
-BL_json_path = os.path.join(
-    path,
-    'BL_init.json.xz'
-)
-
-BL_kum.to_json(
-    path_or_buf=BL_json_path,
-    orient='records',
-    date_format='iso',
-    force_ascii=False,
-    compression='infer'
-)
+BL_kum.to_json(path_or_buf=kum_file_BL, orient='records', date_format='iso', force_ascii=False, compression='infer')
 
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')

@@ -23,7 +23,7 @@ BV_dtypes = {
 CV_dtypes = {'IdLandkreis': 'str', 'NeuerFall': 'Int32', 'AnzahlFall': 'Int32', 'Meldedatum': 'object'}
 
 # used keylists
-keys_LK = ['IdStaat', 'IdBundesland', 'IdLandkreis' ]
+keys_LK = ['IdStaat', 'IdLandkreis' ]
 keys_BL = ['IdStaat', 'IdBundesland']
 keys_ID0 = ['IdStaat']
 
@@ -71,8 +71,6 @@ for file, file_path_full, report_date in all_data_files:
     Datenstand = dt.datetime.strptime(report_date, '%Y-%m-%d')
     lines = LK.shape[0]
     
-    LK['IdLandkreis'] = LK['IdLandkreis'].astype(str).str.zfill(5)
-    LK.insert(loc=0, column='IdBundesland', value=LK['IdLandkreis'].str[:-3].copy())
     LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
     LK.insert(loc=0, column='Datenstand', value= Datenstand.date())
     LK.insert(loc=0, column='IdStaat', value= '00')
@@ -91,7 +89,9 @@ for file, file_path_full, report_date in all_data_files:
         if c not in keys_LK
     }
     LK = LK.groupby(by=keys_LK, as_index=False, observed=True).agg(agg_LK)
-    
+    LK['IdLandkreis'] = LK['IdLandkreis'].astype(str).str.zfill(5)
+    LK.insert(loc=0, column='IdBundesland', value=LK['IdLandkreis'].str[:-3].copy())
+
     agg_BL = {
         c: 'max' if c in ['IdLandkreis', 'Datenstand'] else 'sum'
         for c in LK.columns
@@ -142,7 +142,6 @@ for file, file_path_full, report_date in all_data_files:
         LK_kum = LK_kum[LK_kum['D'] != Datenstand2]
         BL_kum = BL_kum[BL_kum['D'] != Datenstand2]
         LK_kum = pd.concat([LK_kum, LK])
-        LK_kum.sort_values(by=keys_kum, inplace=True)
         BL_kum = pd.concat([BL_kum, BL])
     else:
         LK_kum = LK.copy()

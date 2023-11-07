@@ -526,11 +526,11 @@ kum_file_LK_old_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidenc
 kum_file_BL_old_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL.json.xz')
 
 try:
-    LK_kum_old = pd.read_json(kum_file_LK_old_gz, dtype=LK_dtypes)
-    BL_kum_old = pd.read_json(kum_file_BL_old_gz, dtype=BL_dtypes)
-except:
     LK_kum_old = pd.read_json(kum_file_LK_old_xz, dtype=LK_dtypes)
     BL_kum_old = pd.read_json(kum_file_BL_old_xz, dtype=BL_dtypes)
+except:
+    LK_kum_old = pd.read_json(kum_file_LK_old_gz, dtype=LK_dtypes)
+    BL_kum_old = pd.read_json(kum_file_BL_old_gz, dtype=BL_dtypes)
 
 LK_kum_new = pd.read_json(kum_file_LK_xz, dtype=kum_dtypes)
 BL_kum_new = pd.read_json(kum_file_BL_xz, dtype=kum_dtypes)

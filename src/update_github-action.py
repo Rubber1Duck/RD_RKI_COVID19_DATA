@@ -396,11 +396,14 @@ agg_key = {
 }
 ID0 = BL.groupby(by=key_list_ID0_hist, as_index=False, observed=True).agg(agg_key)
 LK.drop(['IdBundesland', 'Bundesland'], inplace=True, axis=1)
+LK.sort_values(by=key_list_LK_hist, inplace=True)
+LK.reset_index(inplace=True, drop=True)
 BL.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0.drop(['IdLandkreis', 'Landkreis'], inplace=True, axis=1)
 ID0['IdBundesland'] = '00'
 ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
+BL.sort_values(by=key_list_BL_hist, inplace=True)
 BL.reset_index(inplace=True, drop=True)
 
 # store gz compressed json

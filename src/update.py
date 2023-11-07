@@ -8,24 +8,11 @@ import utils as ut
 import gc
 
 startTime = dt.datetime.now()
-meta_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'meta'
-)
+base_path = os.path.dirname(os.path.abspath(__file__))
+meta_path = os.path.join(base_path, '..', 'dataStore', 'meta')
 filename_meta = "meta_new.json"
-feather_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataBase.feather'
-)
-BV_csv_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'Bevoelkerung',
-    'Bevoelkerung.csv'
-)
+feather_path = os.path.join(base_path, '..', 'dataBase.feather')
+BV_csv_path = os.path.join(base_path, '..', 'Bevoelkerung', 'Bevoelkerung.csv')
 LK_dtypes = {
     'Datenstand': 'object',
     'IdLandkreis': 'str',
@@ -106,10 +93,10 @@ dataBase = ut.squeeze_dataframe(dataBase)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
-data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+data_path = os.path.join(base_path, '..', 'data')
 fileNameXz = fileName + '.xz'
-full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileName)
-full_pathXz = os.path.join(os.path.dirname(os.path.abspath(__file__)),data_path,fileNameXz)
+full_path = os.path.join(base_path, data_path, fileName)
+full_pathXz = os.path.join(base_path, data_path, fileNameXz)
 data_path = os.path.normpath(data_path)
 full_path = os.path.normpath(full_path)
 istDatei = os.path.isfile(full_path)
@@ -328,26 +315,11 @@ BL.rename(columns={
 )
 
 # store json
-path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'agegroup'
-)
+path = os.path.join(base_path, '..', 'dataStore', 'agegroup')
 LK_json_path = os.path.join(path, 'districts.json')
 BL_json_path = os.path.join(path, 'states.json')
-LK.to_json(
-    path_or_buf=LK_json_path,
-    orient="records",
-    date_format="iso",
-    force_ascii=False
-)
-BL.to_json(
-    path_or_buf=BL_json_path,
-    orient="records",
-    date_format="iso",
-    force_ascii=False
-)
+LK.to_json(path_or_buf=LK_json_path, orient="records", date_format="iso", force_ascii=False)
+BL.to_json(path_or_buf=BL_json_path, orient="records", date_format="iso", force_ascii=False)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
@@ -439,26 +411,11 @@ BL_pop.reset_index(inplace=True, drop=True)
 BL['population'] = BL_pop['Einwohner']
 
 # store json
-path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'cases'
-)
+path = os.path.join(base_path, '..', 'dataStore', 'cases')
 LK_json_path = os.path.join(path, 'districts.json')
 BL_json_path = os.path.join(path, 'states.json')
-LK.to_json(
-    path_or_buf=LK_json_path,
-    orient="records",
-    date_format="iso",
-    force_ascii=False
-)
-BL.to_json(
-    path_or_buf=BL_json_path,
-    orient="records",
-    date_format="iso",
-    force_ascii=False
-)
+LK.to_json(path_or_buf=LK_json_path, orient="records", date_format="iso", force_ascii=False)
+BL.to_json(path_or_buf=BL_json_path, orient="records", date_format="iso", force_ascii=False)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
@@ -511,26 +468,11 @@ BL = pd.concat([ID0, BL])
 BL.reset_index(inplace=True, drop=True)
 
 # store json
-path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '..',
-    'dataStore',
-    'history'
-)
+path = os.path.join(base_path, '..', 'dataStore', 'history')
 LK_json_path = os.path.join(path, 'districts.json')
 BL_json_path = os.path.join(path, 'states.json')
-LK.to_json(
-    path_or_buf=LK_json_path,
-    orient="records",
-    date_format="iso",
-    force_ascii=False
-)
-BL.to_json(
-    path_or_buf=BL_json_path,
-    orient="records",
-    date_format="iso",
-    force_ascii=False
-)
+LK.to_json(path_or_buf=LK_json_path, orient="records", date_format="iso", force_ascii=False)
+BL.to_json(path_or_buf=BL_json_path, orient="records", date_format="iso", force_ascii=False)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 

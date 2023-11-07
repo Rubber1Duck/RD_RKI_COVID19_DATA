@@ -517,8 +517,8 @@ for file_path_full, report_date in all_files:
         os.remove(file_path_full)
 
 # open existing kum files
-kum_file_LK_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK_init.json.xz')
-kum_file_BL_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL_init.json.xz')
+kum_file_LK_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK_complete.json.xz')
+kum_file_BL_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL_complete.json.xz')
 
 kum_file_LK_old_gz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK.json.gz')
 kum_file_BL_old_gz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL.json.gz')

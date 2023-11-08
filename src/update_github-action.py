@@ -14,6 +14,7 @@ filename_meta = "meta_new.json"
 feather_path = os.path.join(base_path, '..', 'dataBase.feather')
 BV_csv_path = os.path.join(base_path, '..', 'Bevoelkerung', 'Bevoelkerung.csv')
 LK_dtypes = {'Datenstand': 'object', 'IdLandkreis': 'str', 'Landkreis': 'str', 'incidence_7d': 'float64'}
+LK_dtypes_single_files = {'Datenstand': 'object', 'IdLandkreis': 'str', 'Landkreis': 'str', 'AnzahlFall_7d': 'int32','incidence_7d': 'float64'}
 BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'str', 'Bundesland': 'str', 'incidence_7d': 'float64'}
 kum_dtypes = {'D': 'object', 'I': 'str', 'T': 'str', 'i': 'float64'}
 BV_dtypes = {'AGS': 'str', 'Altersgruppe': 'str', 'Name': 'str', 'GueltigAb': 'object',
@@ -488,7 +489,7 @@ BL.rename(columns={'AGS': 'IdBundesland', 'Name': 'Bundesland'}, inplace=True)
 path = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence')
 path_csv = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'csv')
 LK_csv_path = os.path.join(path_csv, 'frozen-incidence_' + Datenstand.date().strftime('%Y-%m-%d') + '_LK.csv')
-LK.to_csv(LK_csv_path, index=False, header=True, lineterminator='\n', encoding='utf-8', date_format='%Y-%m-%d', columns=LK_dtypes.keys())
+LK.to_csv(LK_csv_path, index=False, header=True, lineterminator='\n', encoding='utf-8', date_format='%Y-%m-%d', columns=LK_dtypes_single_files.keys())
 
 # limit frozen-incidence csv files to the last 60 days
 iso_date_re = '([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])'

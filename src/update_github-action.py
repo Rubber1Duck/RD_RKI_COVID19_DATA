@@ -13,14 +13,9 @@ meta_path = os.path.join(base_path, '..', 'dataStore', 'meta')
 filename_meta = "meta_new.json"
 feather_path = os.path.join(base_path, '..', 'dataBase.feather')
 BV_csv_path = os.path.join(base_path, '..', 'Bevoelkerung', 'Bevoelkerung.csv')
-LK_dtypes = {'Datenstand': 'object', 'IdLandkreis': 'str', 'Landkreis': 'str',
-    'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'
-}
-BL_dtypes = {
-    'Datenstand': 'object', 'IdBundesland': 'str', 'Bundesland': 'str',
-    'AnzahlFall_7d': 'Int32', 'incidence_7d': 'float64'
-}
-kum_dtypes = {'D': 'object', 'I': 'str', 'T': 'str', 'A': 'Int32', 'i': 'float64'}
+LK_dtypes = {'Datenstand': 'object', 'IdLandkreis': 'str', 'Landkreis': 'str', 'incidence_7d': 'float64'}
+BL_dtypes = {'Datenstand': 'object', 'IdBundesland': 'str', 'Bundesland': 'str', 'incidence_7d': 'float64'}
+kum_dtypes = {'D': 'object', 'I': 'str', 'T': 'str', 'i': 'float64'}
 BV_dtypes = {'AGS': 'str', 'Altersgruppe': 'str', 'Name': 'str', 'GueltigAb': 'object',
     'GueltigBis': 'object', 'Einwohner': 'Int32', 'männlich': 'Int32', 'weiblich': 'Int32'
 }
@@ -519,6 +514,8 @@ for file_path_full, report_date in all_files:
     if report_date not in day_range_str:
         os.remove(file_path_full)
 
+LK.drop(['AnzahlFall_7d'], inplace=True, axis=1)
+BL.drop(['AnzahlFall_7d'], inplace=True, axis=1)
 # open existing kum files
 kum_file_LK_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK_complete.json.xz')
 kum_file_BL_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL_complete.json.xz')
@@ -569,8 +566,8 @@ BL_kum_old.to_json(path_or_buf=kum_file_BL_old_gz, orient='records', date_format
 LK_kum_old.to_json(path_or_buf=kum_file_LK_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 BL_kum_old.to_json(path_or_buf=kum_file_BL_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 
-LK.rename(columns={'Datenstand': 'D', 'IdLandkreis': 'I', 'Landkreis': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
-BL.rename(columns={'Datenstand': 'D', 'IdBundesland': 'I', 'Bundesland': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
+LK.rename(columns={'Datenstand': 'D', 'IdLandkreis': 'I', 'Landkreis': 'T', 'incidence_7d': 'i'}, inplace=True)
+BL.rename(columns={'Datenstand': 'D', 'IdBundesland': 'I', 'Bundesland': 'T', 'incidence_7d': 'i'}, inplace=True)
 LK_kum_new = pd.concat([LK_kum_new, LK])
 LK_kum_new.sort_values(by=key_list_kum, inplace=True)
 BL_kum_new = pd.concat([BL_kum_new, BL])

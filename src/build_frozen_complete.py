@@ -13,7 +13,7 @@ kum_file_BL = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'da
 
 BV_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Bevoelkerung', 'Bevoelkerung.csv')
 
-kum_dtypes = {'D': 'object', 'I': 'str', 'T': 'str', 'A': 'Int32', 'i': 'float64'}
+kum_dtypes = {'D': 'object', 'I': 'str', 'T': 'str', 'i': 'float64'}
 
 BV_dtypes = {
     'AGS': 'str', 'Altersgruppe': 'str', 'Name': 'str', 'GueltigAb': 'object',
@@ -120,7 +120,7 @@ for file, file_path_full, report_date in all_data_files:
     LK['AnzahlFall_7d'] = np.where(LK['AnzahlFall_7d'].isnull(), 0, LK['AnzahlFall_7d']).astype(int)
     LK['Datenstand'] = np.where(LK['Datenstand'].isnull(), Datenstand.date(), LK['Datenstand'])
     LK['incidence_7d'] = LK['AnzahlFall_7d'] / LK['Einwohner'] * 100000
-    LK.drop(['Einwohner', 'IdLandkreis'], inplace=True, axis=1)
+    LK.drop(['Einwohner', 'IdLandkreis', 'AnzahlFall_7d'], inplace=True, axis=1)
     
     BL_BV_valid = BV[((BV['Altersgruppe'] == "A00+") & (BV['GueltigAb'] <= Datenstand) & (BV['GueltigBis'] >= Datenstand) & (BV['AGS'].str.len() == 2))].copy()
     BL_BV_valid.drop(['Altersgruppe', 'GueltigAb', 'GueltigBis', 'männlich', 'weiblich'], inplace=True, axis=1)
@@ -129,11 +129,11 @@ for file, file_path_full, report_date in all_data_files:
     BL['AnzahlFall_7d'] = np.where(BL['AnzahlFall_7d'].isnull(), 0, BL['AnzahlFall_7d']).astype(int)
     BL['Datenstand'] = np.where(BL['Datenstand'].isnull(), Datenstand.date(), BL['Datenstand'])
     BL['incidence_7d'] = BL['AnzahlFall_7d'] / BL['Einwohner'] * 100000
-    BL.drop(['Einwohner', 'IdBundesland'], inplace=True, axis=1)
+    BL.drop(['Einwohner', 'IdBundesland', 'AnzahlFall_7d'], inplace=True, axis=1)
 
     # rename columns for shorter json files
-    LK.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
-    BL.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'AnzahlFall_7d': 'A', 'incidence_7d': 'i'}, inplace=True)
+    LK.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'incidence_7d': 'i'}, inplace=True)
+    BL.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'incidence_7d': 'i'}, inplace=True)
     LK['D'] = pd.to_datetime(LK['D']).dt.date
     BL['D'] = pd.to_datetime(BL['D']).dt.date
     Datenstand2 = Datenstand.date()

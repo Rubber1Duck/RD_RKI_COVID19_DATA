@@ -253,13 +253,9 @@ BL.reset_index(inplace=True, drop=True)
 
 # store as gz compresed json
 path = os.path.join(base_path, '..', 'dataStore', 'agegroup')
-LK_json_gz = os.path.join(path, 'districts.json.gz')
-BL_json_gz = os.path.join(path, 'states.json.gz')
 LK_json_xz = os.path.join(path, 'districts.json.xz')
 BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_gz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_gz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
@@ -341,13 +337,9 @@ BL['population'] = BL_pop['Einwohner']
 
 # store as gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'cases')
-LK_json_gz = os.path.join(path, 'districts.json.gz')
-BL_json_gz = os.path.join(path, 'states.json.gz')
 LK_json_xz = os.path.join(path, 'districts.json.xz')
 BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_gz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_gz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
@@ -404,13 +396,9 @@ BL.reset_index(inplace=True, drop=True)
 
 # store gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'history')
-LK_json_gz = os.path.join(path, 'districts.json.gz')
-BL_json_gz = os.path.join(path, 'states.json.gz')
 LK_json_xz = os.path.join(path, 'districts.json.xz')
 BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_gz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_gz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
@@ -521,17 +509,11 @@ BL.drop(['AnzahlFall_7d'], inplace=True, axis=1)
 kum_file_LK_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK_complete.json.xz')
 kum_file_BL_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL_complete.json.xz')
 
-kum_file_LK_old_gz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK.json.gz')
-kum_file_BL_old_gz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL.json.gz')
 kum_file_LK_old_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK.json.xz')
 kum_file_BL_old_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL.json.xz')
 
-try:
-    LK_kum_old = pd.read_json(kum_file_LK_old_xz, dtype=LK_dtypes)
-    BL_kum_old = pd.read_json(kum_file_BL_old_xz, dtype=BL_dtypes)
-except:
-    LK_kum_old = pd.read_json(kum_file_LK_old_gz, dtype=LK_dtypes)
-    BL_kum_old = pd.read_json(kum_file_BL_old_gz, dtype=BL_dtypes)
+LK_kum_old = pd.read_json(kum_file_LK_old_xz, dtype=LK_dtypes)
+BL_kum_old = pd.read_json(kum_file_BL_old_xz, dtype=BL_dtypes)
 
 LK_kum_new = pd.read_json(kum_file_LK_xz, dtype=kum_dtypes)
 BL_kum_new = pd.read_json(kum_file_BL_xz, dtype=kum_dtypes)
@@ -562,8 +544,6 @@ LK_kum_old.sort_values(by=key_list_LK, inplace=True)
 BL_kum_old = pd.concat([BL_kum_old, BL])
 BL_kum_old.sort_values(by=key_list_BL, inplace=True)
 
-LK_kum_old.to_json(path_or_buf=kum_file_LK_old_gz, orient='records', date_format='iso', force_ascii=False, compression='infer')
-BL_kum_old.to_json(path_or_buf=kum_file_BL_old_gz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 LK_kum_old.to_json(path_or_buf=kum_file_LK_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 BL_kum_old.to_json(path_or_buf=kum_file_BL_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 

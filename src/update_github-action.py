@@ -356,10 +356,11 @@ key_list_LK_hist = ['IdLandkreis', 'Meldedatum']
 key_list_BL_hist = ['IdBundesland', 'Meldedatum']
 key_list_ID0_hist = ['Meldedatum']
 
+LK['Meldedatum'] = LK['Meldedatum'].astype(str)
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([1, 0]), LK['AnzahlFall'], 0).astype(int)
 LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([1, 0, -9]), LK['AnzahlTodesfall'], 0).astype(int)
 LK['AnzahlGenesen'] = np.where(LK['NeuGenesen'].isin([1, 0, -9]), LK['AnzahlGenesen'], 0).astype(int)
-LK.drop(['NeuerFall','NeuerTodesfall','NeuGenesen', 'Altersgruppe', 'Geschlecht'], inplace=True, axis=1)
+LK.drop(['NeuerFall','NeuerTodesfall','NeuGenesen', 'Altersgruppe', 'Geschlecht', 'Datenstand'], inplace=True, axis=1)
 LK.rename(columns={
     'AnzahlFall': 'cases',
     'AnzahlTodesfall': 'deaths',
@@ -398,8 +399,14 @@ BL.reset_index(inplace=True, drop=True)
 path = os.path.join(base_path, '..', 'dataStore', 'history')
 LK_json_xz = os.path.join(path, 'districts.json.xz')
 BL_json_xz = os.path.join(path, 'states.json.xz')
+LK_json_new_xz = os.path.join(path, 'districts_new.json.xz')
+BL_json_new_xz = os.path.join(path, 'states_new.json.xz')
 LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+LK.rename(columns={'IdLandkreis': 'i', 'Landkreis': 'l', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r'}, inplace=True)
+BL.rename(columns={'IdBundesland': 'i', 'Bundesland': 'b', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r'}, inplace=True)
+LK.to_json(path_or_buf=LK_json_new_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+BL.to_json(path_or_buf=BL_json_new_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 

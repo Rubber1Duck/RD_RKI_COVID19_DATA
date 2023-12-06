@@ -491,7 +491,7 @@ for id in unique_BLID:
     BLID['cases7d'] = BLID.apply(lambda current_row: BLID.loc[
         (BLID['Meldedatum'] <= current_row.Meldedatum) &
         (BLID['Meldedatum'] > current_row.lowDate7d)].cases.sum(),axis=1)
-    BLID['incidence7d'] = BLID['cases7d'] / BLID['Einwohner'] * 100000
+    BLID['incidence7d'] = int((BLID['cases7d'] / BLID['Einwohner'] * 100000 * 10000) + 0.5) / 10000.0 # round to 4 digits
     BL_I = pd.concat([BL_I, BLID])
 BL['cases7d'] = BL_I['cases7d']
 BL['incidence7d'] = BL_I['incidence7d']
@@ -522,7 +522,7 @@ for id in unique_LKID:
     LKID['cases7d'] = LKID.apply(lambda current_row: LKID.loc[
         (LKID['Meldedatum'] <= current_row.Meldedatum) &
         (LKID['Meldedatum'] > current_row.lowDate7d)].cases.sum(),axis=1)
-    LKID['incidence7d'] = LKID['cases7d'] / LKID['Einwohner'] * 100000
+    LKID['incidence7d'] = int((LKID['cases7d'] / LKID['Einwohner'] * 100000 * 10000) + 0.5) / 10000.0 # round to 4 digits
     LK_I = pd.concat([LK_I, LKID])
 LK['cases7d'] = LK_I['cases7d']
 LK['incidence7d'] = LK_I['incidence7d']

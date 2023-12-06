@@ -505,7 +505,7 @@ del BL_ID
 del BL_Dates
 gc.collect()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ":   |-done calculating BL incidence history data ...")
+print(aktuelleZeit, ":   |-done.")
 
 LK['lowDate7d'] = LK['Meldedatum'] - dt.timedelta(days=7)
 LK['Meldedatum'] = LK['Meldedatum'].astype(str)
@@ -536,7 +536,7 @@ del LK_ID
 del LK_Dates
 gc.collect()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ":   |-done calculating LK incidence history data ...")
+print(aktuelleZeit, ":   |-done.")
 
 # store gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'history')

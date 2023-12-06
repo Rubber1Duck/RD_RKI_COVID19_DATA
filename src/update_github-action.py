@@ -495,6 +495,7 @@ for id in unique_BLID:
     BL_I = pd.concat([BL_I, BLID])
 BL['cases7d'] = BL_I['cases7d']
 BL['incidence7d'] = BL_I['incidence7d'].round(5)
+BL.drop(['Einwohner', 'lowDate7d'], inplace=True, axis=1)
 BL_I = pd.DataFrame()
 BLID = pd.DataFrame()
 BL_ID = pd.DataFrame()
@@ -526,6 +527,7 @@ for id in unique_LKID:
     LK_I = pd.concat([LK_I, LKID])
 LK['cases7d'] = LK_I['cases7d']
 LK['incidence7d'] = LK_I['incidence7d'].round(5)
+LK.drop(['Einwohner', 'lowDate7d'], inplace=True, axis=1)
 LK_I = pd.DataFrame()
 LKID = pd.DataFrame()
 LK_ID = pd.DataFrame()

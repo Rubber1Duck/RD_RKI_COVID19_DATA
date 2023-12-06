@@ -482,7 +482,7 @@ BL['lowDate7d'] = BL['lowDate7d'].astype(str)
 BL.insert(loc=8, column="cases7d", value=0)
 BL.insert(loc=9, column="incidence7d", value=0)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": calculating BL incidence history data ...")
+print(aktuelleZeit, ":   |-calculating BL incidence history data ...")
 BL_I = pd.DataFrame()
 unique_BLID = BL_ID['IdBundesland'].unique()
 for id in unique_BLID:
@@ -491,10 +491,10 @@ for id in unique_BLID:
     BLID['cases7d'] = BLID.apply(lambda current_row: BLID.loc[
         (BLID['Meldedatum'] <= current_row.Meldedatum) &
         (BLID['Meldedatum'] > current_row.lowDate7d)].cases.sum(),axis=1)
-    BLID['incidence7d'] = int((BLID['cases7d'] / BLID['Einwohner'] * 100000 * 10000) + 0.5) / 10000.0 # round to 4 digits
+    BLID['incidence7d'] = BLID['cases7d'] / BLID['Einwohner'] * 100000
     BL_I = pd.concat([BL_I, BLID])
 BL['cases7d'] = BL_I['cases7d']
-BL['incidence7d'] = BL_I['incidence7d']
+BL['incidence7d'] = BL_I['incidence7d'].round(5)
 BL_I = pd.DataFrame()
 BLID = pd.DataFrame()
 BL_ID = pd.DataFrame()
@@ -505,7 +505,7 @@ del BL_ID
 del BL_Dates
 gc.collect()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": done calculating BL incidence history data ...")
+print(aktuelleZeit, ":   |-done calculating BL incidence history data ...")
 
 LK['lowDate7d'] = LK['Meldedatum'] - dt.timedelta(days=7)
 LK['Meldedatum'] = LK['Meldedatum'].astype(str)
@@ -513,7 +513,7 @@ LK['lowDate7d'] = LK['lowDate7d'].astype(str)
 LK.insert(loc=8, column="cases7d", value=0)
 LK.insert(loc=9, column="incidence7d", value=0)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": calculating LK incidence history data ...")
+print(aktuelleZeit, ":   |-calculating LK incidence history data ...")
 LK_I = pd.DataFrame()
 unique_LKID = LK_ID.IdLandkreis.unique()
 for id in unique_LKID:
@@ -522,10 +522,10 @@ for id in unique_LKID:
     LKID['cases7d'] = LKID.apply(lambda current_row: LKID.loc[
         (LKID['Meldedatum'] <= current_row.Meldedatum) &
         (LKID['Meldedatum'] > current_row.lowDate7d)].cases.sum(),axis=1)
-    LKID['incidence7d'] = int((LKID['cases7d'] / LKID['Einwohner'] * 100000 * 10000) + 0.5) / 10000.0 # round to 4 digits
+    LKID['incidence7d'] = LKID['cases7d'] / LKID['Einwohner'] * 100000
     LK_I = pd.concat([LK_I, LKID])
 LK['cases7d'] = LK_I['cases7d']
-LK['incidence7d'] = LK_I['incidence7d']
+LK['incidence7d'] = LK_I['incidence7d'].round(5)
 LK_I = pd.DataFrame()
 LKID = pd.DataFrame()
 LK_ID = pd.DataFrame()
@@ -536,7 +536,7 @@ del LK_ID
 del LK_Dates
 gc.collect()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
-print(aktuelleZeit, ": done calculating LK incidence history data ...")
+print(aktuelleZeit, ":   |-done calculating LK incidence history data ...")
 
 # store gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'history')
@@ -589,6 +589,10 @@ BL_incidence_json_xz = os.path.join(path, 's_incidence.json.xz')
 out = BL.copy()
 out.drop(['cases', 'deaths', 'recovered'], inplace=True, axis=1)
 out.to_json(path_or_buf=BL_incidence_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+
+out = pd.DataFrame()
+del out
+gc.collect
 
 # complete districts (cases, deaths, recovered. incidence) short
 LK_json_new_xz = os.path.join(path, 'districts_new.json.xz')

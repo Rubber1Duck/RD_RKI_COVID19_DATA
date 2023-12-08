@@ -35,6 +35,13 @@ def write_file(df, fn, compression='', sheet_name='data'):
 
     return
 
+def write_json(df, fn, pt):
+
+    fullPath = os.path.join(pt, fn)
+    df.to_json(path_or_buf=fullPath, orient="records", date_format="iso", force_ascii=False, compression='infer')
+
+    return
+
 
 def read_file(fn, sheet_name='data'):
 

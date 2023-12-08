@@ -58,3 +58,25 @@ def read_file(fn, sheet_name='data'):
         quit(0)
 
     return df
+
+def calc_incidence(BLorLK, df, unique_ID):
+    BL_I = pd.DataFrame()
+    for id in unique_ID:
+        if (BLorLK == 'BL'):
+            RegionID = df[df['IdBundesland'] == id].copy()
+            RegionID.drop(['Bundesland', 'deaths', 'recovered'], inplace=True, axis=1)
+        else:
+            RegionID = df[df['IdLandkreis'] == id].copy()
+            RegionID.drop(['Landkreis', 'deaths', 'recovered'], inplace=True, axis=1)
+        indexes = RegionID.index.to_list()
+        for index in indexes:
+            cases7d = 0
+            actual_index_of_index = indexes.index(index)
+            for x in range(0, 7):
+                if (actual_index_of_index - x) < 0:
+                    continue
+                cases7d += RegionID.at[indexes[actual_index_of_index - x], 'cases']
+        RegionID.at[index, 'cases7d'] = cases7d
+    RegionID['incidence7d'] = RegionID['cases7d'] / RegionID['Einwohner'] * 100000
+    BL_I = pd.concat([BL_I, RegionID])
+    return BL_I

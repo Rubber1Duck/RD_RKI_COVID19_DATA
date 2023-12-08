@@ -40,7 +40,7 @@ BV_LK = BV[BV['AGS'].str.len() == 5].copy()
 BV_LK.reset_index(inplace=True, drop=True)
 
 BV_LK_A00 = BV_LK[BV_LK['Altersgruppe'] == 'A00+'].copy()
-BV_BL_A00.reset_index(inplace=True, drop=True)
+BV_LK_A00.reset_index(inplace=True, drop=True)
 
 #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 BV = ut.squeeze_dataframe(BV)
@@ -268,10 +268,8 @@ BL.reset_index(inplace=True, drop=True)
 
 # store as gz compresed json
 path = os.path.join(base_path, '..', 'dataStore', 'agegroup')
-LK_json_xz = os.path.join(path, 'districts.json.xz')
-BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+ut.write_json(LK, 'districts.json.xz', path)
+ut.write_json(BL, 'states.json.xz', path)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
@@ -352,10 +350,8 @@ BL['population'] = BL_pop['Einwohner']
 
 # store as gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'cases')
-LK_json_xz = os.path.join(path, 'districts.json.xz')
-BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+ut.write_json(LK, 'districts.json.xz', path)
+ut.write_json(BL, 'states.json.xz', path)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
@@ -474,26 +470,14 @@ LK['cases'] = LK['cases'].fillna(0).astype(int)
 LK['deaths'] = LK['deaths'].fillna(0).astype(int)
 LK['recovered'] = LK['recovered'].fillna(0).astype(int)
 BL['Meldedatum'] = BL['Meldedatum'].astype(str)
-BL.insert(loc=8, column="cases7d", value=0)
-BL.insert(loc=9, column="incidence7d", value=0.0)
+BL.insert(loc=7, column="cases7d", value=0)
+BL.insert(loc=8, column="incidence7d", value=0.0)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ":   |-calculating BL incidence history data ...")
-BL_I = pd.DataFrame()
 unique_BLID = BL_ID['IdBundesland'].unique()
-for id in unique_BLID:
-    BLID = BL[BL['IdBundesland'] == id].copy()
-    BLID.drop(['Bundesland', 'deaths', 'recovered'], inplace=True, axis=1)
-    indexes = BLID.index.to_list()
-    for index in indexes:
-        cases7d = 0
-        actual_index_of_index = indexes.index(index)
-        for x in range(0, 7):
-            if (actual_index_of_index - x) < 0:
-                continue
-            cases7d += BLID.at[indexes[actual_index_of_index - x], 'cases']
-        BLID.at[index, 'cases7d'] = cases7d
-    BLID['incidence7d'] = BLID['cases7d'] / BLID['Einwohner'] * 100000
-    BL_I = pd.concat([BL_I, BLID])
+
+BL_I = ut.calc_incidence(BLorLK='BL', df=BL, unique_ID=unique_BLID)
+
 BL['cases7d'] = BL_I['cases7d']
 BL['incidence7d'] = BL_I['incidence7d'].round(5)
 BL.drop(['Einwohner'], inplace=True, axis=1)
@@ -510,26 +494,14 @@ aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ":   |-done.")
 
 LK['Meldedatum'] = LK['Meldedatum'].astype(str)
-LK.insert(loc=8, column="cases7d", value=0)
-LK.insert(loc=9, column="incidence7d", value=0)
+LK.insert(loc=7, column="cases7d", value=0)
+LK.insert(loc=8, column="incidence7d", value=0.0)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ":   |-calculating LK incidence history data ...")
-LK_I = pd.DataFrame()
 unique_LKID = LK_ID.IdLandkreis.unique()
-for id in unique_LKID:
-    LKID = LK[LK['IdLandkreis'] == id].copy()
-    LKID.drop(['Landkreis', 'deaths', 'recovered'], inplace=True, axis=1)
-    indexes = LKID.index.to_list()
-    for index in indexes:
-        cases7d = 0
-        actual_index_of_index = indexes.index(index)
-        for x in range(0, 7):
-            if (actual_index_of_index - x) < 0:
-                continue
-            cases7d += LKID.at[indexes[actual_index_of_index - x], 'cases']
-        LKID.at[index, 'cases7d'] = cases7d
-    LKID['incidence7d'] = LKID['cases7d'] / LKID['Einwohner'] * 100000
-    LK_I = pd.concat([LK_I, LKID])
+
+LK_I = ut.calc_incidence(BLorLK='LK', df=LK, unique_ID=unique_LKID)
+
 LK['cases7d'] = LK_I['cases7d']
 LK['incidence7d'] = LK_I['incidence7d'].round(5)
 LK.drop(['Einwohner'], inplace=True, axis=1)

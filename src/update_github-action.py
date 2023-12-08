@@ -30,8 +30,24 @@ BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
 BV['GueltigAb'] = pd.to_datetime(BV['GueltigAb'])
 BV['GueltigBis'] = pd.to_datetime(BV['GueltigBis'])
 
+BV_BL = BV[BV['AGS'].str.len() == 2].copy()
+BV_BL.reset_index(inplace=True, drop=True)
+
+BV_BL_A00 = BV_BL[BV_BL['Altersgruppe'] == 'A00+'].copy()
+BV_BL_A00.reset_index(inplace=True, drop=True)
+
+BV_LK = BV[BV['AGS'].str.len() == 5].copy()
+BV_LK.reset_index(inplace=True, drop=True)
+
+BV_LK_A00 = BV_LK[BV_LK['Altersgruppe'] == 'A00+'].copy()
+BV_LK_A00.reset_index(inplace=True, drop=True)
+
 #----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 BV = ut.squeeze_dataframe(BV)
+BV_BL = ut.squeeze_dataframe(BV_BL)
+BV_BL_A00 = ut.squeeze_dataframe(BV_BL_A00)
+BV_LK = ut.squeeze_dataframe(BV_LK)
+BV_LK_A00 = ut.squeeze_dataframe(BV_LK_A00)
 
 # load covid latest from web
 with open(meta_path + "/" + filename_meta, 'r', encoding ='utf8') as file:
@@ -112,8 +128,7 @@ for file in file_list:
         if re_search and re_filename:
             report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime('%Y-%m-%d')
             all_files.append((file_path_full, report_date))
-today = dt.date.today()
-day_range = pd.date_range(end=today, periods=30).tolist()
+day_range = pd.date_range(end=Datenstand, periods=30).tolist()
 day_range_str = []
 for datum in day_range:
     day_range_str.append(datum.strftime('%Y-%m-%d'))
@@ -253,10 +268,8 @@ BL.reset_index(inplace=True, drop=True)
 
 # store as gz compresed json
 path = os.path.join(base_path, '..', 'dataStore', 'agegroup')
-LK_json_xz = os.path.join(path, 'districts.json.xz')
-BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+ut.write_json(LK, 'districts.json.xz', path)
+ut.write_json(BL, 'states.json.xz', path)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
@@ -337,10 +350,8 @@ BL['population'] = BL_pop['Einwohner']
 
 # store as gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'cases')
-LK_json_xz = os.path.join(path, 'districts.json.xz')
-BL_json_xz = os.path.join(path, 'states.json.xz')
-LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+ut.write_json(LK, 'districts.json.xz', path)
+ut.write_json(BL, 'states.json.xz', path)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 
@@ -356,7 +367,7 @@ key_list_LK_hist = ['IdLandkreis', 'Meldedatum']
 key_list_BL_hist = ['IdBundesland', 'Meldedatum']
 key_list_ID0_hist = ['Meldedatum']
 
-LK['Meldedatum'] = LK['Meldedatum'].astype(str)
+#LK['Meldedatum'] = LK['Meldedatum'].astype(str)
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([1, 0]), LK['AnzahlFall'], 0).astype(int)
 LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([1, 0, -9]), LK['AnzahlTodesfall'], 0).astype(int)
 LK['AnzahlGenesen'] = np.where(LK['NeuGenesen'].isin([1, 0, -9]), LK['AnzahlGenesen'], 0).astype(int)
@@ -394,19 +405,210 @@ ID0['Bundesland'] = 'Bundesgebiet'
 BL = pd.concat([ID0, BL])
 BL.sort_values(by=key_list_BL_hist, inplace=True)
 BL.reset_index(inplace=True, drop=True)
+LK['Meldedatum'] = pd.to_datetime(LK['Meldedatum']).dt.date
+BL['Meldedatum'] = pd.to_datetime(BL['Meldedatum']).dt.date
+
+# fill dates for every region
+startDate = '2020-01-01'
+today = dt.datetime.now().strftime(format='%Y-%m-%d')
+date_range = pd.date_range(end=(Datenstand - dt.timedelta(days=1)), start=startDate).to_list()
+date_range_str = []
+for datum in date_range:
+    date_range_str.append(datum.strftime('%Y-%m-%d'))
+allDates = pd.DataFrame(date_range_str, columns=['Datum'])
+BL_ID = pd.DataFrame(pd.unique(BL['IdBundesland']).copy(), columns=['IdBundesland'])
+LK_ID = pd.DataFrame(pd.unique(LK['IdLandkreis']).copy(), columns=['IdLandkreis'])
+# add Bundesland, Landkreis and Einwohner
+BL_ID.insert(loc=1, column="Bundesland", value="")
+BL_ID.insert(loc=2, column="Einwohner", value="")
+LK_ID.insert(loc=1, column="Landkreis", value="")
+LK_ID.insert(loc=2, column="Einwohner", value="")
+BV_mask = (
+    (BV_BL_A00['AGS'].isin(BL_ID['IdBundesland'])) &
+    (BV_BL_A00['GueltigAb'] <= Datenstand) &
+    (BV_BL_A00['GueltigBis'] >= Datenstand)
+)
+BV_masked = BV_BL_A00[BV_mask].copy()
+BV_masked.drop(['GueltigAb','GueltigBis','Altersgruppe','männlich','weiblich'], inplace=True, axis=1)
+ID = BL_ID['IdBundesland'].copy()
+ID = pd.merge(left=ID, right=BV_masked, left_on='IdBundesland', right_on='AGS', how='left')
+BL_ID["Bundesland"] = ID["Name"].copy()
+BL_ID["Einwohner"] = ID["Einwohner"].copy()
+BV_mask = (
+    (BV_LK_A00['AGS'].isin(LK_ID['IdLandkreis'])) &
+    (BV_LK_A00['GueltigAb'] <= Datenstand) &
+    (BV_LK_A00['GueltigBis'] >= Datenstand)
+)
+BV_masked = BV_LK_A00[BV_mask].copy()
+BV_masked.drop(['GueltigAb','GueltigBis','Altersgruppe','männlich','weiblich'], inplace=True, axis=1)
+ID = LK_ID['IdLandkreis'].copy()
+ID = pd.merge(left=ID, right=BV_masked, left_on='IdLandkreis', right_on='AGS', how='left')
+LK_ID["Landkreis"] = ID["Name"].copy()
+LK_ID["Einwohner"] = ID["Einwohner"].copy()
+
+BL_Dates = BL_ID.merge(allDates, how='cross')
+BL_Dates = ut.squeeze_dataframe(BL_Dates)
+LK_Dates = LK_ID.merge(allDates, how='cross')
+LK_dates = ut.squeeze_dataframe(LK_Dates)
+BL_Dates['Datum'] = pd.to_datetime(BL_Dates['Datum']).dt.date
+LK_Dates['Datum'] = pd.to_datetime(LK_Dates['Datum']).dt.date
+
+BL = BL.merge(BL_Dates, how='right', left_on=['IdBundesland', 'Meldedatum'], right_on=['IdBundesland', 'Datum'])
+BL['Bundesland_x'] = BL['Bundesland_y']
+BL['Meldedatum'] = BL['Datum']
+BL.rename({'Bundesland_x': 'Bundesland'}, inplace=True, axis=1)
+BL.drop(['Bundesland_y', 'Datum'], inplace=True, axis=1)
+LK = LK.merge(LK_Dates, how='right', left_on=['IdLandkreis', 'Meldedatum'], right_on=['IdLandkreis', 'Datum'])
+LK['Landkreis_x'] = LK['Landkreis_y']
+LK['Meldedatum'] = LK['Datum']
+LK.rename({'Landkreis_x': 'Landkreis'}, inplace=True, axis=1)
+LK.drop(['Landkreis_y', 'Datum'], inplace=True, axis=1)
+BL['cases'] = BL['cases'].fillna(0).astype(int)
+BL['deaths'] = BL['deaths'].fillna(0).astype(int)
+BL['recovered'] = BL['recovered'].fillna(0).astype(int)
+LK['cases'] = LK['cases'].fillna(0).astype(int)
+LK['deaths'] = LK['deaths'].fillna(0).astype(int)
+LK['recovered'] = LK['recovered'].fillna(0).astype(int)
+BL['Meldedatum'] = BL['Meldedatum'].astype(str)
+BL.insert(loc=7, column="cases7d", value=0)
+BL.insert(loc=8, column="incidence7d", value=0.0)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ":   |-calculating BL incidence history data ...")
+unique_BLID = BL_ID['IdBundesland'].unique()
+
+BL_I = ut.calc_incidence(BLorLK='BL', df=BL, unique_ID=unique_BLID)
+
+BL['cases7d'] = BL_I['cases7d']
+BL['incidence7d'] = BL_I['incidence7d'].round(5)
+BL.drop(['Einwohner'], inplace=True, axis=1)
+BL_I = pd.DataFrame()
+BLID = pd.DataFrame()
+BL_ID = pd.DataFrame()
+BL_Dates = pd.DataFrame()
+del BL_I
+del BLID
+del BL_ID
+del BL_Dates
+gc.collect()
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ":   |-done.")
+
+LK['Meldedatum'] = LK['Meldedatum'].astype(str)
+LK.insert(loc=7, column="cases7d", value=0)
+LK.insert(loc=8, column="incidence7d", value=0.0)
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ":   |-calculating LK incidence history data ...")
+unique_LKID = LK_ID.IdLandkreis.unique()
+
+LK_I = ut.calc_incidence(BLorLK='LK', df=LK, unique_ID=unique_LKID)
+
+LK['cases7d'] = LK_I['cases7d']
+LK['incidence7d'] = LK_I['incidence7d'].round(5)
+LK.drop(['Einwohner'], inplace=True, axis=1)
+LK_I = pd.DataFrame()
+LKID = pd.DataFrame()
+LK_ID = pd.DataFrame()
+LK_Dates = pd.DataFrame()
+del LK_I
+del LKID
+del LK_ID
+del LK_Dates
+gc.collect()
+aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
+print(aktuelleZeit, ":   |-done.")
 
 # store gz compressed json
 path = os.path.join(base_path, '..', 'dataStore', 'history')
-LK_json_xz = os.path.join(path, 'districts.json.xz')
-BL_json_xz = os.path.join(path, 'states.json.xz')
-LK_json_new_xz = os.path.join(path, 'districts_new.json.xz')
-BL_json_new_xz = os.path.join(path, 'states_new.json.xz')
-LK.to_json(path_or_buf=LK_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-LK.rename(columns={'IdLandkreis': 'i', 'Landkreis': 'l', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r'}, inplace=True)
-BL.rename(columns={'IdBundesland': 'i', 'Bundesland': 'b', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r'}, inplace=True)
-LK.to_json(path_or_buf=LK_json_new_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
-BL.to_json(path_or_buf=BL_json_new_xz, orient="records", date_format="iso", force_ascii=False, compression='infer')
+# complete districts (cases, deaths, recovered. incidence)
+ut.write_json(LK, 'districts.json.xz', path)
+# complete states (cases, deaths, recovered. incidence)
+ut.write_json(BL, 'states.json.xz', path)
+# single districts json files per category
+# cases
+out = LK.copy()
+out.drop(['deaths', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
+ut.write_json(out, 'd_cases.json.xz', path)
+# deaths
+out = LK.copy()
+out.drop(['cases', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
+ut.write_json(out, 'd_deaths.json.xz',path)
+# recovered
+out = LK.copy()
+out.drop(['cases', 'deaths', 'cases7d', 'incidence7d'], inplace=True, axis=1)
+ut.write_json(out, 'd_recovered.json.xz', path)
+# incidence (and cases per week)
+out = LK.copy()
+out.drop(['cases', 'deaths', 'recovered'], inplace=True, axis=1)
+ut.write_json(out, 'd_incidence.json.xz', path)
+
+# single states json files per category
+# cases
+out = BL.copy()
+out.drop(['deaths', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
+ut.write_json(out, 's_cases.json.xz', path)
+# deaths
+out = BL.copy()
+out.drop(['cases', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
+ut.write_json(out, 's_deaths.json.xz', path)
+# recovered
+out = BL.copy()
+out.drop(['cases', 'deaths', 'cases7d', 'incidence7d'], inplace=True, axis=1)
+ut.write_json(out, 's_recovered.json.xz', path)
+# incidence
+out = BL.copy()
+out.drop(['cases', 'deaths', 'recovered'], inplace=True, axis=1)
+ut.write_json(out, 's_incidence.json.xz', path)
+
+out = pd.DataFrame()
+del out
+gc.collect
+
+# complete districts (cases, deaths, recovered. incidence) short
+LK.rename(columns={'IdLandkreis': 'i', 'Landkreis': 'l', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
+ut.write_json(LK, 'districts_new.json.xz', path)
+# complete states (cases, deaths, recovered. incidence) short
+BL.rename(columns={'IdBundesland': 'i', 'Bundesland': 'b', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
+ut.write_json(BL, 'states_new.json.xz', path)
+# single districts json files per category short
+# cases
+out = LK.copy()
+out.drop(['d', 'r', 'c7', 'i7'], inplace=True, axis=1)
+ut.write_json(out, 'd_cases_short.json.xz', path)
+# deaths
+out = LK.copy()
+out.drop(['c', 'r', 'c7', 'i7'], inplace=True, axis=1)
+ut.write_json(out, 'd_deaths_short.json.xz', path)
+# recovered
+out = LK.copy()
+out.drop(['c', 'd', 'c7', 'i7'], inplace=True, axis=1)
+ut.write_json(out, 'd_recovered_short.json.xz', path)
+# incidence (and cases per week)
+out = LK.copy()
+out.drop(['c', 'd', 'r'], inplace=True, axis=1)
+ut.write_json(out, 'd_incidence_short.json.xz', path)
+
+# single states json files per category short
+# cases
+out = BL.copy()
+out.drop(['d', 'r', 'c7', 'i7'], inplace=True, axis=1)
+ut.write_json(out, 's_cases_short.json.xz', path)
+# deaths
+out = BL.copy()
+out.drop(['c', 'r', 'c7', 'i7'], inplace=True, axis=1)
+ut.write_json(out, 's_deaths_short.json.xz', path)
+# recovered
+out = BL.copy()
+out.drop(['c', 'd', 'c7', 'i7'], inplace=True, axis=1)
+ut.write_json(out, 's_recovered_short.json.xz', path)
+# incidence
+out = BL.copy()
+out.drop(['c', 'd', 'r'], inplace=True, axis=1)
+ut.write_json(out, 's_incidence_short.json.xz', path)
+
+out = pd.DataFrame()
+del out
+gc.collect
+
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ": done.")
 

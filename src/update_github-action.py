@@ -452,10 +452,8 @@ LK_ID["Einwohner"] = ID["Einwohner"].copy()
 
 BL_Dates = BL_ID.merge(allDates, how='cross')
 BL_Dates = ut.squeeze_dataframe(BL_Dates)
-
 LK_Dates = LK_ID.merge(allDates, how='cross')
 LK_dates = ut.squeeze_dataframe(LK_Dates)
-
 BL_Dates['Datum'] = pd.to_datetime(BL_Dates['Datum']).dt.date
 LK_Dates['Datum'] = pd.to_datetime(LK_Dates['Datum']).dt.date
 
@@ -475,10 +473,7 @@ BL['recovered'] = BL['recovered'].fillna(0).astype(int)
 LK['cases'] = LK['cases'].fillna(0).astype(int)
 LK['deaths'] = LK['deaths'].fillna(0).astype(int)
 LK['recovered'] = LK['recovered'].fillna(0).astype(int)
-
-BL['lowDate7d'] = BL['Meldedatum'] - dt.timedelta(days=7)
 BL['Meldedatum'] = BL['Meldedatum'].astype(str)
-BL['lowDate7d'] = BL['lowDate7d'].astype(str)
 BL.insert(loc=8, column="cases7d", value=0)
 BL.insert(loc=9, column="incidence7d", value=0.0)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
@@ -501,7 +496,7 @@ for id in unique_BLID:
     BL_I = pd.concat([BL_I, BLID])
 BL['cases7d'] = BL_I['cases7d']
 BL['incidence7d'] = BL_I['incidence7d'].round(5)
-BL.drop(['Einwohner', 'lowDate7d'], inplace=True, axis=1)
+BL.drop(['Einwohner'], inplace=True, axis=1)
 BL_I = pd.DataFrame()
 BLID = pd.DataFrame()
 BL_ID = pd.DataFrame()
@@ -514,9 +509,7 @@ gc.collect()
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
 print(aktuelleZeit, ":   |-done.")
 
-LK['lowDate7d'] = LK['Meldedatum'] - dt.timedelta(days=7)
 LK['Meldedatum'] = LK['Meldedatum'].astype(str)
-LK['lowDate7d'] = LK['lowDate7d'].astype(str)
 LK.insert(loc=8, column="cases7d", value=0)
 LK.insert(loc=9, column="incidence7d", value=0)
 aktuelleZeit = dt.datetime.now().strftime(format='%Y-%m-%dT%H:%M:%SZ')
@@ -535,14 +528,11 @@ for id in unique_LKID:
                 continue
             cases7d += LKID.at[indexes[actual_index_of_index - x], 'cases']
         LKID.at[index, 'cases7d'] = cases7d
-    #LKID['cases7d'] = LKID.apply(lambda current_row: LKID.loc[
-    #    (LKID['Meldedatum'] <= current_row.Meldedatum) &
-    #    (LKID['Meldedatum'] > current_row.lowDate7d)].cases.sum(),axis=1)
     LKID['incidence7d'] = LKID['cases7d'] / LKID['Einwohner'] * 100000
     LK_I = pd.concat([LK_I, LKID])
 LK['cases7d'] = LK_I['cases7d']
 LK['incidence7d'] = LK_I['incidence7d'].round(5)
-LK.drop(['Einwohner', 'lowDate7d'], inplace=True, axis=1)
+LK.drop(['Einwohner'], inplace=True, axis=1)
 LK_I = pd.DataFrame()
 LKID = pd.DataFrame()
 LK_ID = pd.DataFrame()

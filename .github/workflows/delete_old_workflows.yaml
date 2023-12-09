@@ -11,7 +11,7 @@ jobs:
         uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
         with:
           repository: Rubber1Duck/RD_RKI_COVID19_DATA
-          workflow: .github/workflows/update.yaml
+          # workflow: .github/workflows/update.yaml
           older-than-seconds: 86400
           # created-before: "2021-12-08T16:34:00Z"
           # actor: test@test.com

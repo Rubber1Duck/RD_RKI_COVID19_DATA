@@ -523,45 +523,6 @@ path = os.path.join(base_path, '..', 'dataStore', 'history')
 ut.write_json(LK, 'districts.json.xz', path)
 # complete states (cases, deaths, recovered. incidence)
 ut.write_json(BL, 'states.json.xz', path)
-# single districts json files per category
-# cases
-out = LK.copy()
-out.drop(['deaths', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
-ut.write_json(out, 'd_cases.json.xz', path)
-# deaths
-out = LK.copy()
-out.drop(['cases', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
-ut.write_json(out, 'd_deaths.json.xz',path)
-# recovered
-out = LK.copy()
-out.drop(['cases', 'deaths', 'cases7d', 'incidence7d'], inplace=True, axis=1)
-ut.write_json(out, 'd_recovered.json.xz', path)
-# incidence (and cases per week)
-out = LK.copy()
-out.drop(['cases', 'deaths', 'recovered'], inplace=True, axis=1)
-ut.write_json(out, 'd_incidence.json.xz', path)
-
-# single states json files per category
-# cases
-out = BL.copy()
-out.drop(['deaths', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
-ut.write_json(out, 's_cases.json.xz', path)
-# deaths
-out = BL.copy()
-out.drop(['cases', 'recovered', 'cases7d', 'incidence7d'], inplace=True, axis=1)
-ut.write_json(out, 's_deaths.json.xz', path)
-# recovered
-out = BL.copy()
-out.drop(['cases', 'deaths', 'cases7d', 'incidence7d'], inplace=True, axis=1)
-ut.write_json(out, 's_recovered.json.xz', path)
-# incidence
-out = BL.copy()
-out.drop(['cases', 'deaths', 'recovered'], inplace=True, axis=1)
-ut.write_json(out, 's_incidence.json.xz', path)
-
-out = pd.DataFrame()
-del out
-gc.collect
 
 # complete districts (cases, deaths, recovered. incidence) short
 LK.rename(columns={'IdLandkreis': 'i', 'Landkreis': 'l', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
@@ -569,6 +530,7 @@ ut.write_json(LK, 'districts_new.json.xz', path)
 # complete states (cases, deaths, recovered. incidence) short
 BL.rename(columns={'IdBundesland': 'i', 'Bundesland': 'b', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
 ut.write_json(BL, 'states_new.json.xz', path)
+
 # single districts json files per category short
 # cases
 out = LK.copy()

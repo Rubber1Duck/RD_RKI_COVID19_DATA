@@ -76,7 +76,7 @@ def calc_incidence(BLorLK, df, unique_ID):
                 if (actual_index_of_index - x) < 0:
                     continue
                 cases7d += RegionID.at[indexes[actual_index_of_index - x], 'cases']
-        RegionID.at[index, 'cases7d'] = cases7d
-    RegionID['incidence7d'] = RegionID['cases7d'] / RegionID['Einwohner'] * 100000
-    Region_I = pd.concat([Region_I, RegionID])
+            RegionID.at[index, 'cases7d'] = cases7d
+        RegionID['incidence7d'] = RegionID['cases7d'] / RegionID['Einwohner'] * 100000
+        Region_I = pd.concat([Region_I, RegionID])
     return Region_I

@@ -134,8 +134,7 @@ for file, file_path_full, report_date in all_data_files:
     # rename columns for shorter json files
     LK.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'incidence_7d': 'i'}, inplace=True)
     BL.rename(columns={'Datenstand': 'D', 'AGS': 'I', 'Name': 'T', 'incidence_7d': 'i'}, inplace=True)
-    LK['D'] = pd.to_datetime(LK['D']).dt.date
-    BL['D'] = pd.to_datetime(BL['D']).dt.date
+    
     Datenstand2 = Datenstand.date()
     
     if kum_exists:
@@ -153,6 +152,9 @@ for file, file_path_full, report_date in all_data_files:
     fileTimeDelta = (fileEndTime - fileStartTime).total_seconds()
     aktuelleZeit = fileEndTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')
     print(aktuelleZeit, ":", file, "done.", "fileTime:", fileTimeDelta, " Lines:", lines)
+
+LK_kum["D"] = LK_kum["D"].astype(str)
+BL_kum["D"] = BL_kum["D"].astype(str)
 
 # save LK_init.json.xz
 LK_kum.to_json(path_or_buf=kum_file_LK, orient='records', date_format='iso', force_ascii=False, compression='infer')

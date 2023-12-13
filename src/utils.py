@@ -43,7 +43,7 @@ def write_json(df, fn, pt):
     return
 
 
-def read_file(fn, sheet_name='data'):
+def read_file(fn):
 
     fn_ext = os.path.splitext(fn)[1]
 

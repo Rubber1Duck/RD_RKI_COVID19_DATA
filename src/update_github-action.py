@@ -367,7 +367,6 @@ key_list_LK_hist = ['IdLandkreis', 'Meldedatum']
 key_list_BL_hist = ['IdBundesland', 'Meldedatum']
 key_list_ID0_hist = ['Meldedatum']
 
-#LK['Meldedatum'] = LK['Meldedatum'].astype(str)
 LK['AnzahlFall'] = np.where(LK['NeuerFall'].isin([1, 0]), LK['AnzahlFall'], 0).astype(int)
 LK['AnzahlTodesfall'] = np.where(LK['NeuerTodesfall'].isin([1, 0, -9]), LK['AnzahlTodesfall'], 0).astype(int)
 LK['AnzahlGenesen'] = np.where(LK['NeuGenesen'].isin([1, 0, -9]), LK['AnzahlGenesen'], 0).astype(int)
@@ -715,6 +714,9 @@ LK_kum_old.sort_values(by=key_list_LK, inplace=True)
 BL_kum_old = pd.concat([BL_kum_old, BL])
 BL_kum_old.sort_values(by=key_list_BL, inplace=True)
 
+LK_kum_old['Datenstand'] = LK_kum_old['Datenstand'].astype(str)
+BL_kum_old['Datenstand'] = BL_kum_old['Datenstand'].astype(str)
+
 LK_kum_old.to_json(path_or_buf=kum_file_LK_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 BL_kum_old.to_json(path_or_buf=kum_file_BL_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 
@@ -724,6 +726,9 @@ LK_kum_new = pd.concat([LK_kum_new, LK])
 LK_kum_new.sort_values(by=key_list_kum, inplace=True)
 BL_kum_new = pd.concat([BL_kum_new, BL])
 BL_kum_new.sort_values(by=key_list_kum, inplace=True)
+
+LK_kum_new['D'] = LK_kum_new['D'].astype(str)
+BL_kum_new['D'] = BL_kum_new['D'].astype(str)
 
 LK_kum_new.to_json(path_or_buf=kum_file_LK_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
 BL_kum_new.to_json(path_or_buf=kum_file_BL_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')

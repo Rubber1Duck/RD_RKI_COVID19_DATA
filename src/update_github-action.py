@@ -524,10 +524,10 @@ ut.write_json(LK, 'districts.json.xz', path)
 ut.write_json(BL, 'states.json.xz', path)
 
 # complete districts (cases, deaths, recovered. incidence) short
-LK.rename(columns={'IdLandkreis': 'i', 'Landkreis': 'l', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
+LK.rename(columns={'IdLandkreis': 'i', 'Landkreis': 't', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
 ut.write_json(LK, 'districts_new.json.xz', path)
 # complete states (cases, deaths, recovered. incidence) short
-BL.rename(columns={'IdBundesland': 'i', 'Bundesland': 'b', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
+BL.rename(columns={'IdBundesland': 'i', 'Bundesland': 't', 'Meldedatum': 'm', 'cases': 'c', 'deaths': 'd', 'recovered': 'r', 'cases7d': 'c7', 'incidence7d': 'i7'}, inplace=True)
 ut.write_json(BL, 'states_new.json.xz', path)
 
 # single districts json files per category short
@@ -676,17 +676,13 @@ for file_path_full, report_date in all_files:
 LK.drop(['AnzahlFall_7d'], inplace=True, axis=1)
 BL.drop(['AnzahlFall_7d'], inplace=True, axis=1)
 # open existing kum files
-kum_file_LK_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK_complete.json.xz')
-kum_file_BL_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL_complete.json.xz')
+path = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence')
 
-kum_file_LK_old_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'LK.json.xz')
-kum_file_BL_old_xz = os.path.join(base_path, '..', 'dataStore', 'frozen-incidence', 'BL.json.xz')
+LK_kum_old = ut.read_json(fn='LK.json.xz', dtype=LK_dtypes, path=path)
+BL_kum_old = ut.read_json(fn='BL.json.xz', dtype=BL_dtypes, path=path)
 
-LK_kum_old = pd.read_json(kum_file_LK_old_xz, dtype=LK_dtypes)
-BL_kum_old = pd.read_json(kum_file_BL_old_xz, dtype=BL_dtypes)
-
-LK_kum_new = pd.read_json(kum_file_LK_xz, dtype=kum_dtypes)
-BL_kum_new = pd.read_json(kum_file_BL_xz, dtype=kum_dtypes)
+LK_kum_new = ut.read_json(fn='LK_complete.json.xz', dtype=kum_dtypes, path=path)
+BL_kum_new = ut.read_json(fn='BL_complete.json.xz', dtype=kum_dtypes, path=path)
 
 LK_kum_old['Datenstand'] = pd.to_datetime(LK_kum_old['Datenstand']).dt.date
 BL_kum_old['Datenstand'] = pd.to_datetime(BL_kum_old['Datenstand']).dt.date
@@ -717,8 +713,8 @@ BL_kum_old.sort_values(by=key_list_BL, inplace=True)
 LK_kum_old['Datenstand'] = LK_kum_old['Datenstand'].astype(str)
 BL_kum_old['Datenstand'] = BL_kum_old['Datenstand'].astype(str)
 
-LK_kum_old.to_json(path_or_buf=kum_file_LK_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
-BL_kum_old.to_json(path_or_buf=kum_file_BL_old_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
+ut.write_json(df=LK_kum_old, fn='LK.json.xz', pt=path)
+ut.write_json(df=BL_kum_old, fn='BL.json.xz', pt=path)
 
 LK.rename(columns={'Datenstand': 'D', 'IdLandkreis': 'I', 'Landkreis': 'T', 'incidence_7d': 'i'}, inplace=True)
 BL.rename(columns={'Datenstand': 'D', 'IdBundesland': 'I', 'Bundesland': 'T', 'incidence_7d': 'i'}, inplace=True)
@@ -730,8 +726,8 @@ BL_kum_new.sort_values(by=key_list_kum, inplace=True)
 LK_kum_new['D'] = LK_kum_new['D'].astype(str)
 BL_kum_new['D'] = BL_kum_new['D'].astype(str)
 
-LK_kum_new.to_json(path_or_buf=kum_file_LK_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
-BL_kum_new.to_json(path_or_buf=kum_file_BL_xz, orient='records', date_format='iso', force_ascii=False, compression='infer')
+ut.write_json(df=LK_kum_new, fn='LK_complete.json.xz', pt=path)
+ut.write_json(df=BL_kum_new, fn='BL_complete.json.xz', pt=path)
 
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format='%Y-%m-%dT%H:%M:%SZ')

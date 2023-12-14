@@ -37,11 +37,17 @@ def write_file(df, fn, compression='', sheet_name='data'):
 
 def write_json(df, fn, pt):
 
-    fullPath = os.path.join(pt, fn)
-    df.to_json(path_or_buf=fullPath, orient="records", date_format="iso", force_ascii=False, compression='infer')
+    full_fn = os.path.join(pt, fn)
+    df.to_json(path_or_buf=full_fn, orient="records", date_format="iso", force_ascii=False, compression='infer')
 
     return
 
+def read_json(fn, dtype, path=''):
+
+    full_fn = os.path.join(path, fn)
+    df = pd.read_json(full_fn, dtype=dtype)
+
+    return df
 
 def read_file(fn):
 

@@ -26,8 +26,8 @@ try:
     with open(meta_path + "/" + filename_meta, "r", encoding="utf8") as file:
         metaObj = json.load(file)
     newObj = metaObj.copy()
-    for property in newObj:
-        if property not in needed:
+    for prop in newObj:
+        if prop not in needed:
             del metaObj[property]
     metaObj["size"] = size
     metaObj["filename"] = filename

@@ -5,21 +5,10 @@ import pandas as pd
 import utils as ut
 
 
-path_fallzahlen = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..",
-    "Fallzahlen",
-    "RKI_COVID19_Fallzahlen.csv",
-)
-path_fallzahlen_feather = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..",
-    "Fallzahlen",
-    "RKI_COVID19_Fallzahlen.feather",
-)
-feather_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "dataBase.feather"
-)
+path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen.csv")
+path_fallzahlen_feather = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen.feather")
+feather_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dataBase.feather")
+
 dtypes_fallzahlen = {
     "Datenstand": "object",
     "IdBundesland": "Int32",
@@ -43,38 +32,12 @@ fallzahlen_df = ut.read_file(fn=path_fallzahlen_feather)
 
 # eval fallzahlen new
 covid_df["Meldedatum"] = pd.to_datetime(covid_df["Meldedatum"]).dt.date
-covid_df["AnzahlFall_neu"] = np.where(
-    covid_df["NeuerFall"].isin([-1, 1]), covid_df["AnzahlFall"], 0
-)
-covid_df["AnzahlFall"] = np.where(
-    covid_df["NeuerFall"].isin([0, 1]), covid_df["AnzahlFall"], 0
-)
-covid_df["AnzahlFall_7d"] = np.where(
-    covid_df["Meldedatum"] > (date_latest - timedelta(days=8)),
-    covid_df["AnzahlFall"],
-    0,
-)
-covid_df["AnzahlTodesfall_neu"] = np.where(
-    covid_df["NeuerTodesfall"].isin([-1, 1]), covid_df["AnzahlTodesfall"], 0
-)
-covid_df["AnzahlTodesfall"] = np.where(
-    covid_df["NeuerTodesfall"].isin([0, 1]), covid_df["AnzahlTodesfall"], 0
-)
-covid_df.drop(
-    [
-        "IdStaat",
-        "Bundesland",
-        "Landkreis",
-        "NeuerFall",
-        "NeuerTodesfall",
-        "Altersgruppe",
-        "Geschlecht",
-        "NeuGenesen",
-        "AnzahlGenesen",
-    ],
-    inplace=True,
-    axis=1,
-)
+covid_df["AnzahlFall_neu"] = np.where(covid_df["NeuerFall"].isin([-1, 1]), covid_df["AnzahlFall"], 0)
+covid_df["AnzahlFall"] = np.where(covid_df["NeuerFall"].isin([0, 1]), covid_df["AnzahlFall"], 0)
+covid_df["AnzahlFall_7d"] = np.where(covid_df["Meldedatum"] > (date_latest - timedelta(days=8)), covid_df["AnzahlFall"], 0)
+covid_df["AnzahlTodesfall_neu"] = np.where(covid_df["NeuerTodesfall"].isin([-1, 1]), covid_df["AnzahlTodesfall"], 0)
+covid_df["AnzahlTodesfall"] = np.where(covid_df["NeuerTodesfall"].isin([0, 1]), covid_df["AnzahlTodesfall"], 0)
+covid_df.drop(["IdStaat", "Bundesland", "Landkreis", "NeuerFall", "NeuerTodesfall", "Altersgruppe", "Geschlecht", "NeuGenesen", "AnzahlGenesen"], inplace=True, axis=1)
 agg_key = {
     c: "max" if c in ["Meldedatum", "Datenstand"] else "sum"
     for c in covid_df.columns

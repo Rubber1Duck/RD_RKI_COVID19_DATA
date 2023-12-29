@@ -28,8 +28,8 @@ try:
     # delete all what is not needed from metaObj
     needed = ["publication_date", "version"]
     newObj = metaObj.copy()
-    for property in newObj:
-        if property not in needed:
+    for prop in newObj:
+        if prop not in needed:
             del metaObj[property]
     # insert all needed stuff
     metaObj["size"] = size  # size of the file to download

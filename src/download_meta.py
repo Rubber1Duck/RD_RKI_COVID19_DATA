@@ -30,7 +30,7 @@ try:
     newObj = metaObj.copy()
     for prop in newObj:
         if prop not in needed:
-            del metaObj[property]
+            del metaObj[prop]
     # insert all needed stuff
     metaObj["size"] = size  # size of the file to download
     metaObj["filename"] = filename  # filename of the file to download

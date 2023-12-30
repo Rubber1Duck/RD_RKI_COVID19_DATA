@@ -28,7 +28,7 @@ try:
     newObj = metaObj.copy()
     for prop in newObj:
         if prop not in needed:
-            del metaObj[property]
+            del metaObj[prop]
     metaObj["size"] = size
     metaObj["filename"] = filename
     metaObj["url"] = url_data

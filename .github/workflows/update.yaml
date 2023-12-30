@@ -62,5 +62,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
   call-cleanup:
+    needs: updateData 
     uses: ./.github/workflows/delete_old_workflows.yaml
     secrets: inherit

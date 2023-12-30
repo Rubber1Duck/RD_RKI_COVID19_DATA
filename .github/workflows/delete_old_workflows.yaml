@@ -1,6 +1,7 @@
 name: delete old workflow runs
 on:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   delete-workflow-runs:

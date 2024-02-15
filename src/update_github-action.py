@@ -182,6 +182,8 @@ ID = pd.DataFrame()
 del ID
 gc.collect()
 LK.insert(loc=0, column="IdStaat", value="00")
+LK = LK[LK["Landkreis"].notna()]
+LK.reset_index(inplace=True, drop=True)
 
 # ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 LK = ut.squeeze_dataframe(LK)

@@ -6,12 +6,13 @@ import pandas as pd
 import json
 import utils as ut
 import gc
+import fallzahlen_update
 
 startTime = dt.datetime.now()
 base_path = os.path.dirname(os.path.abspath(__file__))
 meta_path = os.path.join(base_path, "..", "dataStore", "meta")
 filename_meta = "meta_new.json"
-feather_path = os.path.join(base_path, "..", "dataBase.feather")
+
 BV_csv_path = os.path.join(base_path, "..", "Bevoelkerung", "Bevoelkerung.csv")
 LK_dtypes = {
     "Datenstand": "object",
@@ -115,7 +116,7 @@ print(
 # fileName = "RKI_COVID19_2023-12-26.csv"
 
 
-LK = pd.read_csv(url, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
+LK = pd.read_csv(url, engine="pyarrow", usecols=CV_dtypes.keys(), dtype=CV_dtypes)
 
 LK.sort_values(by=["IdLandkreis", "Altersgruppe", "Geschlecht", "Meldedatum"], axis=0, inplace=True, ignore_index=True)
 LK.reset_index(drop=True, inplace=True)
@@ -155,32 +156,6 @@ else:
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     print(aktuelleZeit, ":", fileExists, "already exists.")
 
-# limit RKI_COVID19 Data files to the last 30 days
-print(aktuelleZeit, ": cleanup data files ...")
-iso_date_re = "([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])"
-file_list = os.listdir(data_path)
-file_list.sort(reverse=False)
-pattern = "RKI_COVID19"
-all_files = []
-for file in file_list:
-    file_path_full = os.path.join(data_path, file)
-    if not os.path.isdir(file_path_full):
-        filename = os.path.basename(file)
-        re_filename = re.search(pattern, filename)
-        re_search = re.search(iso_date_re, filename)
-        if re_search and re_filename:
-            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime("%Y-%m-%d")
-            all_files.append((file_path_full, report_date))
-day_range = pd.date_range(end=Datenstand, periods=30).tolist()
-day_range_str = []
-for datum in day_range:
-    day_range_str.append(datum.strftime("%Y-%m-%d"))
-for file_path_full, report_date in all_files:
-    if report_date not in day_range_str:
-        os.remove(file_path_full)
-aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-print(aktuelleZeit, ": done.")
-
 print(aktuelleZeit, ": add missing columns ...")
 
 LK["IdLandkreis"] = LK["IdLandkreis"].astype(str).str.zfill(5)
@@ -210,9 +185,35 @@ LK.insert(loc=0, column="IdStaat", value="00")
 
 # ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
 LK = ut.squeeze_dataframe(LK)
-
+feather_path = os.path.join(data_path, fileNameRoot + filedate + ".feather")
 # store dataBase to feather file to save memory
 ut.write_file(df=LK, fn=feather_path, compression="lz4")
+aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
+print(aktuelleZeit, ": done.")
+
+# limit RKI_COVID19 Data files to the last 30 days
+print(aktuelleZeit, ": cleanup data files ...")
+iso_date_re = "([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])"
+file_list = os.listdir(data_path)
+file_list.sort(reverse=False)
+pattern = "RKI_COVID19"
+all_files = []
+for file in file_list:
+    file_path_full = os.path.join(data_path, file)
+    if not os.path.isdir(file_path_full):
+        filename = os.path.basename(file)
+        re_filename = re.search(pattern, filename)
+        re_search = re.search(iso_date_re, filename)
+        if re_search and re_filename:
+            report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime("%Y-%m-%d")
+            all_files.append((file_path_full, report_date))
+day_range = pd.date_range(end=Datenstand, periods=30).tolist()
+day_range_str = []
+for datum in day_range:
+    day_range_str.append(datum.strftime("%Y-%m-%d"))
+for file_path_full, report_date in all_files:
+    if report_date not in day_range_str:
+        os.remove(file_path_full)
 aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
 print(aktuelleZeit, ": done.")
 
@@ -728,6 +729,10 @@ BL_kum_new["D"] = BL_kum_new["D"].astype(str)
 ut.write_json(df=LK_kum_new, fn="LK_complete.json.xz", pt=path)
 ut.write_json(df=BL_kum_new, fn="BL_complete.json.xz", pt=path)
 
+aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
+print(aktuelleZeit, ": done.")
+print(aktuelleZeit, ": Fallzahlen update")
+fallzahlen_update.fallzahlen_update(feather_path)
 endTime = dt.datetime.now()
 aktuelleZeit = endTime.strftime(format="%Y-%m-%dT%H:%M:%SZ")
 print(aktuelleZeit, ": done.")

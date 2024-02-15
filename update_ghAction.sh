@@ -71,11 +71,6 @@ DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python update_github-action.py"
 python update_github-action.py
 
-# Print message, update Fallzahlen
-DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : executing python fallzahlen_update.py"
-python fallzahlen_update.py
-
 # Print message, overwriting meta.json
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : overwriting meta.json with meta_new.json"

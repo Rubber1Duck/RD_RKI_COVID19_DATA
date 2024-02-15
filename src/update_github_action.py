@@ -74,13 +74,6 @@ BV_LK.reset_index(inplace=True, drop=True)
 BV_LK_A00 = BV_LK[BV_LK["Altersgruppe"] == "A00+"].copy()
 BV_LK_A00.reset_index(inplace=True, drop=True)
 
-# ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
-BV = ut.squeeze_dataframe(BV)
-BV_BL = ut.squeeze_dataframe(BV_BL)
-BV_BL_A00 = ut.squeeze_dataframe(BV_BL_A00)
-BV_LK = ut.squeeze_dataframe(BV_LK)
-BV_LK_A00 = ut.squeeze_dataframe(BV_LK_A00)
-
 # load covid latest from web
 with open(meta_path + "/" + filename_meta, "r", encoding="utf8") as file:
     metaObj = json.load(file)

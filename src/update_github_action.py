@@ -476,16 +476,14 @@ LK["cases"] = LK["cases"].fillna(0).astype(int)
 LK["deaths"] = LK["deaths"].fillna(0).astype(int)
 LK["recovered"] = LK["recovered"].fillna(0).astype(int)
 BL["Meldedatum"] = BL["Meldedatum"].astype(str)
-BL.insert(loc=7, column="cases7d", value=0)
-BL.insert(loc=8, column="incidence7d", value=0.0)
 aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
 print(aktuelleZeit, ":   |-calculating BL incidence history data ...")
 unique_BLID = BL_ID["IdBundesland"].unique()
 
 BL_I = ut.calc_incidence_BL(df=BL, unique_ID=unique_BLID)
 
-BL["cases7d"] = BL_I["cases7d"]
-BL["incidence7d"] = BL_I["incidence7d"].round(5)
+BL = BL.merge(BL_I, how="left", left_on=["Meldedatum", "IdBundesland"], right_on=["Meldedatum", "IdBundesland"])
+BL["incidence7d"] = BL["incidence7d"].round(5)
 BL.drop(["Einwohner"], inplace=True, axis=1)
 BL_I = pd.DataFrame()
 BLID = pd.DataFrame()
@@ -500,16 +498,14 @@ aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
 print(aktuelleZeit, ":   |-done.")
 
 LK["Meldedatum"] = LK["Meldedatum"].astype(str)
-LK.insert(loc=7, column="cases7d", value=0)
-LK.insert(loc=8, column="incidence7d", value=0.0)
 aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
 print(aktuelleZeit, ":   |-calculating LK incidence history data ...")
 unique_LKID = LK_ID.IdLandkreis.unique()
 
 LK_I = ut.calc_incidence_LK(df=LK, unique_ID=unique_LKID)
 
-LK["cases7d"] = LK_I["cases7d"]
-LK["incidence7d"] = LK_I["incidence7d"].round(5)
+LK = LK.merge(LK_I, how="left", left_on=["Meldedatum", "IdLandkreis"], right_on=["Meldedatum", "IdLandkreis"])
+LK["incidence7d"] = LK["incidence7d"].round(5)
 LK.drop(["Einwohner"], inplace=True, axis=1)
 LK_I = pd.DataFrame()
 LKID = pd.DataFrame()

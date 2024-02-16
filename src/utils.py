@@ -75,35 +75,39 @@ def read_file(fn):
 def calc_incidence_BL(df, unique_ID):
     Region_I = pd.DataFrame()
     for id in unique_ID:
-        RegionID = df[df["IdBundesland"] == id].copy()
+        RegionID = pd.DataFrame(df[df["IdBundesland"] == id].copy())
         RegionID.drop(["Bundesland", "deaths", "recovered"], inplace=True, axis=1)
+        RegionID.reset_index(inplace=True, drop=True)
         indexes = RegionID.index.to_list()
         for index in indexes:
             cases7d = 0
-            actual_index_of_index = indexes.index(index)
             for x in range(0, 7):
-                if (actual_index_of_index - x) < 0:
+                if (index - x) < 0:
                     continue
-                cases7d += RegionID.at[indexes[actual_index_of_index - x], "cases"]
+                cases7d += RegionID.at[index - x, "cases"]
             RegionID.at[index, "cases7d"] = cases7d
         RegionID["incidence7d"] = RegionID["cases7d"] / RegionID["Einwohner"] * 100000
+        RegionID.drop(["Einwohner", "cases"], inplace=True, axis=1)
         Region_I = pd.concat([Region_I, RegionID])
+    Region_I.reset_index(inplace=True, drop=True)
     return Region_I
 
 def calc_incidence_LK(df, unique_ID):
     Region_I = pd.DataFrame()
     for id in unique_ID:
-        RegionID = df[df["IdLandkreis"] == id].copy()
+        RegionID = pd.DataFrame(df[df["IdLandkreis"] == id].copy())
         RegionID.drop(["Landkreis", "deaths", "recovered"], inplace=True, axis=1)
+        RegionID.reset_index(inplace=True, drop=True)
         indexes = RegionID.index.to_list()
         for index in indexes:
             cases7d = 0
-            actual_index_of_index = indexes.index(index)
             for x in range(0, 7):
-                if (actual_index_of_index - x) < 0:
+                if (index - x) < 0:
                     continue
-                cases7d += RegionID.at[indexes[actual_index_of_index - x], "cases"]
+                cases7d += RegionID.at[index - x, "cases"]
             RegionID.at[index, "cases7d"] = cases7d
         RegionID["incidence7d"] = RegionID["cases7d"] / RegionID["Einwohner"] * 100000
+        RegionID.drop(["Einwohner", "cases"], inplace=True, axis=1)
         Region_I = pd.concat([Region_I, RegionID])
+    Region_I.reset_index(inplace=True, drop=True)
     return Region_I

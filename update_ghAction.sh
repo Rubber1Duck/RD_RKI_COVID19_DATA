@@ -93,6 +93,20 @@ SIZE2=$(stat -c%s RKI_COVID19_$DATE.csv.xz)
 QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv. New Size: $SIZE2 = $QUOTE %"
+# compress json files in history
+cd ../dataStore/history
+rm -f ./*.xz
+for file in ./*.json
+  do 
+    DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+    SIZE1=$(stat -c%s $file)
+    echo "$DATE2 : start compressing $file ($SIZE1 bytes)"
+    ../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "$file.xz" "$file"
+    SIZE2=$(stat -c%s $file.xz)
+    QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
+    DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
+    echo "$DATE2 : finished compressing $file. New Size: $SIZE2 = $QUOTE %"
+  done
 rm -rf ../7zzs
 
 # print message update finished

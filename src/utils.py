@@ -19,7 +19,7 @@ def squeeze_dataframe(df):
     return df
 
 
-def write_file(df, fn, compression="", sheet_name="data"):
+def write_file(df, fn, compression=""):
     fn_ext = os.path.splitext(fn)[1]
 
     if fn_ext == ".csv":
@@ -36,8 +36,15 @@ def write_file(df, fn, compression="", sheet_name="data"):
     return
 
 
-def write_json(df, fn, pt):
+def write_json(df, fn, pt, Datenstand="", archivePath=""):
     full_fn = os.path.join(pt, fn)
+    if archivePath != "":
+        full_archiv_fn = os.path.join(archivePath, Datenstand + "_" + fn)
+        try:
+            os.rename(full_fn, full_archiv_fn)
+        except:
+            print(full_fn, "does not exists!")
+
     df.to_json(
         path_or_buf=full_fn,
         orient="records",
@@ -72,42 +79,29 @@ def read_file(fn):
     return df
 
 
-def calc_incidence_BL(df, unique_ID):
-    Region_I = pd.DataFrame()
-    for id in unique_ID:
-        RegionID = pd.DataFrame(df[df["IdBundesland"] == id].copy())
-        RegionID.drop(["Bundesland", "deaths", "recovered"], inplace=True, axis=1)
-        RegionID.reset_index(inplace=True, drop=True)
-        indexes = RegionID.index.to_list()
-        for index in indexes:
-            cases7d = 0
-            for x in range(0, 7):
-                if (index - x) < 0:
-                    continue
-                cases7d += RegionID.at[index - x, "cases"]
-            RegionID.at[index, "cases7d"] = cases7d
-        RegionID["incidence7d"] = RegionID["cases7d"] / RegionID["Einwohner"] * 100000
-        RegionID.drop(["Einwohner", "cases"], inplace=True, axis=1)
-        Region_I = pd.concat([Region_I, RegionID])
-    Region_I.reset_index(inplace=True, drop=True)
-    return Region_I
+def calc_incidence(df):
+    import pandas as pd
+    idIndexes = df.index.to_list()
+    for index in idIndexes:
+        indexPos = idIndexes.index(index)
+        cases7d = 0
+        for x in range(0, 7):
+            if (indexPos - x) < 0:
+                continue
+            cases7d += df.at[idIndexes[indexPos - x], "cases"]
+        df.at[index, "cases7d"] = cases7d
+        df.at[index, "incidence7d"] = (cases7d / df.at[index, "Einwohner"] * 100000).round(5)
+    df["cases7d"] = df["cases7d"].astype(int)
+    return df
 
-def calc_incidence_LK(df, unique_ID):
-    Region_I = pd.DataFrame()
-    for id in unique_ID:
-        RegionID = pd.DataFrame(df[df["IdLandkreis"] == id].copy())
-        RegionID.drop(["Landkreis", "deaths", "recovered"], inplace=True, axis=1)
-        RegionID.reset_index(inplace=True, drop=True)
-        indexes = RegionID.index.to_list()
-        for index in indexes:
-            cases7d = 0
-            for x in range(0, 7):
-                if (index - x) < 0:
-                    continue
-                cases7d += RegionID.at[index - x, "cases"]
-            RegionID.at[index, "cases7d"] = cases7d
-        RegionID["incidence7d"] = RegionID["cases7d"] / RegionID["Einwohner"] * 100000
-        RegionID.drop(["Einwohner", "cases"], inplace=True, axis=1)
-        Region_I = pd.concat([Region_I, RegionID])
-    Region_I.reset_index(inplace=True, drop=True)
-    return Region_I
+def copy(source, destination):
+   with open(source, 'rb') as file:
+       myFile = file.read()
+   with open(destination, 'wb') as file:
+       file.write(myFile)
+
+def get_different_rows(source_df, new_df):
+    """Returns just the rows from the new dataframe that differ from the source dataframe"""
+    merged_df = source_df.merge(new_df, indicator=True, how='outer')
+    changed_rows_df = merged_df[merged_df['_merge'] == 'right_only']
+    return changed_rows_df.drop('_merge', axis=1)

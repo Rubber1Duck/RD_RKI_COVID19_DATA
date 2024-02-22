@@ -151,29 +151,22 @@ else:
 
 print(aktuelleZeit, ": add missing columns ...")
 
-LK["IdLandkreis"] = LK["IdLandkreis"].astype(str).str.zfill(5)
-LK.insert(loc=0, column="IdBundesland", value=LK["IdLandkreis"].str[:-3].copy())
+LK["IdLandkreis"] = LK['IdLandkreis'].map('{:0>5}'.format)
+LK.insert(loc=0, column="IdBundesland", value=LK["IdLandkreis"].str.slice(0,2))
 LK["Meldedatum"] = pd.to_datetime(LK["Meldedatum"]).dt.date
 LK.insert(loc=0, column="Datenstand", value=Datenstand.date())
 
 # add Bundesland und Landkreis
-LK.insert(loc=2, column="Bundesland", value="")
-LK.insert(loc=4, column="Landkreis", value="")
 BV_mask = ((BV["AGS"].isin(LK["IdBundesland"])) & (BV["Altersgruppe"] == "A00+") & (BV["GueltigAb"] <= Datenstand) & (BV["GueltigBis"] >= Datenstand))
 BV_masked = BV[BV_mask].copy()
 BV_masked.drop(["GueltigAb", "GueltigBis", "Altersgruppe", "Einwohner", "männlich", "weiblich"], inplace=True, axis=1)
-ID = LK["IdBundesland"].copy()
-ID = pd.merge(left=ID, right=BV_masked, left_on="IdBundesland", right_on="AGS", how="left")
-LK["Bundesland"] = ID["Name"].copy()
+BV_masked.rename(columns={"AGS": "IdBundesland", "Name": "Bundesland"}, inplace=True)
+LK = LK.merge(right=BV_masked, on="IdBundesland", how="left")
 BV_mask = ((BV["AGS"].isin(LK["IdLandkreis"])) & (BV["Altersgruppe"] == "A00+") & (BV["GueltigAb"] <= Datenstand) & (BV["GueltigBis"] >= Datenstand))
 BV_masked = BV[BV_mask].copy()
 BV_masked.drop(["GueltigAb", "GueltigBis", "Altersgruppe", "Einwohner", "männlich", "weiblich"], inplace=True, axis=1)
-ID = LK["IdLandkreis"].copy()
-ID = pd.merge(left=ID, right=BV_masked, left_on="IdLandkreis", right_on="AGS", how="left")
-LK["Landkreis"] = ID["Name"].copy()
-ID = pd.DataFrame()
-del ID
-gc.collect()
+BV_masked.rename(columns={"AGS": "IdLandkreis", "Name": "Landkreis"}, inplace=True)
+LK = LK.merge(right=BV_masked, on="IdLandkreis", how="left")
 LK.insert(loc=0, column="IdStaat", value="00")
 LK = LK[LK["Landkreis"].notna()]
 LK.reset_index(inplace=True, drop=True)

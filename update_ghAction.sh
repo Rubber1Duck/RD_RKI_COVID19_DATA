@@ -114,5 +114,5 @@ rm -rf ../7zzs
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 ENDTIME=`date +%s`
 TOTALSEC=`expr $ENDTIME - $STARTTIME`
-TIME=date -d@$TOTALSEC -u +%H:%M:%S
+TIME=`date -d@$TOTALSEC -u +%H:%M:%S`
 echo "$DATE2 : Update finished. Total execution time $TIME ."

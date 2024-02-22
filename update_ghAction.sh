@@ -49,6 +49,7 @@ fi
 #fi
 
 # print starting message
+STARTTIME=`date +%s`
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 if [[ "$SOURCEDATA" == "actual" ]]; then
   echo "$DATE2 : Start update with actual data (last modified: $lastModified)"
@@ -111,4 +112,7 @@ rm -rf ../7zzs
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : Update finished"
+ENDTIME=`date +%s`
+TOTALSEC=`expr $ENDTIME - $STARTTIME`
+TIME=date -d@$TOTALSEC -u +%H:%M:%S
+echo "$DATE2 : Update finished. Total execution time $TIME ."

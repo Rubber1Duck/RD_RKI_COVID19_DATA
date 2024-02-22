@@ -659,4 +659,4 @@ if __name__ == '__main__':
     endTime = dt.datetime.now()
     aktuelleZeit = endTime.strftime(format="%Y-%m-%dT%H:%M:%SZ")
     print(f"{aktuelleZeit} : done in {round(t2 - t1, 5)} secs.")
-    print(f"{aktuelleZeit} : total time: {endTime - startTime} .")
+    print(f"{aktuelleZeit} : total python time: {endTime - startTime} .")

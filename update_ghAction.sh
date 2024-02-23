@@ -108,7 +108,7 @@ for file in ./*.json
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     echo "$DATE2 : finished compressing $file. New Size: $SIZE2 = $QUOTE %"
   done
-rm -rf ../7zzs
+rm -rf ../../7zzs
 
 # print message update finished
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')

@@ -439,7 +439,7 @@ if __name__ == '__main__':
 
     LK["Meldedatum"] = LK["Meldedatum"].astype(str)
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-    print(f"{aktuelleZeit} :   |-calculating LK incidence ... {LK.shape[0]} rows")
+    print(f"{aktuelleZeit} :   |-calculating LK incidence with {os.cpu_count()} Processes... {LK.shape[0]} rows")
     t11 = time.time()
     LK = LK.groupby(["IdLandkreis"], observed=True).apply_parallel(ut.calc_incidence, progressbar=False)
     t12 = time.time()

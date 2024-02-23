@@ -423,7 +423,7 @@ if __name__ == '__main__':
     LKuniqueIdsCount = pd.unique(LK["IdLandkreis"]).shape[0]
     t11 = time.time()
     # multiprozessing BL incidence is slower! => normal apply
-    BL = BL.groupby(["IdBundesland"], observed=True).apply(ut.calc_incidence, include_groups=False)
+    BL = BL.groupby(["IdBundesland"], observed=True).apply(ut.calc_incidence)
     t12 = time.time()
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     LKEstimateTime = (t12-t11) * LKuniqueIdsCount / 17

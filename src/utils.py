@@ -80,14 +80,11 @@ def read_file(fn):
 
 
 def calc_incidence(df):
-    import pandas as pd
     idIndexes = df.index.to_list()
     for index in idIndexes:
         indexPos = idIndexes.index(index)
         cases7d = 0
-        for x in range(0, 7):
-            if (indexPos - x) < 0:
-                continue
+        for x in [y for y in range(0, 7) if indexPos - y >=0]:
             cases7d += df.at[idIndexes[indexPos - x], "cases"]
         df.at[index, "cases7d"] = cases7d
         df.at[index, "incidence7d"] = (cases7d / df.at[index, "Einwohner"] * 100000).round(5)

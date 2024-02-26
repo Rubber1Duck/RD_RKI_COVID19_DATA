@@ -66,7 +66,8 @@ if __name__ == '__main__':
     # LK = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     # Datenstand = dt.datetime(year=2023, month=12, day=26, hour=0, minute=0, second=0, microsecond=0)
     # fileName = "RKI_COVID19_2023-12-26.csv"
-
+    #url = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'), 'RKI_COVID19_2024-02-23.csv')
+    
     LK = pd.read_csv(url, engine="pyarrow", usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     LK.sort_values(by=["IdLandkreis", "Altersgruppe", "Geschlecht", "Meldedatum"], axis=0, inplace=True, ignore_index=True)
     LK.reset_index(drop=True, inplace=True)
@@ -418,22 +419,16 @@ if __name__ == '__main__':
     LK["recovered"] = LK["recovered"].fillna(0).astype(int)
 
     BL["Meldedatum"] = BL["Meldedatum"].astype(str)
+    
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     print(f"{aktuelleZeit} :   |-calculating BL incidence ... {BL.shape[0]} rows.")
     LKuniqueIdsCount = pd.unique(LK["IdLandkreis"]).shape[0]
     t11 = time.time()
-    # multiprozessing BL incidence is slower! => normal apply
-    BL = BL.groupby(["IdBundesland"], observed=True).apply(ut.calc_incidence)
+    BL = BL.groupby(["IdBundesland"], observed=True).apply_parallel(ut.calc_incidence, progressbar=False)
     t12 = time.time()
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     LKEstimateTime = (t12-t11) * LKuniqueIdsCount / 17
     print(f"{aktuelleZeit} :   |-Done in {round(t12 - t11, 5)} sec. Estimate {round(LKEstimateTime, 5)} sec. for LK!")
-    #t11 = time.time()
-    #BL1 = BL.groupby(["IdBundesland"], observed=True).apply_parallel(ut.calc_incidence, progressbar=False)
-    #t12 = time.time()
-    #aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-    #LKEstimateTime = (t12-t11) * LKuniqueIdsCount / 17
-    #print(f"{aktuelleZeit} :   |-Done in {round(t12 - t11, 5)} sec. Estimate {round(LKEstimateTime, 5)} sec. for LK!")
     BL.reset_index(inplace=True, drop=True)
     BL.drop(["Einwohner"], inplace=True, axis=1)
 
@@ -447,6 +442,7 @@ if __name__ == '__main__':
     print(f"{aktuelleZeit} :   |-Done in {round(t12-t11, 5)} sec. Thats {round(LKEstimateTime/(t12 - t11), 2)} times faster as estimated with normal apply!")
     LK.reset_index(inplace=True, drop=True)
     LK.drop(["Einwohner"], inplace=True, axis=1)
+    
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     t2 = time.time()
     print(f"{aktuelleZeit} : done in {round((t2 - t1), 5)} secs.")

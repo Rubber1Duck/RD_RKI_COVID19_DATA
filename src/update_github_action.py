@@ -559,7 +559,7 @@ if __name__ == '__main__':
     BL["AnzahlFall_7d"] = np.where(BL["AnzahlFall_7d"].isnull(), 0, BL["AnzahlFall_7d"]).astype(int)
     BL["Datenstand"] = np.where(BL["Datenstand"].isnull(), Datenstand.date(), BL["Datenstand"])
     BL["incidence_7d"] = BL["AnzahlFall_7d"] / BL["Einwohner"] * 100000
-    BL.drop(["Einwohner", "IdBundesland"], inplace=True, axis=1)
+    BL.drop(["Einwohner"], inplace=True, axis=1)
     
     # store csv files, i need this csv files for personal reasons! they are not nessasary for the api!
     path = os.path.join(base_path, "..", "dataStore", "frozen-incidence")

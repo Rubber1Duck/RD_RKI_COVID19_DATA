@@ -7,8 +7,7 @@ import utils as ut
 
 def fallzahlen_update(dataBaseFeatherFilePath):
     path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen.csv")
-    path_fallzahlen_feather = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen.feather")
-    
+        
     dtypes_fallzahlen = {
         "Datenstand": "object",
         "IdBundesland": "Int32",
@@ -28,7 +27,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
     covid_df = ut.read_file(fn=dataBaseFeatherFilePath)
     date_latest = covid_df["Datenstand"].max()
     # read fallzahlen current
-    fallzahlen_df = ut.read_file(fn=path_fallzahlen_feather)
+    fallzahlen_df = pd.read_csv(path_fallzahlen, engine="pyarrow", usecols=dtypes_fallzahlen.keys(), dtype=dtypes_fallzahlen)
 
     # eval fallzahlen new
     covid_df["Meldedatum"] = pd.to_datetime(covid_df["Meldedatum"]).dt.date
@@ -68,4 +67,4 @@ def fallzahlen_update(dataBaseFeatherFilePath):
             date_format="%Y-%m-%d",
             columns=dtypes_fallzahlen.keys(),
         )
-    ut.write_file(df=fallzahlen_new, fn=path_fallzahlen_feather, compression="lz4")
+    

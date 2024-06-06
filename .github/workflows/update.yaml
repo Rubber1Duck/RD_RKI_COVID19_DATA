@@ -55,12 +55,24 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.TAG }}
-      - name: Push changes
+      - name: Push_changes
         if: steps.update.outcome == 'success'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
+      - name: Trigger update Workflow in DATA5
+        if: steps.Push_changes.outcome == 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT }} # Fine-grained GitHub PAT that was saved as repository secret
+          script: |
+            await github.rest.actions.createworkflowDispatch({
+              owner: 'Rubber1Duck',
+              repo: 'RD_RKI_COVID19_DATA5',
+              workflow_id: 'update.yml',
+              ref: 'main'
+            })    
   call-cleanup:
     needs: updateData 
     uses: ./.github/workflows/delete_old_workflows.yaml

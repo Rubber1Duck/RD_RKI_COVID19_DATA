@@ -56,13 +56,14 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
       - name: Push_changes
+        id: push
         if: steps.update.outcome == 'success'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
       - name: Trigger update Workflow in DATA5
-        if: steps.Push_changes.outcome == 'success'
+        if: steps.push.outcome == 'success'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.PAT }} # Fine-grained GitHub PAT that was saved as repository secret

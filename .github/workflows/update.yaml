@@ -64,11 +64,11 @@ jobs:
           force: true
       - name: Trigger update Workflow in DATA5
         if: steps.push.outcome == 'success'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PAT }} # Fine-grained GitHub PAT that was saved as repository secret
           script: |
-            await github.rest.actions.createworkflowDispatch({
+            await github.rest.actions.createWorkflowDispatch({
               owner: 'Rubber1Duck',
               repo: 'RD_RKI_COVID19_DATA5',
               workflow_id: 'update.yml',

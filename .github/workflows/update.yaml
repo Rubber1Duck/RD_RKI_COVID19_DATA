@@ -71,7 +71,7 @@ jobs:
               owner: 'Rubber1Duck',
               repo: 'RD_RKI_COVID19_DATA5',
               workflow_id: 'update.yml',
-              ref: 'main'
+              ref: 'master'
             })    
   call-cleanup:
     needs: updateData 

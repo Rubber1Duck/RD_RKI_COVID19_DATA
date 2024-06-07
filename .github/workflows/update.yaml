@@ -71,7 +71,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: 'Rubber1Duck',
               repo: 'RD_RKI_COVID19_DATA5',
-              workflow_id: 'update.yml',
+              workflow_id: 'update.yaml',
               ref: 'master'
             })    
   call-cleanup:

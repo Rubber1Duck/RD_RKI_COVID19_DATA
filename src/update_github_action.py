@@ -446,6 +446,17 @@ if __name__ == '__main__':
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     t2 = time.time()
     print(f"{aktuelleZeit} : done in {round((t2 - t1), 5)} secs.")
+    
+    print(f"{aktuelleZeit} : write data file in format feather for DATA5 to disk ...")
+    t1 = time.time()
+    pathBL = os.path.join(base_path, "..", "dataStore", "historychanges", "BL_BaseData.feather")
+    pathLK = os.path.join(base_path, "..", "dataStore", "historychanges", "LK_BaseData.feather")
+    ut.write_file(BL, pathBL, "lz4")
+    ut.write_file(LK, pathLK, "lz4")
+    aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
+    t2 = time.time()
+    print(f"{aktuelleZeit} : done writing bases for DATA5")
+    
     print(f"{aktuelleZeit} : write files to disk ...")
     t1 = time.time()
     # store gz compressed json
@@ -653,6 +664,7 @@ if __name__ == '__main__':
     fallzahlen_update.fallzahlen_update(feather_path)
     t2 = time.time()
     endTime = dt.datetime.now()
+    os.remove(feather_path)
     aktuelleZeit = endTime.strftime(format="%Y-%m-%dT%H:%M:%SZ")
     print(f"{aktuelleZeit} : done in {round(t2 - t1, 5)} secs.")
     print(f"{aktuelleZeit} : total python time: {endTime - startTime} .")

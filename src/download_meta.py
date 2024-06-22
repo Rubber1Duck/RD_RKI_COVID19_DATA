@@ -32,6 +32,7 @@ try:
         if prop not in needed:
             del metaObj[prop]
     # insert all needed stuff
+    metaObj["publication_date"] = api_Object["commit"]["committer"]["date"]
     metaObj["size"] = size  # size of the file to download
     metaObj["filename"] = filename  # filename of the file to download
     metaObj["url"] = url_data  # url of the file to download

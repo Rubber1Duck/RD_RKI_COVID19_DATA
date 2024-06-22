@@ -33,7 +33,7 @@ COMMIT_DATE=${COMMIT_DATE_FULL:0:10}
 # if todays date not equal to lastModified date from RKI server the new data is not (yet) availible, print message and exit
 if [[ "Update $DATE" != "$COMMIT_MESSAGE" ]]; then
   DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-  echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $lastModifiedArchive)"
+  echo "$DATE2 : Updated data for $DATE in archive data does not yet exist (modified date: $COMMIT_DATE_FULL)"
   # URL for meta data on RKI server
   URL_METADATA="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland/main/Metadaten/zenodo.json"
   lastModified=$(curl -s -X GET -H "Accept: application/json" "$URL_METADATA" 2>&1 | jq -r '.version')

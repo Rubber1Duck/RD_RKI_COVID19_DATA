@@ -16,7 +16,7 @@ do
   CSVFILE="${file%.*}"
   SIZECSV=$(stat -c%s $CSVFILE)
   echo "$(date '+%Y-%m-%dT%H:%M:%SZ') : recompressing $CSVFILE $SIZECSV bytes (old compressed size was $SIZEBEVOR bytes)"
-  ../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 $file $CSV
+  ../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 $file $CSVFILE
   SIZEAFTER=$(stat -c%s $file)
   QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZEAFTER / $SIZEBEVOR * 100;}")
   if [[ $SIZEAFTER -ne $SIZEBEVOR ]]; then

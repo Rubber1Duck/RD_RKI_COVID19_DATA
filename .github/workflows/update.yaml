@@ -19,7 +19,7 @@ jobs:
           activate-environment: covid
           python-version: 3.11
           miniconda-version: "latest"
-          channels: conda-forge,defaults
+          channels: conda-forge
       - name: Install requirements
         run: pip install -r ./requirements.txt
         working-directory: ./

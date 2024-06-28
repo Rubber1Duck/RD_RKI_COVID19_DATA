@@ -73,8 +73,20 @@ jobs:
               repo: 'RD_RKI_COVID19_DATA5',
               workflow_id: 'update.yaml',
               ref: 'master'
-            })    
-  call-cleanup:
-    needs: updateData 
-    uses: ./.github/workflows/delete_old_workflows.yaml
-    secrets: inherit
+            })
+      - name: Delete workflow runs
+        if: steps.push.outcome == 'success'
+        uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
+        with:
+          repository: Rubber1Duck/RD_RKI_COVID19_DATA
+          # workflow: .github/workflows/update.yaml
+          older-than-seconds: 86400
+          # created-before: "2021-12-08T16:34:00Z"
+          # actor: test@test.com
+          # branch: main
+          # event: push
+          status: completed
+          # what-if: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          

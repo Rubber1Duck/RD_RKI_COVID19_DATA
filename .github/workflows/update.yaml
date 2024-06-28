@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   updateData:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}

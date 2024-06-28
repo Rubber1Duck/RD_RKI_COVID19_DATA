@@ -13,7 +13,7 @@ jobs:
         working-directory: ./.github/workflows
     steps:
       - uses: actions/checkout@master
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: false
           activate-environment: covid

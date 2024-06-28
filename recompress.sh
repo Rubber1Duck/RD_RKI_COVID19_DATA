@@ -19,7 +19,7 @@ do
   ../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 $file $CSV
   SIZEAFTER=$(stat -c%s $file)
   QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZEAFTER / $SIZEBEVOR * 100;}")
-  if [[ $SIZEAFTER -nq $SIZEBEVOR ]]; then
+  if [[ $SIZEAFTER -ne $SIZEBEVOR ]]; then
     file=$(basename $file)
     PUSHLIST="./data/$file $PUSHLIST"
     echo "$(date '+%Y-%m-%dT%H:%M:%SZ') : done recompressing $file. New Size: $SIZEAFTER = $QUOTE %. Added to pushlist!"

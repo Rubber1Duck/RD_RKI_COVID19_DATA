@@ -18,7 +18,6 @@ if [[ "$DATE" == "$lastModifiedLocal" ]]; then
 fi
 
 #try RKI Git Hub Archiv
-URL_METAARCHIV="https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/main/Metadaten/zenodo.json"
 URL_API_ARCHIV="https://api.github.com/repos/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/commits/main"
 COMMIT_JSON=$(curl -s -X GET -H "Accept: application/json" "$URL_API_ARCHIV" 2>&1)
 COMMIT_MESSAGE=$(echo $COMMIT_JSON | jq -r '.commit.message')

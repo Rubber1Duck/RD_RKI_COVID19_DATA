@@ -76,7 +76,7 @@ jobs:
             })
       - name: Delete workflow runs
         if: steps.push.outcome == 'success'
-        uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
+        uses: MajorScruffy/delete-old-workflow-runs@main
         with:
           repository: Rubber1Duck/RD_RKI_COVID19_DATA
           # workflow: .github/workflows/update.yaml

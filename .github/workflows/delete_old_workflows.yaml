@@ -9,7 +9,7 @@ jobs:
     name: delete old worflow runs
     steps:
       - name: Delete workflow runs
-        uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
+        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.0
         with:
           repository: Rubber1Duck/RD_RKI_COVID19_DATA
           # workflow: .github/workflows/update.yaml
@@ -19,6 +19,6 @@ jobs:
           # branch: main
           # event: push
           status: completed
-          # what-if: true
+          what-if: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

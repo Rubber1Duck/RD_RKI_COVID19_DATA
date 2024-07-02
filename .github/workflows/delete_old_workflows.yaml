@@ -19,6 +19,6 @@ jobs:
           # branch: main
           # event: push
           status: Queued
-          what-if: true
+          what-if: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

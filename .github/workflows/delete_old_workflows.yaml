@@ -18,7 +18,7 @@ jobs:
           # actor: test@test.com
           # branch: main
           # event: push
-          # status: completed
+          status: Queued
           what-if: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

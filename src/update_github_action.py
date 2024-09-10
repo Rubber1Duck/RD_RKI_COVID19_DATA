@@ -430,6 +430,7 @@ if __name__ == '__main__':
     LKEstimateTime = (t12-t11) * LKuniqueIdsCount / 17
     print(f"{aktuelleZeit} :   |-Done in {round(t12 - t11, 5)} sec. Estimate {round(LKEstimateTime, 5)} sec. for LK!")
     BL.reset_index(inplace=True, drop=True)
+    BL["incidence7d"] = (BL["cases7d"] / BL["Einwohner"] * 100000).round(5)
     BL.drop(["Einwohner"], inplace=True, axis=1)
 
     LK["Meldedatum"] = LK["Meldedatum"].astype(str)
@@ -439,8 +440,9 @@ if __name__ == '__main__':
     LK = LK.groupby(["IdLandkreis"], observed=True).apply_parallel(ut.calc_incidence, progressbar=False)
     t12 = time.time()
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-    print(f"{aktuelleZeit} :   |-Done in {round(t12-t11, 5)} sec. Thats {round(LKEstimateTime/(t12 - t11), 2)} times faster as estimated with normal apply!")
+    print(f"{aktuelleZeit} :   |-Done in {round(t12-t11, 5)} sec. Thats {round(LKEstimateTime/(t12 - t11), 2)} times faster as estimated!")
     LK.reset_index(inplace=True, drop=True)
+    LK["incidence7d"] = (LK["cases7d"] / LK["Einwohner"] * 100000).round(5)
     LK.drop(["Einwohner"], inplace=True, axis=1)
     
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")

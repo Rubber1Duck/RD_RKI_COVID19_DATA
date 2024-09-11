@@ -81,10 +81,11 @@ def read_file(fn):
 
 def calc_incidence(df):
     Indexes = df.index.to_list()
+    df_cases_values = df["cases"].values
     y = 0
     for index in Indexes:
         indexPos = Indexes.index(index)
-        df.at[index, "cases7d"] = sum(df["cases"].values[indexPos - y:indexPos + 1])
+        df.at[index, "cases7d"] = sum(df_cases_values[indexPos - y:indexPos + 1])
         if y < 6: y += 1
     df["cases7d"] = df["cases7d"].astype(int)
     return df

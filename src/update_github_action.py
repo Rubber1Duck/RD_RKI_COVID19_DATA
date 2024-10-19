@@ -574,34 +574,6 @@ if __name__ == '__main__':
     BL["incidence_7d"] = BL["AnzahlFall_7d"] / BL["Einwohner"] * 100000
     BL.drop(["Einwohner"], inplace=True, axis=1)
     
-    # store csv files, i need this csv files for personal reasons! they are not nessasary for the api!
-    path = os.path.join(base_path, "..", "dataStore", "frozen-incidence")
-    path_csv = os.path.join(base_path, "..", "dataStore", "frozen-incidence", "csv")
-    LK_csv_path = os.path.join(path_csv, "frozen-incidence_" + Datenstand.date().strftime("%Y-%m-%d") + "_LK.csv")
-    LK.to_csv(LK_csv_path, index=False, header=True, lineterminator="\n", encoding="utf-8", date_format="%Y-%m-%d", columns=LK_dtypes_single_files.keys())
-
-    # limit frozen-incidence csv files to the last 60 days
-    iso_date_re = "([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])"
-    file_list = os.listdir(path_csv)
-    file_list.sort(reverse=False)
-    pattern = "frozen-incidence"
-    all_files = []
-    for file in file_list:
-        file_path_full = os.path.join(path_csv, file)
-        if not os.path.isdir(file_path_full):
-            filename = os.path.basename(file)
-            re_filename = re.search(pattern, filename)
-            re_search = re.search(iso_date_re, filename)
-            if re_search and re_filename:
-                report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime("%Y-%m-%d")
-                all_files.append((file_path_full, report_date))
-    day_range_str = []
-    for datum in pd.date_range(end=Datenstand, periods=60).tolist():
-        day_range_str.append(datum.strftime("%Y-%m-%d"))
-    for file_path_full, report_date in all_files:
-        if report_date not in day_range_str:
-            os.remove(file_path_full)
-
     LK.drop(["AnzahlFall_7d"], inplace=True, axis=1)
     BL.drop(["AnzahlFall_7d"], inplace=True, axis=1)
     # open existing kum files

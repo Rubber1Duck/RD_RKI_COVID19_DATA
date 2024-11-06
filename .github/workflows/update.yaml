@@ -40,6 +40,13 @@ jobs:
           git add ':/*.xz'
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
+      - name: Push_changes
+        id: push
+        if: steps.update.outcome == 'success'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
       - name: set up env var
         if: steps.update.outcome == 'success'
         run: echo "TAG=v1.9.$(date '+%Y%m%d')" >> $GITHUB_ENV
@@ -55,13 +62,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
-      - name: Push_changes
-        id: push
-        if: steps.update.outcome == 'success'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          force: true
       - name: Trigger update Workflow in DATA5
         if: steps.push.outcome == 'success'
         uses: actions/github-script@v7

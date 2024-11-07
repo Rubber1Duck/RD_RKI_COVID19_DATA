@@ -29,6 +29,9 @@ jobs:
         continue-on-error: true
         working-directory: ./
         timeout-minutes: 70
+      - name: set up env var
+        if: steps.update.outcome == 'success'
+        run: echo "TAG=v1.9.$(date '+%Y%m%d')" >> $GITHUB_ENV
       - name: Commit files
         if: steps.update.outcome == 'success'
         run: |
@@ -40,6 +43,7 @@ jobs:
           git add ':/*.xz'
           git status -s
           git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
+          git tag -a "${{ env.TAG }}" -m "${{ env.TAG}} release"
       - name: Push_changes
         id: push
         if: steps.update.outcome == 'success'
@@ -47,16 +51,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
-      - name: set up env var
-        if: steps.update.outcome == 'success'
-        run: echo "TAG=v1.9.$(date '+%Y%m%d')" >> $GITHUB_ENV
-      - name: Create Tag
-        if: steps.update.outcome == 'success'
-        uses: rickstaa/action-create-tag@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.TAG }}
-          message: "${{ env.TAG }} release"
+          tags: true
       - name: Release
         if: steps.update.outcome == 'success'
         uses: softprops/action-gh-release@v2

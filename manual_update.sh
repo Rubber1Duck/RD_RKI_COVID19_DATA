@@ -4,7 +4,7 @@
 cd ./src
 
 #get todays date
-DATE=$(date '+%Y-%m-%d')
+DATE=$(date -d $1 '+%Y-%m-%d')
 
 STARTTIME=`date +%s`
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
@@ -70,5 +70,8 @@ git add ':/*.json'
 git add ':/*.feather'
 git add ':/*.xz'
 git status -s
-git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
+git commit -m "update on $1"
 git tag -a $2 -m "$2 release"
+git push
+git push origin tag $2
+

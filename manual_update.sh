@@ -73,5 +73,6 @@ git status -s
 git commit -m "update on $1"
 git tag -a "v1.9.$(date -d $1 '+%Y%m%d')" -m "v1.9.$(date -d $1 '+%Y%m%d') release"
 git push
-git push origin tag $2
+git push origin tag "v1.9.$(date -d $1 '+%Y%m%d')"
+
 

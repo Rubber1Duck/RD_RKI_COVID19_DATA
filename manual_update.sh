@@ -71,7 +71,7 @@ git add ':/*.feather'
 git add ':/*.xz'
 git status -s
 git commit -m "update on $1"
-git tag -a $2 -m "$2 release"
+git tag -a "v1.9.$(date -d $1 '+%Y%m%d')" -m "v1.9.$(date -d $1 '+%Y%m%d') release"
 git push
 git push origin tag $2
 

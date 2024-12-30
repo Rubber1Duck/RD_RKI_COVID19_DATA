@@ -61,7 +61,7 @@ jobs:
         if: steps.push.outcome == 'success'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PAT }} # Fine-grained GitHub PAT that was saved as repository secret
+          github-token: ${{ secrets.PAT2 }} # Fine-grained GitHub PAT that was saved as repository secret
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'Rubber1Duck',

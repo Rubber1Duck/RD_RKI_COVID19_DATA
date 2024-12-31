@@ -365,7 +365,7 @@ if __name__ == '__main__':
     BL["Meldedatum"] = pd.to_datetime(BL["Meldedatum"]).dt.date
 
     # fill dates for every region
-    startDate = "2020-01-01"
+    startDate = "2019-12-26"
     date_range_str = []
     for datum in pd.date_range(end=(Datenstand - dt.timedelta(days=1)), start=startDate).to_list():
         date_range_str.append(datum.strftime("%Y-%m-%d"))

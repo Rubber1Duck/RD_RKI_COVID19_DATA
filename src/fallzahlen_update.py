@@ -63,7 +63,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
     covid_df["AnzahlFall_7d"] = np.where(covid_df["Meldedatum"] > (date_latest - timedelta(days=8)), covid_df["AnzahlFall"], 0)
     covid_df["AnzahlTodesfall_neu"] = np.where(covid_df["NeuerTodesfall"].isin([-1, 1]), covid_df["AnzahlTodesfall"], 0)
     covid_df["AnzahlTodesfall"] = np.where(covid_df["NeuerTodesfall"].isin([0, 1]), covid_df["AnzahlTodesfall"], 0)
-    covid_df.drop(["IdStaat", "Bundesland", "Landkreis", "NeuerFall", "NeuerTodesfall", "Altersgruppe", "Geschlecht", "NeuGenesen", "AnzahlGenesen"], inplace=True, axis=1)
+    covid_df.drop(["NeuerFall", "NeuerTodesfall", "Altersgruppe", "Geschlecht", "NeuGenesen", "AnzahlGenesen"], inplace=True, axis=1)
     agg_key = {
         c: "max" if c in ["Meldedatum", "Datenstand"] else "sum"
         for c in covid_df.columns

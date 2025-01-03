@@ -13,11 +13,12 @@ jobs:
         working-directory: ./.github/workflows
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.13
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install dependencies
+        working-directory: ./
         run: |
           python --version
           python -m pip install --upgrade pip

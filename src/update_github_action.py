@@ -113,33 +113,6 @@ if __name__ == '__main__':
     t2 = time.time()
     print(f" done in {round((t2 - t1), 3)} secs.")
 
-    # limit RKI_COVID19 Data files to the last 30 days
-    print(f"{aktuelleZeit} : cleanup data files ...", end="")
-    t1 = time.time()
-    iso_date_re = "([0-9]{4})(-?)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])"
-    file_list = os.listdir(data_path)
-    file_list.sort(reverse=False)
-    pattern = "RKI_COVID19"
-    all_files = []
-    for file in file_list:
-        file_path_full = os.path.join(data_path, file)
-        if not os.path.isdir(file_path_full):
-            filename = os.path.basename(file)
-            re_filename = re.search(pattern, filename)
-            re_search = re.search(iso_date_re, filename)
-            if re_search and re_filename:
-                report_date = dt.date(int(re_search.group(1)), int(re_search.group(3)), int(re_search.group(4))).strftime("%Y-%m-%d")
-                all_files.append((file_path_full, report_date))
-    day_range_str = []
-    for datum in pd.date_range(end=Datenstand, periods=30).tolist():
-        day_range_str.append(datum.strftime("%Y-%m-%d"))
-    for file_path_full, report_date in all_files:
-        if report_date not in day_range_str:
-            os.remove(file_path_full)
-    aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-    t2 = time.time()
-    print(f" done in {round((t2 - t1), 3)} secs.")
-
     # ageGroup Data
     print(f"{aktuelleZeit} : calculating age-group data ...", end="")
     t1= time.time()

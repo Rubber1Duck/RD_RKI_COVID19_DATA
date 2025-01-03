@@ -13,16 +13,15 @@ jobs:
         working-directory: ./.github/workflows
     steps:
       - uses: actions/checkout@master
-      - uses: conda-incubator/setup-miniconda@v3
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
         with:
-          auto-activate-base: false
-          activate-environment: covid
-          python-version: 3.11
-          miniconda-version: "latest"
-          channels: conda-forge
-      - name: Install requirements
-        run: pip install -r ./requirements.txt
-        working-directory: ./
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python --version
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: update
         id: update
         run: ./update_ghAction.sh

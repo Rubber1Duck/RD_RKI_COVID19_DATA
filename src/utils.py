@@ -36,15 +36,9 @@ def write_file(df, fn, compression=""):
     return
 
 
-def write_json(df, fn, pt, Datenstand="", archivePath=""):
+def write_json(df, fn, pt):
     full_fn = os.path.join(pt, fn)
-    if archivePath != "":
-        full_archiv_fn = os.path.join(archivePath, Datenstand + "_" + fn)
-        try:
-            os.rename(full_fn, full_archiv_fn)
-        except:
-            print(full_fn, "does not exists!")
-
+    
     df.to_json(
         path_or_buf=full_fn,
         orient="records",
@@ -85,14 +79,17 @@ def calc_incidence(df):
     df["cases7d"] = df["cases7d"].astype(int)
     return df
 
+
 def copy(source, destination):
-   with open(source, 'rb') as file:
-       myFile = file.read()
-   with open(destination, 'wb') as file:
-       file.write(myFile)
+    with open(source, 'rb') as file:
+        myFile = file.read()
+    with open(destination, 'wb') as file:
+        file.write(myFile)
+
 
 def get_different_rows(source_df, new_df):
     """Returns just the rows from the new dataframe that differ from the source dataframe"""
     merged_df = source_df.merge(new_df, indicator=True, how='outer')
     changed_rows_df = merged_df[merged_df['_merge'] == 'right_only']
     return changed_rows_df.drop('_merge', axis=1)
+

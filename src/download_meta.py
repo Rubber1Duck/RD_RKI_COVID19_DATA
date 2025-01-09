@@ -1,5 +1,6 @@
-from download_pkg import *
-import os, requests, json
+import os
+import requests
+import json
 import datetime as dt
 
 try:
@@ -44,5 +45,6 @@ try:
     # store to disc
     with open(meta_path + "/" + filename_meta, "w", encoding="utf8") as json_file:
         json.dump(metaObj, json_file, ensure_ascii=False)
+
 except Exception as e:
     print(e)

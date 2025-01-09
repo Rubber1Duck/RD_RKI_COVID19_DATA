@@ -49,7 +49,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
 
     # read covid latest
     covid_df = ut.read_file(fn=dataBaseFeatherFilePath)
-    
+
     date_latest = covid_df["Datenstand"].max()
     # read fallzahlen current
     fallzahlen_df = pd.read_csv(path_fallzahlen, engine="pyarrow", usecols=dtypes_fallzahlen.keys(), dtype=dtypes_fallzahlen)
@@ -71,7 +71,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
     }
     covid_df = covid_df.groupby(key_list, as_index=False, observed=True).agg(agg_key)
     covid_copy = covid_df.copy()
-    
+
     covid_copy.drop("IdLandkreis", axis=1, inplace=True)
     agg_key = {
         c: "max" if c in ["Meldedatum", "Datenstand"] else "sum"
@@ -79,8 +79,8 @@ def fallzahlen_update(dataBaseFeatherFilePath):
         if c not in key_list_BL
     }
     covid_df_BL = covid_copy.groupby(key_list_BL, as_index=False, observed=True).agg(agg_key)
-    
-    covid_copy.drop("IdBundesland",axis=1, inplace=True)
+
+    covid_copy.drop("IdBundesland", axis=1, inplace=True)
     agg_key = {
         c: "max" if c in ["Meldedatum", "Datenstand"] else "sum"
         for c in covid_copy.columns

@@ -1,4 +1,5 @@
-import requests, os
+import requests
+import os
 
 
 class DownloadFile:

@@ -1,5 +1,4 @@
 import os
-import re
 import datetime as dt
 import time
 import numpy as np
@@ -66,8 +65,8 @@ if __name__ == '__main__':
     # LK = pd.read_csv(testfile, usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     # Datenstand = dt.datetime(year=2023, month=12, day=26, hour=0, minute=0, second=0, microsecond=0)
     # fileName = "RKI_COVID19_2023-12-26.csv"
-    #url = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'), 'RKI_COVID19_2024-02-23.csv')
-    
+    # url = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'), 'RKI_COVID19_2024-02-23.csv')
+
     LK = pd.read_csv(url, engine="pyarrow", usecols=CV_dtypes.keys(), dtype=CV_dtypes)
     # ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
     LK = ut.squeeze_dataframe(LK)
@@ -100,7 +99,7 @@ if __name__ == '__main__':
     print(f"{aktuelleZeit} : add missing columns ...", end="")
     t1 = time.time()
     LK["IdLandkreis"] = LK['IdLandkreis'].map('{:0>5}'.format)
-    LK.insert(loc=0, column="IdBundesland", value=LK["IdLandkreis"].str.slice(0,2))
+    LK.insert(loc=0, column="IdBundesland", value=LK["IdLandkreis"].str.slice(0, 2))
     LK["Meldedatum"] = pd.to_datetime(LK["Meldedatum"]).dt.date
     LK.insert(loc=0, column="Datenstand", value=Datenstand.date())
 
@@ -123,7 +122,7 @@ if __name__ == '__main__':
     # korrigiere Kategorien Altersgruppe und Geschlecht
     LK["Geschlecht"] = LK["Geschlecht"].cat.remove_unused_categories()
     LK["Altersgruppe"] = LK["Altersgruppe"].cat.remove_unused_categories()
-    
+
     # lösche alle nicht benötigten Spalten
     LK.drop(["Meldedatum", "Datenstand"], inplace=True, axis=1)
 
@@ -242,13 +241,13 @@ if __name__ == '__main__':
         if c not in key_list_ID0_cases
     }
     ID0 = BL.groupby(by=key_list_ID0_cases, as_index=False, observed=False).agg(agg_key)
-    
+
     BL.drop(["IdStaat", "IdLandkreis"], inplace=True, axis=1)
     ID0.drop(["IdStaat", "IdLandkreis"], inplace=True, axis=1)
     ID0["IdBundesland"] = "00"
     BL = pd.concat([ID0, BL])
     BL.reset_index(inplace=True, drop=True)
-    
+
     mask = ((BV["AGS"].isin(LK["IdLandkreis"])) & (BV["Altersgruppe"] == "A00+") & (BV["GueltigAb"] <= Datenstand) & (BV["GueltigBis"] >= Datenstand))
     masked = BV[mask].copy()
     masked.drop(["GueltigAb", "GueltigBis", "männlich", "weiblich", "Altersgruppe"], inplace=True, axis=1)
@@ -280,7 +279,7 @@ if __name__ == '__main__':
     print(f"{aktuelleZeit} : calculating history data ...")
     t1 = time.time()
     LK = ut.read_file(fn=feather_path)
-    
+
     # used keylists
     key_list_LK_hist = ["IdLandkreis", "Meldedatum"]
     key_list_BL_hist = ["IdBundesland", "Meldedatum"]
@@ -318,7 +317,7 @@ if __name__ == '__main__':
     BL = pd.concat([ID0, BL])
     BL.sort_values(by=key_list_BL_hist, inplace=True)
     BL.reset_index(inplace=True, drop=True)
-    
+
     # fill dates for every region
     allDates = pd.DataFrame(pd.date_range(end=(Datenstand - dt.timedelta(days=1)), start="2019-12-26").strftime("%Y-%m-%d"), columns=["Meldedatum"])
     BLDates = pd.DataFrame(pd.unique(BL["IdBundesland"]).copy(), columns=["IdBundesland"])
@@ -388,11 +387,11 @@ if __name__ == '__main__':
     LK.reset_index(inplace=True, drop=True)
     LK["incidence7d"] = (LK["cases7d"] / LK["Einwohner"] * 100000).round(5)
     LK.drop(["Einwohner"], inplace=True, axis=1)
-    
+
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     t2 = time.time()
     print(f"{aktuelleZeit} : history data calculation done in {round((t2 - t1), 3)} secs.")
-    
+
     print(f"{aktuelleZeit} : write data file in format feather for DATA5 to disk ...", end="")
     pathBL = os.path.join(base_path, "..", "dataStore", "historychanges", "BL_BaseData.feather")
     pathLK = os.path.join(base_path, "..", "dataStore", "historychanges", "LK_BaseData.feather")
@@ -400,7 +399,7 @@ if __name__ == '__main__':
     ut.write_file(LK, pathLK, "lz4")
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     print(f" done.")
-    
+
     print(f"{aktuelleZeit} : write files to disk ...", end="")
     t1 = time.time()
     # store gz compressed json
@@ -409,7 +408,7 @@ if __name__ == '__main__':
     ut.write_json(LK, "districts.json", path)
     # complete states (cases, deaths, recovered. incidence)
     ut.write_json(BL, "states.json", path)
-    
+
     # complete districts (cases, deaths, recovered. incidence) short
     LK.rename(columns={"IdLandkreis": "i", "Landkreis": "t", "Meldedatum": "m", "cases": "c", "deaths": "d", "recovered": "r", "cases7d": "c7", "incidence7d": "i7"}, inplace=True)
     ut.write_json(LK, "districts_new.json", path)
@@ -442,7 +441,7 @@ if __name__ == '__main__':
     # incidence
     out = BL[["i", "m", "c7", "i7"]].copy()
     ut.write_json(out, "s_incidence_short.json", path)
-        
+
     out = pd.DataFrame()
     del out
     gc.collect
@@ -499,7 +498,7 @@ if __name__ == '__main__':
     LK["Datenstand"] = np.where(LK["Datenstand"].isnull(), Datenstand.date(), LK["Datenstand"])
     LK["incidence_7d"] = LK["AnzahlFall_7d"] / LK["Einwohner"] * 100000
     LK.drop(["Einwohner"], inplace=True, axis=1)
-    
+
     BL_BV_valid = BV[((BV["Altersgruppe"] == "A00+") & (BV["GueltigAb"] <= Datenstand) & (BV["GueltigBis"] >= Datenstand) & (BV["AGS"].str.len() == 2))].copy()
     BL_BV_valid.drop(["Altersgruppe", "GueltigAb", "GueltigBis", "männlich", "weiblich"], inplace=True, axis=1)
     BL_BV_valid.rename(columns={"AGS": "IdBundesland", "Name": "Bundesland"}, inplace=True)
@@ -508,7 +507,7 @@ if __name__ == '__main__':
     BL["Datenstand"] = np.where(BL["Datenstand"].isnull(), Datenstand.date(), BL["Datenstand"])
     BL["incidence_7d"] = BL["AnzahlFall_7d"] / BL["Einwohner"] * 100000
     BL.drop(["Einwohner"], inplace=True, axis=1)
-    
+
     LK.drop(["AnzahlFall_7d"], inplace=True, axis=1)
     BL.drop(["AnzahlFall_7d"], inplace=True, axis=1)
     # open existing kum files

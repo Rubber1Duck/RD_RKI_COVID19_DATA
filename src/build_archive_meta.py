@@ -1,4 +1,7 @@
-import os, requests, json, sys
+import os
+import requests
+import json
+import sys
 import datetime as dt
 
 try:
@@ -7,10 +10,10 @@ try:
     filename_meta_new = "meta_new.json"
     date = dt.datetime.fromisoformat(sys.argv[1])
     date_only_str = date.strftime("%Y-%m-%d")
-        
+
     filename = date_only_str + "_Deutschland_SarsCov2_Infektionen.csv.xz"
     url_data = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Archiv/" + filename
-    
+
     resp = requests.head(url_data, allow_redirects=True)
     size = resp.headers["content-length"]
 
@@ -24,8 +27,9 @@ try:
     metaObj["url"] = url_data
     modified = int(dt.datetime.timestamp(date)) * 1000
     metaObj["modified"] = modified
-    
+
     with open(meta_path + "/" + filename_meta_new, "w", encoding="utf8") as json_file:
         json.dump(metaObj, json_file, ensure_ascii=False)
+
 except Exception as e:
     print(e)

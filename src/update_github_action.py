@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # ageGroup Data
     print(f"{aktuelleZeit} : calculating age-group data ...", end="")
-    t1= time.time()
+    t1 = time.time()
     # kopiere dataBase ohne unbekannte Altersgruppen oder unbekannte Geschlechter
     LK = LK[LK["Altersgruppe"] != "unbekannt"].copy()
     LK = LK[LK["Geschlecht"] != "unbekannt"].copy()
@@ -359,7 +359,7 @@ if __name__ == '__main__':
     del BV_masked
     gc.collect()
 
-    #fill nan with 0
+    # fill nan with 0
     BL["cases"] = BL["cases"].fillna(0).astype(int)
     BL["deaths"] = BL["deaths"].fillna(0).astype(int)
     BL["recovered"] = BL["recovered"].fillna(0).astype(int)
@@ -398,7 +398,7 @@ if __name__ == '__main__':
     ut.write_file(BL, pathBL, "lz4")
     ut.write_file(LK, pathLK, "lz4")
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-    print(f" done.")
+    print(" done.")
 
     print(f"{aktuelleZeit} : write files to disk ...", end="")
     t1 = time.time()
@@ -454,7 +454,7 @@ if __name__ == '__main__':
     # * fixed-incidence *
     # *******************
     print(f"{aktuelleZeit} : calculating fixed-incidence data ...", end="")
-    t1= time.time()
+    t1 = time.time()
     LK = ut.read_file(fn=feather_path)
     LK["IdStaat"] = "00"
 

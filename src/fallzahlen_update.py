@@ -136,7 +136,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
             date_format="%Y-%m-%d",
             columns=dtypes_fallzahlen_BL.keys(),
         )
-    
+
     # write csv
     with open(path_fallzahlen_00, "wb") as csvfile:
         fallzahlen_new_00.to_csv(

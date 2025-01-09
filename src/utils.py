@@ -38,7 +38,7 @@ def write_file(df, fn, compression=""):
 
 def write_json(df, fn, pt):
     full_fn = os.path.join(pt, fn)
-    
+
     df.to_json(
         path_or_buf=full_fn,
         orient="records",
@@ -92,4 +92,3 @@ def get_different_rows(source_df, new_df):
     merged_df = source_df.merge(new_df, indicator=True, how='outer')
     changed_rows_df = merged_df[merged_df['_merge'] == 'right_only']
     return changed_rows_df.drop('_merge', axis=1)
-

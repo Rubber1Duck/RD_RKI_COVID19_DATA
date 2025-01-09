@@ -13,7 +13,6 @@ import pandas as pd
 from multiprocessing import Pool
 import functools
 from os import cpu_count
-from tqdm import tqdm
 import numpy as np
 
 
@@ -23,7 +22,7 @@ def attachpandas():
     pd.core.frame.DataFrame.apply_parallel = df_apply_parallel
 
 
-def group_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, progressbar=True, *args, **kwargs):
+def group_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, *args, **kwargs):
     """
     Add functionality to pandas so that you can do processing on groups on multiple cores at same time.
     - This method will pass each group dataframe to the passed func (including key columns on which the group is formed).
@@ -34,10 +33,7 @@ def group_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, p
     chunk_size = (len(self)//(n_chunks if n_chunks is not None else num_processes))
 
     with Pool(num_processes) as p:
-        if progressbar:
-            ret_list = p.map(func, tqdm([df.copy() for idx, df in self]), chunksize=max(1, chunk_size))
-        else:
-            ret_list = p.map(func, [df.copy() for idx, df in self], chunksize=max(1, chunk_size))
+        ret_list = p.map(func, [df.copy() for idx, df in self], chunksize=max(1, chunk_size))
 
     keys = self.keys if isinstance(self.keys, list) else [self.keys]
     if isinstance(ret_list[0], pd.DataFrame):
@@ -54,7 +50,7 @@ def group_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, p
 pd.core.groupby.generic.DataFrameGroupBy.apply_parallel = group_apply_parallel
 
 
-def series_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, progressbar=True, *args, **kwargs):
+def series_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, *args, **kwargs):
     """
     Add functionality to pandas so that you can do processing on series on multiple cores at same time.
     - This method will pass individual items from series to the func.
@@ -65,10 +61,7 @@ def series_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, 
     chunk_size = (self.shape[0]//(n_chunks if n_chunks is not None else num_processes))
 
     with Pool(num_processes) as p:
-        if progressbar:
-            ret_list = p.map(func, tqdm(self.values.tolist()), chunksize=max(1, chunk_size))
-        else:
-            ret_list = p.map(func, self.values.tolist(), chunksize=max(1, chunk_size))
+        ret_list = p.map(func, self.values.tolist(), chunksize=max(1, chunk_size))
     ret_list = np.array(ret_list).flatten()
 
     # Handle if aggregation function ('func') returns dataframes
@@ -82,7 +75,7 @@ def series_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, 
 pd.core.series.Series.apply_parallel = series_apply_parallel
 
 
-def df_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, axis=0, progressbar=True, *args, **kwargs):
+def df_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, axis=0, *args, **kwargs):
     """
     Add functionality to pandas so that you can do processing on dataframes on multiple cores at same time.
     - This method will pass individual rows/columns from dataframe to the func.
@@ -94,16 +87,10 @@ def df_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, axis
     chunk_size = (self.shape[0]//(n_chunks if n_chunks is not None else num_processes))
 
     with Pool(num_processes) as p:
-        if progressbar:
-            if axis == 0:
-                ret_list = p.map(func, tqdm([row for _, row in self.iterrows()]), chunksize=max(1, chunk_size))
-            elif axis == 1:
-                ret_list = p.map(func, tqdm([col for _, col in self.items()]), chunksize=max(1, chunk_size))
-        else:
-            if axis == 0:
-                ret_list = p.map(func, [row for _, row in self.iterrows()], chunksize=max(1, chunk_size))
-            elif axis == 1:
-                ret_list = p.map(func, [col for _, col in self.items()], chunksize=max(1, chunk_size))
+        if axis == 0:
+            ret_list = p.map(func, [row for _, row in self.iterrows()], chunksize=max(1, chunk_size))
+        elif axis == 1:
+            ret_list = p.map(func, [col for _, col in self.items()], chunksize=max(1, chunk_size))
 
     # Handle if aggregation function ('func') returns dataframes
     if isinstance(ret_list[0], pd.DataFrame):

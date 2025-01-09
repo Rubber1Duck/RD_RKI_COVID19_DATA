@@ -71,12 +71,13 @@ def series_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, 
             ret_list = p.map(func, self.values.tolist(), chunksize=max(1, chunk_size))
     ret_list = np.array(ret_list).flatten()
 
-    # Handle if aggregation function ('func') returns dataframes 
+    # Handle if aggregation function ('func') returns dataframes
     if isinstance(ret_list[0], pd.DataFrame):
         return pd.concat(ret_list, keys=self.index, names=self.index.name, axis=0)
-    
+
     # Handle if aggregation function ('func') returns any other iterable
     return pd.Series(ret_list, index=self.index)
+
 
 pd.core.series.Series.apply_parallel = series_apply_parallel
 
@@ -86,9 +87,9 @@ def df_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, axis
     Add functionality to pandas so that you can do processing on dataframes on multiple cores at same time.
     - This method will pass individual rows/columns from dataframe to the func.
     - Pass axis=1 if you want to process on columns. By default, axis=0 i.e. each rows
-    """       
+    """
     if n_chunks is not None:
-        assert n_chunks>=num_processes, "Number of chunks must be greater than number of processes"
+        assert n_chunks >= num_processes, "Number of chunks must be greater than number of processes"
     func = functools.partial(func, *args, **kwargs)
     chunk_size = (self.shape[0]//(n_chunks if n_chunks is not None else num_processes))
 
@@ -97,7 +98,7 @@ def df_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, axis
             if axis == 0:
                 ret_list = p.map(func, tqdm([row for _, row in self.iterrows()]), chunksize=max(1, chunk_size))
             elif axis == 1:
-                ret_list = p.map(func, tqdm([col for _, col in self.items()]), chunksize= max(1, chunk_size))
+                ret_list = p.map(func, tqdm([col for _, col in self.items()]), chunksize=max(1, chunk_size))
         else:
             if axis == 0:
                 ret_list = p.map(func, [row for _, row in self.iterrows()], chunksize=max(1, chunk_size))
@@ -117,9 +118,9 @@ def df_apply_parallel(self, func, num_processes=cpu_count(), n_chunks=None, axis
             return pd.concat(ret_list, keys=self.index, names=self.index.name, axis=1).T
         elif axis == 1:
             return pd.concat(ret_list, keys=self.columns, axis=1)
-    
+
     # Handle if aggregation function ('func') returns any other iterable
-    return pd.Series(ret_list, index = self.index) if axis == 0 else pd.Series(ret_list, index=self.columns)
+    return pd.Series(ret_list, index=self.index) if axis == 0 else pd.Series(ret_list, index=self.columns)
 
 
 pd.core.frame.DataFrame.apply_parallel = df_apply_parallel

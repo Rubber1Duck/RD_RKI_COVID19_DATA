@@ -106,7 +106,7 @@ for file in ./*.json
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     SIZE1=$(stat -c%s $file)
     echo -n "$DATE2 : compressing $file ($SIZE1 bytes); "
-    ../../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "$file.xz" "$file"
+    ../../7zzs a -txz -mmt4 -mx=7 -sdel -stl -bso0 -bsp0 "$file.xz" "$file"
     SIZE2=$(stat -c%s $file.xz)
     QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
     echo "New Size: $SIZE2 = $QUOTE %"

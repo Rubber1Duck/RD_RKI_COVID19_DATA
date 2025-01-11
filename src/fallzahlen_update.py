@@ -6,9 +6,24 @@ import utils as ut
 
 
 def fallzahlen_update(dataBaseFeatherFilePath):
-    path_fallzahlen = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen.csv")
-    path_fallzahlen_BL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen_BL.csv")
-    path_fallzahlen_00 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fallzahlen", "RKI_COVID19_Fallzahlen_00.csv")
+    path_fallzahlen = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..",
+        "Fallzahlen",
+        "RKI_COVID19_Fallzahlen.csv",
+    )
+    path_fallzahlen_BL = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..",
+        "Fallzahlen",
+        "RKI_COVID19_Fallzahlen_BL.csv",
+    )
+    path_fallzahlen_00 = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..",
+        "Fallzahlen",
+        "RKI_COVID19_Fallzahlen_00.csv",
+    )
 
     dtypes_fallzahlen = {
         "Datenstand": "object",
@@ -52,18 +67,56 @@ def fallzahlen_update(dataBaseFeatherFilePath):
 
     date_latest = covid_df["Datenstand"].max()
     # read fallzahlen current
-    fallzahlen_df = pd.read_csv(path_fallzahlen, engine="pyarrow", usecols=dtypes_fallzahlen.keys(), dtype=dtypes_fallzahlen)
-    fallzahlen_df_BL = pd.read_csv(path_fallzahlen_BL, engine="pyarrow", usecols=dtypes_fallzahlen_BL.keys(), dtype=dtypes_fallzahlen_BL)
-    fallzahlen_df_00 = pd.read_csv(path_fallzahlen_00, engine="pyarrow", usecols=dtypes_fallzahlen_00.keys(), dtype=dtypes_fallzahlen_00)
+    fallzahlen_df = pd.read_csv(
+        path_fallzahlen,
+        engine="pyarrow",
+        usecols=dtypes_fallzahlen.keys(),
+        dtype=dtypes_fallzahlen,
+    )
+    fallzahlen_df_BL = pd.read_csv(
+        path_fallzahlen_BL,
+        engine="pyarrow",
+        usecols=dtypes_fallzahlen_BL.keys(),
+        dtype=dtypes_fallzahlen_BL,
+    )
+    fallzahlen_df_00 = pd.read_csv(
+        path_fallzahlen_00,
+        engine="pyarrow",
+        usecols=dtypes_fallzahlen_00.keys(),
+        dtype=dtypes_fallzahlen_00,
+    )
 
     # eval fallzahlen new
     covid_df["Meldedatum"] = pd.to_datetime(covid_df["Meldedatum"]).dt.date
-    covid_df["AnzahlFall_neu"] = np.where(covid_df["NeuerFall"].isin([-1, 1]), covid_df["AnzahlFall"], 0)
-    covid_df["AnzahlFall"] = np.where(covid_df["NeuerFall"].isin([0, 1]), covid_df["AnzahlFall"], 0)
-    covid_df["AnzahlFall_7d"] = np.where(covid_df["Meldedatum"] > (date_latest - timedelta(days=8)), covid_df["AnzahlFall"], 0)
-    covid_df["AnzahlTodesfall_neu"] = np.where(covid_df["NeuerTodesfall"].isin([-1, 1]), covid_df["AnzahlTodesfall"], 0)
-    covid_df["AnzahlTodesfall"] = np.where(covid_df["NeuerTodesfall"].isin([0, 1]), covid_df["AnzahlTodesfall"], 0)
-    covid_df.drop(["NeuerFall", "NeuerTodesfall", "Altersgruppe", "Geschlecht", "NeuGenesen", "AnzahlGenesen"], inplace=True, axis=1)
+    covid_df["AnzahlFall_neu"] = np.where(
+        covid_df["NeuerFall"].isin([-1, 1]), covid_df["AnzahlFall"], 0
+    )
+    covid_df["AnzahlFall"] = np.where(
+        covid_df["NeuerFall"].isin([0, 1]), covid_df["AnzahlFall"], 0
+    )
+    covid_df["AnzahlFall_7d"] = np.where(
+        covid_df["Meldedatum"] > (date_latest - timedelta(days=8)),
+        covid_df["AnzahlFall"],
+        0,
+    )
+    covid_df["AnzahlTodesfall_neu"] = np.where(
+        covid_df["NeuerTodesfall"].isin([-1, 1]), covid_df["AnzahlTodesfall"], 0
+    )
+    covid_df["AnzahlTodesfall"] = np.where(
+        covid_df["NeuerTodesfall"].isin([0, 1]), covid_df["AnzahlTodesfall"], 0
+    )
+    covid_df.drop(
+        [
+            "NeuerFall",
+            "NeuerTodesfall",
+            "Altersgruppe",
+            "Geschlecht",
+            "NeuGenesen",
+            "AnzahlGenesen",
+        ],
+        inplace=True,
+        axis=1,
+    )
     agg_key = {
         c: "max" if c in ["Meldedatum", "Datenstand"] else "sum"
         for c in covid_df.columns
@@ -78,7 +131,9 @@ def fallzahlen_update(dataBaseFeatherFilePath):
         for c in covid_copy.columns
         if c not in key_list_BL
     }
-    covid_df_BL = covid_copy.groupby(key_list_BL, as_index=False, observed=True).agg(agg_key)
+    covid_df_BL = covid_copy.groupby(key_list_BL, as_index=False, observed=True).agg(
+        agg_key
+    )
 
     covid_copy.drop("IdBundesland", axis=1, inplace=True)
     agg_key = {
@@ -86,7 +141,9 @@ def fallzahlen_update(dataBaseFeatherFilePath):
         for c in covid_copy.columns
         if c not in key_list_00
     }
-    covid_df_00 = covid_df.groupby(key_list_00, as_index=False, observed=True).agg(agg_key)
+    covid_df_00 = covid_df.groupby(key_list_00, as_index=False, observed=True).agg(
+        agg_key
+    )
 
     covid_df.rename(columns={"Meldedatum": "meldedatum_max"}, inplace=True)
     covid_df_BL.rename(columns={"Meldedatum": "meldedatum_max"}, inplace=True)

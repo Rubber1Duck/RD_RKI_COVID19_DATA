@@ -450,42 +450,55 @@ LK.rename(
     inplace=True,
 )
 agg_key = {
-    c: "max"
-    if c
-    in [
-        "IdStaat",
-        "IdBundesland",
-        "Meldedatum",
-        "Datenstand",
-        "Landkreis",
-        "Bundesland",
-    ]
-    else "sum"
+    c: (
+        "max"
+        if c
+        in [
+            "IdStaat",
+            "IdBundesland",
+            "Meldedatum",
+            "Datenstand",
+            "Landkreis",
+            "Bundesland",
+        ]
+        else "sum"
+    )
     for c in LK.columns
     if c not in key_list_LK_cases
 }
 LK = LK.groupby(by=key_list_LK_cases, as_index=False).agg(agg_key)
 agg_key = {
-    c: "max"
-    if c
-    in ["IdStaat", "Meldedatum", "Datenstand", "Bundesland", "IdLandkreis", "Landkreis"]
-    else "sum"
+    c: (
+        "max"
+        if c
+        in [
+            "IdStaat",
+            "Meldedatum",
+            "Datenstand",
+            "Bundesland",
+            "IdLandkreis",
+            "Landkreis",
+        ]
+        else "sum"
+    )
     for c in LK.columns
     if c not in key_list_BL_cases
 }
 BL = LK.groupby(by=key_list_BL_cases, as_index=False).agg(agg_key)
 agg_key = {
-    c: "max"
-    if c
-    in [
-        "Meldedatum",
-        "Datenstand",
-        "Bundesland",
-        "IdLandkreis",
-        "Landkreis",
-        "IdBundesland",
-    ]
-    else "sum"
+    c: (
+        "max"
+        if c
+        in [
+            "Meldedatum",
+            "Datenstand",
+            "Bundesland",
+            "IdLandkreis",
+            "Landkreis",
+            "IdBundesland",
+        ]
+        else "sum"
+    )
     for c in BL.columns
     if c not in key_list_ID0_cases
 }
@@ -565,31 +578,37 @@ LK.rename(
     inplace=True,
 )
 agg_key = {
-    c: "max"
-    if c in ["IdBundesland", "Datenstand", "Landkreis", "Bundesland"]
-    else "sum"
+    c: (
+        "max"
+        if c in ["IdBundesland", "Datenstand", "Landkreis", "Bundesland"]
+        else "sum"
+    )
     for c in LK.columns
     if c not in key_list_LK_hist
 }
 LK = LK.groupby(by=key_list_LK_hist, as_index=False, observed=True).agg(agg_key)
 agg_key = {
-    c: "max"
-    if c
-    in [
-        "IdLandkreis",
-        "Datenstand",
-        "Landkreis",
-        "Bundesland",
-    ]
-    else "sum"
+    c: (
+        "max"
+        if c
+        in [
+            "IdLandkreis",
+            "Datenstand",
+            "Landkreis",
+            "Bundesland",
+        ]
+        else "sum"
+    )
     for c in LK.columns
     if c not in key_list_BL_hist
 }
 BL = LK.groupby(by=key_list_BL_hist, as_index=False, observed=True).agg(agg_key)
 agg_key = {
-    c: "max"
-    if c in ["IdBundesland", "IdLandkreis", "Datenstand", "Bundesland", "Landkreis"]
-    else "sum"
+    c: (
+        "max"
+        if c in ["IdBundesland", "IdLandkreis", "Datenstand", "Bundesland", "Landkreis"]
+        else "sum"
+    )
     for c in BL.columns
     if c not in key_list_ID0_hist
 }

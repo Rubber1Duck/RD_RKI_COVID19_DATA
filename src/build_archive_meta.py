@@ -5,14 +5,21 @@ import sys
 import datetime as dt
 
 try:
-    meta_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dataStore", "meta"))
+    meta_path = os.path.normpath(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..", "dataStore", "meta"
+        )
+    )
     filename_meta_old = "meta.json"
     filename_meta_new = "meta_new.json"
     date = dt.datetime.fromisoformat(sys.argv[1])
     date_only_str = date.strftime("%Y-%m-%d")
 
     filename = date_only_str + "_Deutschland_SarsCov2_Infektionen.csv.xz"
-    url_data = "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Archiv/" + filename
+    url_data = (
+        "https://github.com/robert-koch-institut/SARS-CoV-2-Infektionen_in_Deutschland_Archiv/raw/main/Archiv/"
+        + filename
+    )
 
     resp = requests.head(url_data, allow_redirects=True)
     size = resp.headers["content-length"]

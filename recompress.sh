@@ -15,7 +15,7 @@ do
   rm -f $file
   CSVFILE="${file%.*}"
   SIZECSV=$(stat -c%s $CSVFILE)
-  echo "$(date '+%Y-%m-%dT%H:%M:%SZ') : recompress $CSVFILE $SIZECSV bytes (old compressed size was $SIZEBEVOR bytes); "
+  echo -n "$(date '+%Y-%m-%dT%H:%M:%SZ') : recompress $CSVFILE $SIZECSV bytes (old compressed size was $SIZEBEVOR bytes); "
   mv $CSVFILE temp.csv
   sort -t',' -n -k 1,1 -k 2,2 -k 3,3 -k 10,10 temp.csv > sort -t',' > $CSVFILE
   rm -f temp.csv

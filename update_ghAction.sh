@@ -94,6 +94,9 @@ cd ./data
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 SIZE1=$(stat -c%s RKI_COVID19_$DATE.csv)
 echo -n "$DATE2 : compressing RKI_COVID19_$DATE.csv ($SIZE1 bytes); "
+mv "RKI_COVID19_$DATE.csv" "temp.csv"
+sort -t',' -n -k 1,1 -k 2,2 -k 3,3 -k 10,10 temp.csv > sort -t',' > "RKI_COVID19_$DATE.csv"
+rm -f temp.csv
 ../7zzs a -txz -mmt4 -mx=9 -sdel -stl -bso0 -bsp0 "RKI_COVID19_$DATE.csv.xz" "RKI_COVID19_$DATE.csv"
 SIZE2=$(stat -c%s RKI_COVID19_$DATE.csv.xz)
 QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")

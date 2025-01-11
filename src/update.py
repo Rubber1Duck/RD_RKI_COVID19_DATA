@@ -55,7 +55,7 @@ BV = pd.read_csv(BV_csv_path, usecols=BV_dtypes.keys(), dtype=BV_dtypes)
 BV["GueltigAb"] = pd.to_datetime(BV["GueltigAb"])
 BV["GueltigBis"] = pd.to_datetime(BV["GueltigBis"])
 
-# ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+# ----- Squeeze the dataframe
 BV = ut.squeeze_dataframe(BV)
 
 # load covid latest from web
@@ -94,7 +94,7 @@ dataBase.sort_values(
 )
 dataBase.reset_index(drop=True, inplace=True)
 
-# ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+# ----- Squeeze the dataframe
 dataBase = ut.squeeze_dataframe(dataBase)
 
 aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
@@ -213,7 +213,7 @@ del ID
 gc.collect()
 dataBase.insert(loc=0, column="IdStaat", value="00")
 
-# ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+# ----- Squeeze the dataframe
 dataBase = ut.squeeze_dataframe(dataBase)
 
 # store dataBase to feather file to save memory

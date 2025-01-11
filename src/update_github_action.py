@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # url = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'), 'RKI_COVID19_2024-02-23.csv')
 
     LK = pd.read_csv(url, engine="pyarrow", usecols=CV_dtypes.keys(), dtype=CV_dtypes)
-    # ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+    # ----- Squeeze the dataframe
     LK = ut.squeeze_dataframe(LK)
 
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     LK["Meldedatum"] = pd.to_datetime(LK["Meldedatum"]).dt.date
     LK.insert(loc=0, column="Datenstand", value=Datenstand.date())
 
-    # ----- Squeeze the dataframe to ideal memory size (see "compressing" Medium article and run_dataframe_squeeze.py for background)
+    # ----- Squeeze the dataframe
     LK = ut.squeeze_dataframe(LK)
     feather_path = os.path.join(data_path, fileNameRoot + filedate + ".feather")
     # store dataBase to feather file to save memory

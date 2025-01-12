@@ -29,7 +29,7 @@ echo "$DATE2 : overwriting meta.json with meta_new.json"
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : download static 7zip"
 cd ../
-VERSION7ZIP="2301"
+VERSION7ZIP="2409"
 ./get7Zip.sh ${VERSION7ZIP}
 
 # start compress RKI_COVID19_$DATE.csv

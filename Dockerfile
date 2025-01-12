@@ -10,7 +10,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .
 
-ARG SEVENZIP_VERSION="2301"
+ARG SEVENZIP_VERSION="2409"
 
 RUN apt-get update \
   && apt-get -y upgrade \

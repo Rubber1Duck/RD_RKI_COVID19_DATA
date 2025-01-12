@@ -2,7 +2,7 @@
 
 # download static 7zip
 echo "$(date '+%Y-%m-%dT%H:%M:%SZ') : download static 7zip"
-VERSION7ZIP="2301"
+VERSION7ZIP="2409"
 ./get7Zip.sh ${VERSION7ZIP}
 PUSHLIST=""
 

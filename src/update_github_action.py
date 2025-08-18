@@ -124,27 +124,23 @@ if __name__ == "__main__":
     full_path = os.path.normpath(full_path)
     istDatei = os.path.isfile(full_path)
     istDateiXz = os.path.isfile(full_pathXz)
-    if not (istDatei | istDateiXz):
-        print(f"{aktuelleZeit} : writing DataFrame to {fileName} ...", end="")
-        LK.to_csv(
-            full_path,
-            index=False,
-            header=True,
-            lineterminator="\n",
-            encoding="utf-8",
-            date_format="%Y-%m-%d",
-            columns=CV_dtypes.keys(),
-        )
-        t2 = time.time()
-        print(f" done in {round((t2 - t1), 3)} secs.")
-    else:
-        if istDatei:
-            fileExists = fileName
-        else:
-            fileExists = fileNameXz
-        aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
-        print(f"{aktuelleZeit} : {fileExists} already exists.")
-
+    if (istDatei):
+        os.remove(full_path)
+    if (istDateiXz):
+        os.remove(full_pathXz)
+    print(f"{aktuelleZeit} : writing DataFrame to {fileName} ...", end="")
+    LK.to_csv(
+        full_path,
+        index=False,
+        header=True,
+        lineterminator="\n",
+        encoding="utf-8",
+        date_format="%Y-%m-%d",
+        columns=CV_dtypes.keys(),
+    )
+    t2 = time.time()
+    print(f" done in {round((t2 - t1), 3)} secs.")
+    
     print(f"{aktuelleZeit} : add missing columns ...", end="")
     t1 = time.time()
     LK["IdLandkreis"] = LK["IdLandkreis"].map("{:0>5}".format)

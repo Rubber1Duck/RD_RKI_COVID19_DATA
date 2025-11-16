@@ -1,0 +1,93 @@
+name: Update and create release
+
+on:
+  schedule:
+    - cron: "10,40 * * * *"
+  workflow_dispatch:
+jobs:
+  updateData:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+        working-directory: ./.github/workflows
+    steps:
+      - name: free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+      - uses: actions/checkout@master
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        working-directory: ./
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: update
+        id: update
+        run: ./update_ghAction.sh
+        continue-on-error: true
+        working-directory: ./
+        timeout-minutes: 70
+      - name: set up env var
+        if: steps.update.outcome == 'success'
+        run: echo "TAG=v1.9.$(date '+%Y%m%d')" >> $GITHUB_ENV
+      - name: Commit files
+        if: steps.update.outcome == 'success'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add ':/*.csv'
+          git add ':/*.json'
+          git add ':/*.feather'
+          git add ':/*.xz'
+          git status -s
+          git commit -m "update on $(date '+%Y-%m-%dT%H:%M:%SZ')"
+          git tag -a "${{ env.TAG }}" -m "${{ env.TAG}} release"
+      - name: Push_changes
+        id: push
+        if: steps.update.outcome == 'success'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+          tags: true
+      - name: Release
+        if: steps.update.outcome == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+      - name: Trigger update Workflow in DATA5
+        if: steps.push.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT2 }} # Fine-grained GitHub PAT that was saved as repository secret
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'Rubber1Duck',
+              repo: 'RD_RKI_COVID19_DATA5',
+              workflow_id: 'update.yaml',
+              ref: 'master'
+            })
+      - name: Delete workflow runs
+        if: steps.push.outcome == 'success'
+        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.0
+        with:
+          repository: Rubber1Duck/RD_RKI_COVID19_DATA
+          # workflow: .github/workflows/update.yaml
+          older-than-seconds: 86400
+          # created-before: "2021-12-08T16:34:00Z"
+          # actor: test@test.com
+          # branch: main
+          # event: push
+          status: completed
+          # what-if: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          

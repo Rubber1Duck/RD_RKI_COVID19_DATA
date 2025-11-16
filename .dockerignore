@@ -1,0 +1,15 @@
+.git
+.github
+data
+dataStore/frozen-incidence/csv
+dataStore/frozen-incidence/*.gz
+dataStore/frozen-incidence/*.xlsx
+src/update_github-action.py
+src/fallzahlen_update.py
+src/__pycache__
+update_ghAction.sh
+Fallzahlen
+.vscode
+.gitignore
+requirements.txt
+

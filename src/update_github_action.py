@@ -165,8 +165,8 @@ if __name__ == "__main__":
     LK = LK[LK["Geschlecht"] != "unbekannt"].copy()
 
     # korrigiere Kategorien Altersgruppe und Geschlecht
-    LK["Geschlecht"] = LK["Geschlecht"].cat.remove_unused_categories()
-    LK["Altersgruppe"] = LK["Altersgruppe"].cat.remove_unused_categories()
+    #LK["Geschlecht"] = LK["Geschlecht"].cat.remove_unused_categories()
+    #LK["Altersgruppe"] = LK["Altersgruppe"].cat.remove_unused_categories()
 
     # lösche alle nicht benötigten Spalten
     LK.drop(["Meldedatum", "Datenstand"], inplace=True, axis=1)

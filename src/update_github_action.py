@@ -22,13 +22,6 @@ if __name__ == "__main__":
         "Landkreis": "str",
         "incidence_7d": "float64",
     }
-    LK_dtypes_single_files = {
-        "Datenstand": "object",
-        "IdLandkreis": "str",
-        "Landkreis": "str",
-        "AnzahlFall_7d": "int32",
-        "incidence_7d": "float64",
-    }
     BL_dtypes = {
         "Datenstand": "object",
         "IdBundesland": "str",
@@ -64,21 +57,15 @@ if __name__ == "__main__":
     BV["GueltigAb"] = pd.to_datetime(BV["GueltigAb"])
     BV["GueltigBis"] = pd.to_datetime(BV["GueltigBis"])
 
-    BV_BL = BV[BV["AGS"].str.len() == 2].copy()
-    BV_BL.reset_index(inplace=True, drop=True)
-
-    BV_BL_A00 = BV_BL[BV_BL["Altersgruppe"] == "A00+"].copy()
+    BV_BL_A00 = BV[(BV["AGS"].str.len() == 2) & (BV["Altersgruppe"] == "A00+")].copy()
     BV_BL_A00.reset_index(inplace=True, drop=True)
 
-    BV_LK = BV[BV["AGS"].str.len() == 5].copy()
-    BV_LK.reset_index(inplace=True, drop=True)
-
-    BV_LK_A00 = BV_LK[BV_LK["Altersgruppe"] == "A00+"].copy()
+    BV_LK_A00 = BV[(BV["AGS"].str.len() == 5) & (BV["Altersgruppe"] == "A00+")].copy()
     BV_LK_A00.reset_index(inplace=True, drop=True)
 
     # load covid latest from web
     t1 = time.time()
-    with open(meta_path + "/" + filename_meta, "r", encoding="utf8") as file:
+    with open(os.path.join(meta_path, filename_meta), "r", encoding="utf8") as file:
         metaObj = json.load(file)
     fileNameOrig = metaObj["filename"]
     fileSize = int(metaObj["size"])
@@ -86,11 +73,7 @@ if __name__ == "__main__":
     timeStamp = metaObj["modified"]
     Datenstand = dt.datetime.fromtimestamp(timeStamp / 1000)
     Datenstand = Datenstand.replace(hour=0, minute=0, second=0, microsecond=0)
-    filedate = (
-        dt.datetime.fromtimestamp(metaObj["modified"] / 1000)
-        .date()
-        .strftime("%Y-%m-%d")
-    )
+    filedate = Datenstand.date().strftime("%Y-%m-%d")
     fileSizeMb = round(fileSize / 1024 / 1024, 1)
     fileNameRoot = "RKI_COVID19_"
     fileName = fileNameRoot + filedate + ".csv"
@@ -143,7 +126,7 @@ if __name__ == "__main__":
     
     print(f"{aktuelleZeit} : add missing columns ...", end="")
     t1 = time.time()
-    LK["IdLandkreis"] = LK["IdLandkreis"].map("{:0>5}".format)
+    LK["IdLandkreis"] = LK["IdLandkreis"].str.zfill(5)
     LK.insert(loc=0, column="IdBundesland", value=LK["IdLandkreis"].str.slice(0, 2))
     LK["Meldedatum"] = pd.to_datetime(LK["Meldedatum"]).dt.date
     LK.insert(loc=0, column="Datenstand", value=Datenstand.date())
@@ -161,12 +144,7 @@ if __name__ == "__main__":
     print(f"{aktuelleZeit} : calculating age-group data ...", end="")
     t1 = time.time()
     # kopiere dataBase ohne unbekannte Altersgruppen oder unbekannte Geschlechter
-    LK = LK[LK["Altersgruppe"] != "unbekannt"].copy()
-    LK = LK[LK["Geschlecht"] != "unbekannt"].copy()
-
-    # korrigiere Kategorien Altersgruppe und Geschlecht
-    #LK["Geschlecht"] = LK["Geschlecht"].cat.remove_unused_categories()
-    #LK["Altersgruppe"] = LK["Altersgruppe"].cat.remove_unused_categories()
+    LK = LK[(LK["Altersgruppe"] != "unbekannt") & (LK["Geschlecht"] != "unbekannt")].copy()
 
     # lösche alle nicht benötigten Spalten
     LK.drop(["Meldedatum", "Datenstand"], inplace=True, axis=1)
@@ -286,6 +264,7 @@ if __name__ == "__main__":
     print(f"{aktuelleZeit} : calculating new and accumulated data ...", end="")
     t1 = time.time()
     LK = ut.read_file(fn=feather_path)
+    week_cutoff_date = Datenstand.date() - dt.timedelta(days=8)
 
     # used keylists
     key_list_LK_cases = ["IdLandkreis"]
@@ -300,12 +279,12 @@ if __name__ == "__main__":
         LK["NeuerFall"].isin([1, -1]), LK["AnzahlFall"], 0
     ).astype(int)
     LK["accuCasesPerWeek"] = np.where(
-        LK["Meldedatum"] > (Datenstand.date() - dt.timedelta(days=8)),
+        LK["Meldedatum"] > week_cutoff_date,
         LK["accuCases"],
         0,
     ).astype(int)
     LK["newCasesPerWeek"] = np.where(
-        LK["Meldedatum"] > (Datenstand.date() - dt.timedelta(days=8)), LK["newCases"], 0
+        LK["Meldedatum"] > week_cutoff_date, LK["newCases"], 0
     ).astype(int)
     LK["accuDeaths"] = np.where(
         LK["NeuerTodesfall"].isin([1, 0, -9]), LK["AnzahlTodesfall"], 0
@@ -314,12 +293,12 @@ if __name__ == "__main__":
         LK["NeuerTodesfall"].isin([1, -1]), LK["AnzahlTodesfall"], 0
     ).astype(int)
     LK["accuDeathsPerWeek"] = np.where(
-        LK["Meldedatum"] > (Datenstand.date() - dt.timedelta(days=8)),
+        LK["Meldedatum"] > week_cutoff_date,
         LK["accuDeaths"],
         0,
     ).astype(int)
     LK["newDeathsPerWeek"] = np.where(
-        LK["Meldedatum"] > (Datenstand.date() - dt.timedelta(days=8)),
+        LK["Meldedatum"] > week_cutoff_date,
         LK["newDeaths"],
         0,
     ).astype(int)
@@ -548,18 +527,7 @@ if __name__ == "__main__":
     LK = LK.merge(LKDates, how="right", on=["IdLandkreis", "Meldedatum"])
 
     # clear unneeded data
-    ID0 = pd.DataFrame()
-    allDates = pd.DataFrame()
-    BLDates = pd.DataFrame()
-    LKDates = pd.DataFrame()
-    BV_mask = pd.DataFrame()
-    BV_masked = pd.DataFrame()
-    del ID0
-    del allDates
-    del BLDates
-    del LKDates
-    del BV_mask
-    del BV_masked
+    del ID0, allDates, BLDates, LKDates, BV_mask, BV_masked
     gc.collect()
 
     # fill nan with 0
@@ -682,9 +650,8 @@ if __name__ == "__main__":
     out = BL[["i", "m", "c7", "i7"]].copy()
     ut.write_json(out, "s_incidence_short.json", path)
 
-    out = pd.DataFrame()
     del out
-    gc.collect
+    gc.collect()
 
     aktuelleZeit = dt.datetime.now().strftime(format="%Y-%m-%dT%H:%M:%SZ")
     t2 = time.time()
@@ -707,7 +674,7 @@ if __name__ == "__main__":
         LK["NeuerFall"].isin([0, 1]), LK["AnzahlFall"], 0
     ).astype(int)
     LK["AnzahlFall_7d"] = np.where(
-        LK["Meldedatum"] > (Datenstand.date() - dt.timedelta(days=8)),
+        LK["Meldedatum"] > week_cutoff_date,
         LK["AnzahlFall"],
         0,
     ).astype(int)

@@ -23,7 +23,7 @@ def write_file(df, fn, compression=""):
     fn_ext = os.path.splitext(fn)[1]
 
     if fn_ext == ".csv":
-        df.to_csv(fn, index=False)
+        df.to_csv(fn, index=False, compression=compression)
 
     elif fn_ext == ".feather":
         compression = "zstd" if compression == "" else compression

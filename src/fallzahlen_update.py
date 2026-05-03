@@ -10,7 +10,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
         os.path.dirname(os.path.abspath(__file__)),
         "..",
         "Fallzahlen",
-        "RKI_COVID19_Fallzahlen.csv",
+        "RKI_COVID19_Fallzahlen.csv.xz",
     )
     path_fallzahlen_BL = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
@@ -180,6 +180,7 @@ def fallzahlen_update(dataBaseFeatherFilePath):
             encoding="utf-8",
             date_format="%Y-%m-%d",
             columns=dtypes_fallzahlen.keys(),
+            compression="xz",
         )
 
     # write csv

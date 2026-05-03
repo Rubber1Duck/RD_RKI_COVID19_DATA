@@ -264,6 +264,7 @@ if __name__ == "__main__":
     print(f"{aktuelleZeit} : calculating new and accumulated data ...", end="")
     t1 = time.time()
     LK = ut.read_file(fn=feather_path)
+    LK["Meldedatum"] = pd.to_datetime(LK["Meldedatum"]).dt.date
     week_cutoff_date = Datenstand.date() - dt.timedelta(days=8)
 
     # used keylists
@@ -663,6 +664,7 @@ if __name__ == "__main__":
     print(f"{aktuelleZeit} : calculating fixed-incidence data ...", end="")
     t1 = time.time()
     LK = ut.read_file(fn=feather_path)
+    LK["Meldedatum"] = pd.to_datetime(LK["Meldedatum"]).dt.date
     LK["IdStaat"] = "00"
 
     # used keylists

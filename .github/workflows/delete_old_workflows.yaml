@@ -1,0 +1,24 @@
+name: delete old workflow runs
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  delete-workflow-runs:
+    runs-on: ubuntu-latest
+    name: delete old worflow runs
+    steps:
+      - name: Delete workflow runs
+        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.0
+        with:
+          repository: Rubber1Duck/RD_RKI_COVID19_DATA
+          # workflow: .github/workflows/update.yaml
+          older-than-seconds: 86400
+          # created-before: "2021-12-08T16:34:00Z"
+          # actor: test@test.com
+          # branch: main
+          # event: push
+          status: Queued
+          what-if: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

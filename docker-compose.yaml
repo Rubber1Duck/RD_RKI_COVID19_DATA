@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  updater:
+    restart: always
+    container_name: updater
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    # image: rubber4duck/rki-covid-api-updater:latest
+    volumes:
+      - dataStore:/usr/src/app/dataStore
+      - ./data:/usr/src/app/data
+volumes:
+  dataStore:

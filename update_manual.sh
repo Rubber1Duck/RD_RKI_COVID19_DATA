@@ -36,7 +36,7 @@ VERSION7ZIP="2600"
 cd ./data
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 SIZE1=$(stat -c%s RKI_COVID19_$DATE.csv)
-echo "$DATE2 : start compressing RKI_COVID19_$DATE.csv ($SIZE1 bytes)"
+echo -n "$DATE2 : compressing RKI_COVID19_$DATE.csv ($SIZE1 bytes)."
 mv "RKI_COVID19_$DATE.csv" "temp.csv"
 sort -t',' -n -k 1,1 -k 2,2 -k 3,3 -k 10,10 temp.csv > "RKI_COVID19_$DATE.csv"
 rm -f temp.csv
@@ -44,7 +44,7 @@ rm -f temp.csv
 SIZE2=$(stat -c%s RKI_COVID19_$DATE.csv.xz)
 QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-echo "$DATE2 : finished compressing RKI_COVID19_$DATE.csv. New Size: $SIZE2 = $QUOTE %"
+echo " New Size: $SIZE2 = $QUOTE %"
 # compress json files in history
 cd ../dataStore/history
 rm -f ./*.xz
@@ -52,12 +52,12 @@ for file in ./*.json
   do 
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
     SIZE1=$(stat -c%s $file)
-    echo "$DATE2 : start compressing $file ($SIZE1 bytes)"
+    echo -n "$DATE2 : compressing $file ($SIZE1 bytes)."
     ../../7zzs a -txz -mmt4 -mx=7 -sdel -stl -bso0 -bsp0 "$file.xz" "$file"
     SIZE2=$(stat -c%s $file.xz)
     QUOTE=$(gawk "BEGIN {OFMT=\"%.4f\"; print $SIZE2 / $SIZE1 * 100;}")
     DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
-    echo "$DATE2 : finished compressing $file. New Size: $SIZE2 = $QUOTE %"
+    echo " New Size: $SIZE2 = $QUOTE %"
   done
 rm -rf ../../7zzs
 

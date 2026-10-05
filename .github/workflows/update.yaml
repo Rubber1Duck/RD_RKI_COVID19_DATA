@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -53,12 +53,12 @@ jobs:
           tags: true
       - name: Release
         if: steps.update.outcome == 'success'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.TAG }}
       - name: Trigger update Workflow in DATA5
         if: steps.push.outcome == 'success'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.PAT2 }} # Fine-grained GitHub PAT that was saved as repository secret
           script: |
@@ -70,7 +70,7 @@ jobs:
             })
       - name: Delete workflow runs
         if: steps.push.outcome == 'success'
-        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.0
+        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.1
         with:
           repository: Rubber1Duck/RD_RKI_COVID19_DATA
           # workflow: .github/workflows/update.yaml

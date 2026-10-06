@@ -9,7 +9,7 @@ jobs:
     name: delete old worflow runs
     steps:
       - name: Delete workflow runs
-        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.3
+        uses: Rubber1Duck/delete-old-workflow-runs@v0.4.4
         with:
           repository: Rubber1Duck/RD_RKI_COVID19_DATA
           # workflow: .github/workflows/update.yaml

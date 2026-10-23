@@ -86,6 +86,11 @@ def fallzahlen_update(dataBaseFeatherFilePath):
         dtype=dtypes_fallzahlen_00,
     )
 
+    # csv date columns are read as strings, convert to date to match covid_df
+    for df in (fallzahlen_df, fallzahlen_df_BL, fallzahlen_df_00):
+        for col in ["Datenstand", "report_date", "meldedatum_max"]:
+            df[col] = pd.to_datetime(df[col]).dt.date
+
     # eval fallzahlen new
     covid_df["Meldedatum"] = pd.to_datetime(covid_df["Meldedatum"]).dt.date
     covid_df["AnzahlFall_neu"] = np.where(

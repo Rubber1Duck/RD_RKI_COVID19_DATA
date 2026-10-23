@@ -75,7 +75,7 @@ fi
 # Print message, create new json files for date
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
 echo "$DATE2 : executing python update_github_action.py"
-python update_github_action.py
+python update_github_action.py || exit 1
 
 # Print message, overwriting meta.json
 DATE2=$(date '+%Y-%m-%dT%H:%M:%SZ')
